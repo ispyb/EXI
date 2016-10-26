@@ -1,6 +1,17 @@
 <div class="container-fluid containerWithScroll">
    <div class="row">
       <div class="col-xs-12 col-md-2">
+               
+         <table style='width: 100px;font-size:10px' class='table'>
+            <tbody>
+               <tr>
+                  <th class='innershell' >InnerShell</th>
+                  <th class='overallshell' >Overall</th>
+                  <th class='outershell' >OuterShell</th>
+               </tr>
+            </tbody>
+         </table>
+        
          <table class="table table-striped table-hover">
             <thead>
                <tr>
@@ -22,13 +33,13 @@
                   <th >Rmerge</th>
                   <th >Rpim</th>
                   <th >cc(1/2)</th>
-                  <th ></th>
+                  <th >Download</th>
                </tr>
             </thead>
             {#.}
             <tr>
                <td  >#{.rank}</td>
-               <td  ><a href='#/autoprocintegration/datacollection/{.AutoProcIntegration_dataCollectionId}/main'>{.v_datacollection_processingPrograms}</a></td>
+               <td  ><a target="_blank" href='#/autoprocintegration/datacollection/{.AutoProcIntegration_dataCollectionId}/main'>{.v_datacollection_processingPrograms}</a></td>
                <td  >{.v_datacollection_summary_phasing_autoproc_space_group}</td>
                <td  >
                   {@eq key=v_datacollection_summary_phasing_anomalous type="boolean" value="true"}
@@ -62,16 +73,7 @@
             </tr>
             {/.}
          </table>
-         <br />        
-         <table style='width: 100px;font-size:12px' class='table  table-striped '>
-            <tbody>
-               <tr>
-                  <th class='innershell' >InnerShell</th>
-                  <th class='overallshell' >Overall</th>
-                  <th class='outershell' >OuterShell</th>
-               </tr>
-            </tbody>
-         </table>
+        
       </div>
    </div>
 </div>

@@ -79,7 +79,7 @@ CurvePlotter.prototype.render = function(url) {
                 title: this.title,
                 titleHeight: 20,
 
-                legend: this.legend,
+                //legend: this.legend,
                 labelsSeparateLines: true,
                 errorBars: true,
                 connectSeparatedPoints: true,

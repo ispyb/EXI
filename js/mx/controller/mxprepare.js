@@ -25,7 +25,7 @@ MxPrepare.prototype.init = function() {
 
 	Path.map("#/mx/prepare/main").to(function() {
 		EXI.clearNavigationPanel();
-	    var mainView = new PrepareMainView();
+	    var mainView = new PrepareMainViewTest();
 		EXI.addMainPanel(mainView);
 	    mainView.load();
 	}).enter(this.setPageBackground);

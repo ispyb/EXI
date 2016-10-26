@@ -7,7 +7,7 @@ function PrepareMainView() {
     var _this = this;
     
     this.dewarListSelector = new DewarListSelectorGrid({height : 600});
-    this.dewarListSelector.onSelect.attach(function(sender, dewar){                       
+    this.dewarListSelector.onSelect.attach(function(sender, dewar){                     
             if (dewar.shippingStatus == "processing"){
                 _this.updateStatus(dewar.shippingId, "at_ESRF");
             } 

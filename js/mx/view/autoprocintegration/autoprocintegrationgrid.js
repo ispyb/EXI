@@ -48,8 +48,10 @@ AutoProcIntegrationGrid.prototype.parseData = function(data) {
          try{             
             data[i].statistics = this.getStatistics(data[i]);
             data[i].collapsed = this.getCollapseStatistics(data[i]);
-            data[i].phasing = this.getPhasing(data[i]);              
-            data[i].downloadFilesUrl = EXI.getDataAdapter().mx.autoproc.downloadAttachmentListByautoProcProgramsIdList(data[i].v_datacollection_summary_phasing_autoProcProgramId);                                          
+            data[i].phasing = this.getPhasing(data[i]);    
+                      
+            data[i].downloadFilesUrl = EXI.getDataAdapter().mx.autoproc.downloadAttachmentListByautoProcProgramsIdList(data[i].v_datacollection_summary_phasing_autoProcProgramId);
+            console.log(data[i].downloadFilesUrl);                                          
          }
          catch(e){
              
@@ -208,10 +210,10 @@ AutoProcIntegrationGrid.prototype.getPanel = function() {
 	
 	this.panel = Ext.create('Ext.grid.Panel', {		
 		store : this.store,		
-        tbar: this.getToolBar(),
+        //tbar: this.getToolBar(),
         margin : 10,
-		cls : 'border-grid',
-       
+		//cls : 'border-grid',
+        height : this.height,
         layout : 'fit',
 		columns : [             
                     {
@@ -262,7 +264,7 @@ AutoProcIntegrationGrid.prototype.getPanel = function() {
 };
 
 
-
+/*
 AutoProcIntegrationGrid.prototype.getToolBar = function() {
     var _this = this;
     return Ext.create('Ext.toolbar.Toolbar', {
@@ -285,8 +287,7 @@ AutoProcIntegrationGrid.prototype.getToolBar = function() {
           
         ]
     });
-};
-
+};*/
 /**
 * Attaches the events to lazy load to the images. Images concerned are with the class img-responsive and smalllazy
 *

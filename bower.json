@@ -39,7 +39,9 @@
     "dustjs-linkedin": "^2.7.2",
     "dustjs-helpers": "^1.7.3",
     "lightbox2": "^2.8.2",
-    "bootstrap": "^3.3.7"
+    "bootstrap": "^3.3.7",
+    "exi-ui-utils": "*",
+    "bootstrap-year-calendar": "^1.1.0"
   },
   "devDependencies": {
     "uglymol": "^0.1.0"

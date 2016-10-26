@@ -30,11 +30,28 @@ AutoprocIntegrationController.prototype.init = function() {
 	var _this = this;
 	var listView;	
     
-	Path.map("#/autoprocintegration/datacollection/:datacollectionId/main").to(function() {
-        EXI.hideNavigationPanel();
+	Path.map("#/autoprocintegration/datacollection/:datacollectionId/main").to(function() {        
 		var mainView = new AutoProcIntegrationMainView();
 		EXI.addMainPanel(mainView);
-		mainView.load(this.params['datacollectionId']);
+		mainView.panel.setLoading(true);
+        
+        var listPanel = new AutoProcIntegrationListView();        
+        EXI.addNavigationPanel(listPanel);
+        
+        listPanel.onSelect.attach(function(sender, selected){           
+            mainView.load(selected);            
+        });
+         /** Load view for autoprocessing */
+        var onSuccess2 = function(sender, data){
+            mainView.load(data[0]);
+            console.log(data[0]);
+            mainView.panel.setLoading(false);            
+            listPanel.load(data[0]);
+        };
+        EXI.getDataAdapter({onSuccess : onSuccess2}).mx.autoproc.getViewByDataCollectionId(this.params['datacollectionId']);
+    
+    
+    
 	}).enter(this.setPageBackground);
 
 	Path.map("#/autoprocintegration/datacollection/:datacollectionId/files").to(function() {
