@@ -1,11 +1,27 @@
+/**
+* Displays the data collections by session or acronym of the protein
+*
+* @class MXDataCollectionGrid
+* @constructor
+*/
 function MXDataCollectionGrid(args) {
     this.id = BUI.id();
 
-    /** If view should be collapsed or not */
-    this.collapsed = false;
+    /** DATACOLLECTION, DATACOLLECTION_COLLAPSED, PLATES_VIEW */
+    this.renderingType = 'DATACOLLECTION';
+
+    this.uncollapsedDataCollectionGrid = new UncollapsedDataCollectionGrid({
+                                                                    mxDataCollectionGrid : this
+                                                                });
+    this.collapsedDataCollectionGrid = new CollapsedDataCollectionGrid({
+                                                                    mxDataCollectionGrid : this
+                                                                });
+    this.platesDataCollectionGrid = new PlatesDataCollectionGrid({
+                                                                        mxDataCollectionGrid : this
+                                                                    });  
+                                                                    
+    this.activePanel = this.uncollapsedDataCollectionGrid;
 }
-
-
 
 /**
 * Attaches the events to lazy load to the images. Images concerned are with the class img-responsive and smalllazy
@@ -15,6 +31,7 @@ function MXDataCollectionGrid(args) {
 MXDataCollectionGrid.prototype.attachCallBackAfterRender = function() {
     
     var _this = this;
+    
     var lazy = {
             bind: 'event',
             /** !!IMPORTANT this is the id of the parent node which contains the scroll **/
@@ -29,8 +46,6 @@ MXDataCollectionGrid.prototype.attachCallBackAfterRender = function() {
         
     var timer1 = setTimeout(function() {  $('.img-responsive').lazy(lazy);}, 500);
     var timer2 = setTimeout(function() {  $('.smalllazy').lazy(lazy);}, 500); 
-    
-    
     
     var tabsEvents = function(grid) {
         
@@ -59,7 +74,7 @@ MXDataCollectionGrid.prototype.attachCallBackAfterRender = function() {
                     var onSuccess2 = function(sender, data){                       
                         /** Parsing data */
                         var html = "";     
-                                           
+                        
                         dust.render("collapsed.autoprocintegrationgrid.template",  new AutoProcIntegrationGrid().parseData(data[0]), function(err, out) {
                                     html = html + out;
                         });
@@ -68,7 +83,71 @@ MXDataCollectionGrid.prototype.attachCallBackAfterRender = function() {
                     var dataCollectionId = target.slice(4);                    
                     EXI.getDataAdapter({onSuccess : onSuccess2}).mx.autoproc.getViewByDataCollectionId(dataCollectionId);    
                 }
-                
+
+                 if (target.startsWith("#sa")){                    
+                        var dataCollectionId = target.slice(4);
+
+                        var divName = "xtal1_samples_" + dataCollectionId;
+                        // $("#xtal2_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: divName, zoomWindowHeight: 200, zoomWindowWidth:200, borderSize: 0, easing:true});
+                        // $("#xtal3_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: divName, zoomWindowHeight: 200, zoomWindowWidth:200, borderSize: 0, easing:true});
+                        // $("#xtal4_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: divName, zoomWindowHeight: 200, zoomWindowWidth:200, borderSize: 0, easing:true});
+
+                        // $("#xtal1_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: 2});
+                        // $("#xtal2_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: 2});
+                        // $("#xtal3_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: 2});
+                        // $("#xtal4_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: 2});
+
+
+                        // $(".elevatezoom").elevateZoom({scrollZoom : true, zoomWindowPosition: 2});
+                        // Intense(document.querySelectorAll('.intense'));
+
+                        var dc =_.find(grid.dataCollectionGroup, {"DataCollection_dataCollectionId":Number(dataCollectionId)});
+                        
+                        if (dc){
+                            if ($("#sample_puck_layout_" +dataCollectionId)){
+                                
+                                if (dc.Container_containerId){
+                                    var container =_.filter(grid.dataCollectionGroup, {"Container_containerId":Number(dc.Container_containerId)});
+                                    if(container){
+                                    var dataCollectionIds = {};
+                                        for (var i = 1 ; i <= container[0].Container_capacity ; i++) {
+                                            var sampleByLocation = _.filter(container,{"BLSample_location":i.toString()});
+                                            if (sampleByLocation.length > 0) {
+                                                var ids = [];
+                                                for (sample in sampleByLocation){
+                                                    ids.push(sampleByLocation[sample].DataCollection_dataCollectionId);
+                                                }
+                                                dataCollectionIds[i] = ids.toString();
+                                            }
+                                        }
+                                    }
+
+                                    var puck = new UniPuckWidget({mainRadius : 100, 
+                                                                    enableMouseOver : false, 
+                                                                    enableClick : false,
+                                                                    dataCollectionIds : dataCollectionIds
+                                                                });
+                                    if (dc.Container_capacity == 10){
+                                        puck = new SpinePuckWidget({mainRadius : 100, 
+                                                                    enableMouseOver : false, 
+                                                                    enableClick : false,
+                                                                    dataCollectionIds : dataCollectionIds
+                                                                });
+                                    }
+                                    $("#sample_puck_layout_" +dataCollectionId).html(puck.getPanel());
+                                    
+                                    var onSuccess = function(sender, samples){
+                                        if (samples){
+                                            puck.loadSamples(samples,dc.BLSample_location);
+                                        }
+                                    };
+                                    
+                                    EXI.getDataAdapter({onSuccess : onSuccess}).mx.sample.getSamplesByContainerId(dc.Container_containerId);
+                                }
+                            }
+                        }
+                   
+                }
                 
                 if (target.startsWith("#wf")){                    
                     var dataCollectionId = target.slice(4);
@@ -83,166 +162,80 @@ MXDataCollectionGrid.prototype.attachCallBackAfterRender = function() {
                         $(target).html(html);
                     }  
                 }
-                
-               
-                
-                
-                
             });
     };
-    
     var timer3 = setTimeout(tabsEvents, 500, _this);
- 
 };
+
 
 MXDataCollectionGrid.prototype.getPanel = function(dataCollectionGroup) {
     var _this = this;
-    this.store = Ext.create('Ext.data.Store', {
-        fields: ["dataCollectionGroup"]
-    });
-    this.panel = Ext.create('Ext.grid.Panel', {
-        border: 1,
-        padding: 5,
+
+    this.panel = Ext.create('Ext.panel.Panel', {  
         id: this.id,
-        store: this.store,
-       
-        disableSelection: true,
         tbar: this.getToolBar(),
-        columns: this.getColumns(),
-        viewConfig: {
-            enableTextSelection: true,
-            stripeRows: false
-        },
-        listeners: {
-            viewready: function() {
-                function loadMagnifiers() {
-                    for (var i = 0; i < _this.dataCollectionGroup.length; i++) {
-                        var elementId = _this.dataCollectionGroup[i].DataCollection_dataCollectionId + "_thumb";
-                        $('#' + elementId).Lazy();
-
-                    }
-                }
-            }
-        }
-
-    });
+        
+        items: [_this.activePanel.getPanel(dataCollectionGroup)]
+        });
 
     this.panel.on('boxready', function() {
         _this.attachCallBackAfterRender();
     });
 
     return this.panel;
-};
+}
 
-
-
-
-/**
-* Parses statistics and return the best one
-*
-* @method _getAutoprocessingStatistics
-* @param {Object} data Record with all the information that it is stored in the store
-* @return {Object} return all statistics sorted by best values
-*/
-MXDataCollectionGrid.prototype._getAutoprocessingStatistics = function(data) {
-    /** This converts and array of comma separated value in a array */
-    function getArrayValues(value) {
-        /** It splits every value */
-        return _.map(_.trim(value).split(","), function(singleValue) { return _.trim(singleValue); });
-    }
-
-    var autoProc_spaceGroups = getArrayValues(data.AutoProc_spaceGroups);
-    var autoProcIds = getArrayValues(data.autoProcIds);
-    var completenessList = getArrayValues(data.completenessList);
-    var resolutionsLimitHigh = getArrayValues(data.resolutionsLimitHigh);
-    var resolutionsLimitLow = getArrayValues(data.resolutionsLimitLow);
-    var scalingStatisticsTypes = getArrayValues(data.scalingStatisticsTypes);
-    var rMerges = getArrayValues(data.rMerges);
-    var cell_a = getArrayValues(data.Autoprocessing_cell_a);
-    var cell_b = getArrayValues(data.Autoprocessing_cell_b);
-    var cell_c = getArrayValues(data.Autoprocessing_cell_c);
-
-    var cell_alpha = getArrayValues(data.Autoprocessing_cell_alpha);
-    var cell_beta = getArrayValues(data.Autoprocessing_cell_beta);
-    var cell_gamma = getArrayValues(data.Autoprocessing_cell_gamma);
-
-
-    data = {};
-    /** Returning if no autoprocs */
-    if (autoProcIds) {
-        if (autoProcIds[0] == "") {
-            return [];
-        }
-    }
-    for (var i = 0; i < autoProcIds.length; i++) {
-        if (data[autoProcIds[i]] == null) {
-            data[autoProcIds[i]] = {
-                autoProcId: autoProcIds[i],
-                spaceGroup: autoProc_spaceGroups[i]
-            };
-        }
-
-        data[autoProcIds[i]][scalingStatisticsTypes[i]] = ({
-            autoProcId: autoProcIds[i],
-            scalingStatisticsType: scalingStatisticsTypes[i],
-            completeness: Number(completenessList[i]).toFixed(0),
-            resolutionsLimitHigh: Number(resolutionsLimitHigh[i]).toFixed(1),
-            resolutionsLimitLow: Number(resolutionsLimitLow[i]).toFixed(1),
-            rMerge: Number(rMerges[i]).toFixed(1),
-            spaceGroup: autoProc_spaceGroups[i],
-            cell_a: cell_a[i],
-            cell_b: cell_b[i],
-            cell_c: cell_c[i],
-            cell_alpha: cell_alpha[i],
-            cell_beta: cell_beta[i],
-            cell_gamma: cell_gamma[i]
-
-        });
-
-    }
-
-    /** Convert from map to array */
-    var ids = _.map(data, 'autoProcId');
-    var result = [];
-    for ( i = 0; i < ids.length; i++) {
-        result.push(data[ids[i]]);
-    }
-
-    function sortByBest(a, b) {
-        var spaceGroupA = a.spaceGroup.replace(/\s/g, "");
-        var spaceGroupB = b.spaceGroup.replace(/\s/g, "");              
-        return (_.indexOf(ExtISPyB.spaceGroups, spaceGroupA) > _.indexOf(ExtISPyB.spaceGroups, spaceGroupB));
-    }
-
-    var sorted = result.sort(sortByBest).reverse();    
-    /** Add new attribute for ranking order */
-    for ( i = 0; i < sorted.length; i++) {
-        sorted[i]["rank"] = i + 1;
-    }
-
-    return sorted;
-};
 
 MXDataCollectionGrid.prototype.getToolBar = function() {
     var _this = this;
+    function onMenuClicked(widget){
+        if (_this.activePanel != widget){
+            _this.activePanel = widget;
+            if (Ext.getCmp(_this.id + "_search").getValue() != "") {
+                _this.reloadData(_this.filterBy(Ext.getCmp(_this.id + "_search").getValue()));
+            } else {
+                _this.reloadData(_this.dataCollectionGroup);
+            }
+        }
+    }
+
+    var menu =  Ext.create('Ext.menu.Menu', {     
+        items: [{
+            text: 'Data Collection',
+            handler: function(){
+                _this.renderingType = "DATACOLLECTION";
+                onMenuClicked(_this.uncollapsedDataCollectionGrid);
+            }
+        },{
+            text: 'Summary',            
+            handler: function(){
+                _this.renderingType = "DATACOLLECTION_COLLAPSED";
+                onMenuClicked(_this.collapsedDataCollectionGrid);
+            }
+        },{
+            text: 'Plates',            
+            handler: function(){
+                _this.renderingType = "PLATES";
+                if (_this.activePanel != _this.platesDataCollectionGrid){
+                    _this.activePanel = _this.platesDataCollectionGrid;
+                    if (Ext.getCmp(_this.id + "_search").getValue() != "") {
+                        _this.platesDataCollectionGrid.reloadPlates(_this.filterBy(Ext.getCmp(_this.id + "_search").getValue()),true);
+                    }
+                    else {
+                        _this.platesDataCollectionGrid.reloadPlates(_this.dataCollectionGroup,false);
+                    }
+                }
+            }
+        }]
+   });
+
     return Ext.create('Ext.toolbar.Toolbar', {
         width: 500,
         items: [
-            {
-                xtype: 'checkboxfield',
-                boxLabel: 'Summary',
-                id: this.id + "_collapse",
-                listeners: {
-                    change: function(field, e) {
-                        _this.collapsed = e;
-                        if (Ext.getCmp(_this.id + "_search").getValue() != "") {
-                            _this.filterBy(Ext.getCmp(_this.id + "_search").getValue());
-                        }
-                        else {
-                            _this.reloadData(_this.dataCollectionGroup);
-                        }
-                    }
-                }
+           {
+                text:'View',
+                iconCls: 'bmenu',  // <-- icon
+                menu : menu  // assign menu by instance
             },
             '->', 
             {
@@ -253,7 +246,13 @@ MXDataCollectionGrid.prototype.getToolBar = function() {
                 listeners: {
                     specialkey: function(field, e) {
                         if (e.getKey() == e.ENTER) {
-                            _this.filterBy(field.getValue());
+                            _this.filter = field.getValue();
+
+                            if (_this.renderingType == "PLATES"){
+                                _this.reloadPlates(_this.filterBy(field.getValue()));
+                            } else {
+                                _this.reloadData(_this.filterBy(field.getValue()));
+                            }
                         }
                     }
                 }
@@ -262,126 +261,13 @@ MXDataCollectionGrid.prototype.getToolBar = function() {
         ]
     });
 };
-MXDataCollectionGrid.prototype.getColumns = function() {
-    var _this = this;
-    var columns = [
-        {
-
-            dataIndex: 'dataCollectionGroup',
-            name: 'dataCollectionGroup',
-            flex: 1.5,
-            hidden: false,
-            renderer: function(grid, e, record) {
-                
-                var data = record.data;                              
-                var html = "";                               
-                /** For thumbnail */
-                data.urlThumbnail = EXI.getDataAdapter().mx.dataCollection.getThumbNailById(data.lastImageId);
-                data.url = EXI.getDataAdapter().mx.dataCollection.getImageById(data.lastImageId);
-                data.ref = '#/mx/beamlineparameter/datacollection/' + data.DataCollection_dataCollectionId + '/main';
-                data.runNumber = data.DataCollection_dataCollectionNumber;
-                data.prefix = data.DataCollection_imagePrefix;
-                data.comments = data.DataCollectionGroup_comments;
-                data.sample = data.BLSample_name;
-                data.folder = data.DataCollection_imageDirectory;
-
-                
-                try{
-                    if (data.autoProcIntegrationId){                        
-                        data.resultsCount = _.uniq(data.autoProcIntegrationId.replace(/ /g,'').split(",")).length;
-                    }
-                }
-                catch(e){}
-                /** For Phasing */
-                
-                if (data.phasingStepType) {
-                    var phasingSteps = data.phasingStepType.split(",");
-                    data.phasingStepLength = phasingSteps.length;
-                   
-                }
-                
-                /** For crystal */
-                data.xtal1 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 1);
-                data.xtal2 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 2);
-                data.xtal3 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 3);
-                data.xtal4 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 4);
-
-                /** Image quality indicator **/
-                data.indicator = EXI.getDataAdapter().mx.dataCollection.getQualityIndicatorPlot(record.data.DataCollection_dataCollectionId);
-
-                /** For online data analysis */
-                //var online = (new OnlineResultSectionDataCollection().parseData(record.data));
-                //data.autoprocessing = _.filter(online, function(b) { return b.name == "Autoprocessing"; });
-
-               
-                //data.screening = _.filter(online, function(b) { return b.name == "Screening"; });
-                
-                /*if (data.autoprocessing.length > 0){
-                   data.isScreeningVisible = false;
-                }
-                else{
-                    data.isScreeningVisible = true;
-                }*/
-                //else{
-                //    data.ScreeningOutput_indexingSuccess = null;
-                //    data.ScreeningOutput_strategySuccess = null;
-               // }
-                data.onlineresults = _this._getAutoprocessingStatistics(record.data);
-                
-                /** We dont show screen if there are results of autoprocessing */
-                data.isScreeningVisible = true;
-                if (data.onlineresults){
-                    if (data.onlineresults.length > 0){
-                        data.isScreeningVisible = false;
-                    }                    
-                }
-                /** For the workflows **/
-                if (record.data.WorkflowStep_workflowStepType) {
-                    data.workflows = new WorkflowSectionDataCollection().parseWorkflow(record.data);
-                }
-                if (data.workflows == null) {
-                    data.workflows = [];
-                }
-
-                if (!_this.collapsed) {                    
-                    dust.render("mxdatacollectiongrid.template", data, function(err, out) {                                                                       
-                        html = html + out;
-                    });                    
-                    /*dust.render("online.mxdatacollectiongrid.template", data, function(err, out) {
-                        html = html + out;
-                    });*/
-                }
-                else {
-                    dust.render("collapsed.mxdatacollectiongrid.template", data, function(err, out) {
-                        html = html + out;
-                    });
-                }
-                return html;
-
-            }
-        },
-        {
-            header: 'IDs',
-            dataIndex: 'dataCollectionGroup',
-            name: 'dataCollectionGroup',
-            flex: 1.5,
-            hidden: true,
-            renderer: function(grid, e, record) {
-                var html = "";
-                dust.render("ids.mxdatacollectiongrid.template", record.data, function(err, out) {
-                    html = out;
-                });
-                return html;
-
-            }
-        }         
-    ];
-    return columns;
-};
 
 MXDataCollectionGrid.prototype.reloadData = function(dataCollections) {
-    this.store.loadData(dataCollections);
+    this.activePanel.store.loadData(dataCollections);
     this.attachCallBackAfterRender();
+    this.panel.removeAll();
+
+    this.panel.add(this.activePanel.getPanel(this.dataCollectionGroup));
 };
 /**
 * Filters data by prefix, protein acronym or sample
@@ -402,11 +288,11 @@ MXDataCollectionGrid.prototype.filterBy = function(searchTerm) {
         }
     });
     Ext.getCmp(this.id + "_found").setText(filtered.length + " items found");
-    this.reloadData(filtered);
+    return filtered;
 };
 
 MXDataCollectionGrid.prototype.load = function(dataCollectionGroup) {    
     this.dataCollectionGroup = dataCollectionGroup;
     this.dataCollectionGroup.reverse();
-    this.store.loadData(this.dataCollectionGroup);
+    this.activePanel.store.loadData(this.dataCollectionGroup);
 };

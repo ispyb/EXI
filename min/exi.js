@@ -435,7 +435,7 @@ function Exi(args) {
 	this.keepTabs = false;
 	
 	
-	this.controllers = [new ExiController(), new ProposalExiController(), new ShippingExiController()];
+	this.controllers = [new ExiController(), new ProposalExiController(), new ShippingExiController(), new TestController()];
 	
 	if (args != null){
 		if (args.menu != null){
@@ -1079,6 +1079,45 @@ ExiGenericController.prototype.notFound = function() {
 
 
 
+
+function MainView(args) {
+	this.id = BUI.id();
+	this.title = "New Tab";
+	this.closable = true; 
+	this.onSelectionChange = new Event(this);
+	this.onSelect = new Event(this);
+	this.onDeselect = new Event(this);
+	
+	//this.bodyStyle = {"background-color":"#FAFAFA"};
+    
+    if (args != null){
+        if (args.title != null){
+            this.title = args.title;
+        }
+    }
+
+}
+
+MainView.prototype.getContainer = function() {
+	return this.container;
+};
+
+MainView.prototype.getPanel = function() {
+	this.container = Ext.create('Ext.container.Container', {
+		xtype : 'container',
+		items : []
+	});
+
+	this.panel = Ext.create('Ext.panel.Panel', {
+		autoScroll : true,
+		title : this.title,
+		closable: this.closable,
+		icon : this.icon,
+		bodyStyle: this.bodyStyle, 
+		items :[this.getContainer() ]
+	});
+	return this.panel;
+};
 function AuthenticationManager(){
 	this.onSuccess = new Event(this);
 	this.onError = new Event(this);
@@ -2086,6 +2125,44 @@ ListView.prototype.getPanel = function(){
 	    });
 	return this.panel; 
 };
+
+
+
+/**
+* AddressListView displays the address (labcontact information) as list on the navigation panels
+*
+* @class AddressListView
+* @constructor
+*/
+function AddressListView(){
+	this.title = "Addresses";
+	this.sorters = [{property : 'cardName', direction: 'ASC'}];
+	ListView.call(this);
+}
+
+AddressListView.prototype.getPanel = ListView.prototype.getPanel;
+AddressListView.prototype.load = ListView.prototype.load;
+AddressListView.prototype.getFields = ListView.prototype.getFields;
+AddressListView.prototype.getColumns = ListView.prototype.getColumns;
+
+AddressListView.prototype.getFilter = function(value){
+	return [{property : "cardName", value : value, anyMatch : true}];
+};
+
+/**
+* Calls to the dust template in order to render to puck in HTML
+*
+* @class getRow
+* @constructor
+*/
+AddressListView.prototype.getRow = function(record){
+	var html = "";
+	dust.render("address.listview", record.data, function(err, out){
+        	html = out;
+     	});
+	return html;
+};
+
 
 
 

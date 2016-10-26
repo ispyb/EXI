@@ -4,6 +4,7 @@ function ContainerPrepareSpreadSheet(){
 
 
 ContainerPrepareSpreadSheet.prototype.load = function(dewars){
+    debugger
   var hotSettings = {
     data: dewars,
     columns: [
@@ -50,6 +51,7 @@ ContainerPrepareSpreadSheet.prototype.load = function(dewars){
         'Sample Changer Location'
     ]
 };
+    
   this.spreadSheet =  new Handsontable(document.getElementById(this.id), hotSettings);
 };
 ContainerPrepareSpreadSheet.prototype.getPanel = function(){

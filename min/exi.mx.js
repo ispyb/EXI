@@ -306,7 +306,7 @@ MxPrepare.prototype.init = function() {
 
 	Path.map("#/mx/prepare/main").to(function() {
 		EXI.clearNavigationPanel();
-	    var mainView = new PrepareMainView();
+	    var mainView = new PrepareMainViewTest();
 		EXI.addMainPanel(mainView);
 	    mainView.load();
 	}).enter(this.setPageBackground);
@@ -647,6 +647,7 @@ function ExiMX() {
                                     new PhasingController(),
                                     new XfeController(),
                                     new BeamlineParameterController()
+									
 							],
 		 					headerCssClass : 'mxTitlePanel'
 
@@ -2757,6 +2758,197 @@ AutoProcessingFileManager.prototype.load = function(dataCollectionIds){
     
 	EXI.getDataAdapter({onSuccess : onSuccess2}).mx.autoproc.getViewByDataCollectionId(dataCollectionIds);
 };
+function DataCollectionGrid(args) {
+
+    this.store = Ext.create('Ext.data.Store', {
+            fields: ["dataCollectionGroup"]
+        });
+
+    if (args) {
+        if (args.mxDataCollectionGrid) {
+            this.mxDataCollectionGrid = args.mxDataCollectionGrid;
+        }
+    }
+}
+    
+/**
+* Parses statistics and return the best one
+*
+* @method _getAutoprocessingStatistics
+* @param {Object} data Record with all the information that it is stored in the store
+* @return {Object} return all statistics sorted by best values
+*/
+DataCollectionGrid.prototype._getAutoprocessingStatistics = function(data) {
+    /** This converts and array of comma separated value in a array */
+    function getArrayValues(value) {
+        /** It splits every value */
+        return _.map(_.trim(value).split(","), function(singleValue) { return _.trim(singleValue); });
+    }
+
+    var autoProc_spaceGroups = getArrayValues(data.AutoProc_spaceGroups);
+    var autoProcIds = getArrayValues(data.autoProcIds);
+    var completenessList = getArrayValues(data.completenessList);
+    var resolutionsLimitHigh = getArrayValues(data.resolutionsLimitHigh);
+    var resolutionsLimitLow = getArrayValues(data.resolutionsLimitLow);
+    var scalingStatisticsTypes = getArrayValues(data.scalingStatisticsTypes);
+    var rMerges = getArrayValues(data.rMerges);
+    var cell_a = getArrayValues(data.Autoprocessing_cell_a);
+    var cell_b = getArrayValues(data.Autoprocessing_cell_b);
+    var cell_c = getArrayValues(data.Autoprocessing_cell_c);
+
+    var cell_alpha = getArrayValues(data.Autoprocessing_cell_alpha);
+    var cell_beta = getArrayValues(data.Autoprocessing_cell_beta);
+    var cell_gamma = getArrayValues(data.Autoprocessing_cell_gamma);
+
+    data = {};
+    /** Returning if no autoprocs */
+    if (autoProcIds) {
+        if (autoProcIds[0] == "") {
+            return [];
+        }
+    }
+    for (var i = 0; i < autoProcIds.length; i++) {
+        if (data[autoProcIds[i]] == null) {
+            data[autoProcIds[i]] = {
+                autoProcId: autoProcIds[i],
+                spaceGroup: autoProc_spaceGroups[i]
+            };
+        }
+
+        data[autoProcIds[i]][scalingStatisticsTypes[i]] = ({
+            autoProcId: autoProcIds[i],
+            scalingStatisticsType: scalingStatisticsTypes[i],
+            completeness: Number(completenessList[i]).toFixed(0),
+            resolutionsLimitHigh: Number(resolutionsLimitHigh[i]).toFixed(1),
+            resolutionsLimitLow: Number(resolutionsLimitLow[i]).toFixed(1),
+            rMerge: Number(rMerges[i]).toFixed(1),
+            spaceGroup: autoProc_spaceGroups[i],
+            cell_a: cell_a[i],
+            cell_b: cell_b[i],
+            cell_c: cell_c[i],
+            cell_alpha: cell_alpha[i],
+            cell_beta: cell_beta[i],
+            cell_gamma: cell_gamma[i]
+
+        });
+
+    }
+
+    /** Convert from map to array */
+    var ids = _.map(data, 'autoProcId');
+    var result = [];
+    for ( i = 0; i < ids.length; i++) {
+        result.push(data[ids[i]]);
+    }
+
+    function sortByBest(a, b) {
+        var spaceGroupA = a.spaceGroup.replace(/\s/g, "");
+        var spaceGroupB = b.spaceGroup.replace(/\s/g, "");              
+        return (_.indexOf(ExtISPyB.spaceGroups, spaceGroupA) > _.indexOf(ExtISPyB.spaceGroups, spaceGroupB));
+    }
+
+    var sorted = result.sort(sortByBest).reverse();    
+    /** Add new attribute for ranking order */
+    for ( i = 0; i < sorted.length; i++) {
+        sorted[i]["rank"] = i + 1;
+    }
+
+    return sorted;
+};
+
+
+
+DataCollectionGrid.prototype.getColumns = function() {
+    var _this = this;
+    var columns = [
+        {
+
+            dataIndex: 'dataCollectionGroup',
+            name: 'dataCollectionGroup',
+            flex: 1.5,
+            hidden: false,
+            renderer: function(grid, e, record) {
+
+                var data = record.data;                              
+                var html = "";                               
+
+                /** For thumbnail */
+                data.urlThumbnail = EXI.getDataAdapter().mx.dataCollection.getThumbNailById(data.lastImageId);
+                data.url = EXI.getDataAdapter().mx.dataCollection.getImageById(data.lastImageId);
+                data.ref = '#/mx/beamlineparameter/datacollection/' + data.DataCollection_dataCollectionId + '/main';
+                data.runNumber = data.DataCollection_dataCollectionNumber;
+                data.prefix = data.DataCollection_imagePrefix;
+                data.comments = data.DataCollectionGroup_comments;
+                data.sample = data.BLSample_name;
+                data.folder = data.DataCollection_imageDirectory;
+
+                
+                try{
+                    if (data.autoProcIntegrationId){                        
+                        data.resultsCount = _.uniq(data.autoProcIntegrationId.replace(/ /g,'').split(",")).length;
+                    }
+                }
+                catch(e){}
+                /** For Phasing */
+                
+                if (data.phasingStepType) {
+                    var phasingSteps = data.phasingStepType.split(",");
+                    data.phasingStepLength = phasingSteps.length;
+                
+                }
+                
+                /** For crystal */
+                data.xtal1 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 1);
+                data.xtal2 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 2);
+                data.xtal3 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 3);
+                data.xtal4 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 4);
+
+                /** Image quality indicator **/
+                data.indicator = EXI.getDataAdapter().mx.dataCollection.getQualityIndicatorPlot(record.data.DataCollection_dataCollectionId);              
+                data.onlineresults = _this._getAutoprocessingStatistics(record.data);
+                
+                /** We dont show screen if there are results of autoprocessing */
+                data.isScreeningVisible = true;
+                if (data.onlineresults){
+                    if (data.onlineresults.length > 0){
+                        data.isScreeningVisible = false;
+                    }                    
+                }
+                /** For the workflows **/
+                if (record.data.WorkflowStep_workflowStepType) {
+                    data.workflows = new WorkflowSectionDataCollection().parseWorkflow(record.data);
+                }
+                if (data.workflows == null) {
+                    data.workflows = [];
+                }
+             
+                dust.render(_this.template, data, function(err, out) {                                                                       
+                    html = html + out;
+                });
+                
+                return html;
+
+            }
+        },
+        {
+            header: 'IDs',
+            dataIndex: 'dataCollectionGroup',
+            name: 'dataCollectionGroup',
+            flex: 1.5,
+            hidden: true,
+            renderer: function(grid, e, record) {
+                var html = "";
+                dust.render("ids.mxdatacollectiongrid.template", record.data, function(err, out) {
+                    html = out;
+                });
+                return html;
+
+            }
+        }         
+    ];
+
+    return columns;
+};
 /**
 * Landing page for where data collections are shown. It manages the DataCollectionSummaryGrid
 *
@@ -2885,6 +3077,49 @@ DataCollectionMxMainView.prototype.loadCollections = function(dataCollections) {
      Ext.getCmp(this.id + "_dataCollectionTab").setDisabled(true);
 };
 
+/**
+* Displays the data collections by session or acronym of the protein
+*
+* @class MXDataCollectionGrid
+* @constructor
+*/
+function CollapsedDataCollectionGrid(args) {
+    this.template = "collapsed.mxdatacollectiongrid.template";
+    DataCollectionGrid.call(this,args);
+}
+
+CollapsedDataCollectionGrid.prototype._getAutoprocessingStatistics = DataCollectionGrid.prototype._getAutoprocessingStatistics;
+CollapsedDataCollectionGrid.prototype.getColumns = DataCollectionGrid.prototype.getColumns;
+
+CollapsedDataCollectionGrid.prototype.getPanel = function (dataCollectionGroup) {
+    var _this = this;
+    this.panel = Ext.create('Ext.grid.Panel', {
+        border: 1,
+        
+        store: this.store,
+       
+        disableSelection: true,
+        columns: this.getColumns(),
+        viewConfig: {
+            enableTextSelection: true,
+            stripeRows: false
+        },
+        listeners: {
+            viewready: function() {
+                function loadMagnifiers() {
+                    for (var i = 0; i < _this.mxDataCollectionGrid.dataCollectionGroup.length; i++) {
+                        var elementId = _this.mxDataCollectionGrid.dataCollectionGroup[i].DataCollection_dataCollectionId + "_thumb";
+                        $('#' + elementId).Lazy();
+
+                    }
+                }
+            }
+        }
+
+    });
+
+    return this.panel;
+}
 function CustomSectionDataCollection(args) {
 	this.noFoundClass = "summary_datacollection_noFound";
 	this.failedClass = "summary_datacollection_failed";
@@ -2968,14 +3203,30 @@ CustomSectionDataCollection.prototype.getHTML = function(dataCollectionGroup){
 
 
 
+/**
+* Displays the data collections by session or acronym of the protein
+*
+* @class MXDataCollectionGrid
+* @constructor
+*/
 function MXDataCollectionGrid(args) {
     this.id = BUI.id();
 
-    /** If view should be collapsed or not */
-    this.collapsed = false;
+    /** DATACOLLECTION, DATACOLLECTION_COLLAPSED, PLATES_VIEW */
+    this.renderingType = 'DATACOLLECTION';
+
+    this.uncollapsedDataCollectionGrid = new UncollapsedDataCollectionGrid({
+                                                                    mxDataCollectionGrid : this
+                                                                });
+    this.collapsedDataCollectionGrid = new CollapsedDataCollectionGrid({
+                                                                    mxDataCollectionGrid : this
+                                                                });
+    this.platesDataCollectionGrid = new PlatesDataCollectionGrid({
+                                                                        mxDataCollectionGrid : this
+                                                                    });  
+                                                                    
+    this.activePanel = this.uncollapsedDataCollectionGrid;
 }
-
-
 
 /**
 * Attaches the events to lazy load to the images. Images concerned are with the class img-responsive and smalllazy
@@ -2985,6 +3236,7 @@ function MXDataCollectionGrid(args) {
 MXDataCollectionGrid.prototype.attachCallBackAfterRender = function() {
     
     var _this = this;
+    
     var lazy = {
             bind: 'event',
             /** !!IMPORTANT this is the id of the parent node which contains the scroll **/
@@ -2999,8 +3251,6 @@ MXDataCollectionGrid.prototype.attachCallBackAfterRender = function() {
         
     var timer1 = setTimeout(function() {  $('.img-responsive').lazy(lazy);}, 500);
     var timer2 = setTimeout(function() {  $('.smalllazy').lazy(lazy);}, 500); 
-    
-    
     
     var tabsEvents = function(grid) {
         
@@ -3029,7 +3279,7 @@ MXDataCollectionGrid.prototype.attachCallBackAfterRender = function() {
                     var onSuccess2 = function(sender, data){                       
                         /** Parsing data */
                         var html = "";     
-                                           
+                        
                         dust.render("collapsed.autoprocintegrationgrid.template",  new AutoProcIntegrationGrid().parseData(data[0]), function(err, out) {
                                     html = html + out;
                         });
@@ -3038,7 +3288,71 @@ MXDataCollectionGrid.prototype.attachCallBackAfterRender = function() {
                     var dataCollectionId = target.slice(4);                    
                     EXI.getDataAdapter({onSuccess : onSuccess2}).mx.autoproc.getViewByDataCollectionId(dataCollectionId);    
                 }
-                
+
+                 if (target.startsWith("#sa")){                    
+                        var dataCollectionId = target.slice(4);
+
+                        var divName = "xtal1_samples_" + dataCollectionId;
+                        // $("#xtal2_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: divName, zoomWindowHeight: 200, zoomWindowWidth:200, borderSize: 0, easing:true});
+                        // $("#xtal3_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: divName, zoomWindowHeight: 200, zoomWindowWidth:200, borderSize: 0, easing:true});
+                        // $("#xtal4_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: divName, zoomWindowHeight: 200, zoomWindowWidth:200, borderSize: 0, easing:true});
+
+                        // $("#xtal1_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: 2});
+                        // $("#xtal2_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: 2});
+                        // $("#xtal3_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: 2});
+                        // $("#xtal4_samples_" + dataCollectionId).elevateZoom({scrollZoom : true, zoomWindowPosition: 2});
+
+
+                        // $(".elevatezoom").elevateZoom({scrollZoom : true, zoomWindowPosition: 2});
+                        // Intense(document.querySelectorAll('.intense'));
+
+                        var dc =_.find(grid.dataCollectionGroup, {"DataCollection_dataCollectionId":Number(dataCollectionId)});
+                        
+                        if (dc){
+                            if ($("#sample_puck_layout_" +dataCollectionId)){
+                                
+                                if (dc.Container_containerId){
+                                    var container =_.filter(grid.dataCollectionGroup, {"Container_containerId":Number(dc.Container_containerId)});
+                                    if(container){
+                                    var dataCollectionIds = {};
+                                        for (var i = 1 ; i <= container[0].Container_capacity ; i++) {
+                                            var sampleByLocation = _.filter(container,{"BLSample_location":i.toString()});
+                                            if (sampleByLocation.length > 0) {
+                                                var ids = [];
+                                                for (sample in sampleByLocation){
+                                                    ids.push(sampleByLocation[sample].DataCollection_dataCollectionId);
+                                                }
+                                                dataCollectionIds[i] = ids.toString();
+                                            }
+                                        }
+                                    }
+
+                                    var puck = new UniPuckWidget({mainRadius : 100, 
+                                                                    enableMouseOver : false, 
+                                                                    enableClick : false,
+                                                                    dataCollectionIds : dataCollectionIds
+                                                                });
+                                    if (dc.Container_capacity == 10){
+                                        puck = new SpinePuckWidget({mainRadius : 100, 
+                                                                    enableMouseOver : false, 
+                                                                    enableClick : false,
+                                                                    dataCollectionIds : dataCollectionIds
+                                                                });
+                                    }
+                                    $("#sample_puck_layout_" +dataCollectionId).html(puck.getPanel());
+                                    
+                                    var onSuccess = function(sender, samples){
+                                        if (samples){
+                                            puck.loadSamples(samples,dc.BLSample_location);
+                                        }
+                                    };
+                                    
+                                    EXI.getDataAdapter({onSuccess : onSuccess}).mx.sample.getSamplesByContainerId(dc.Container_containerId);
+                                }
+                            }
+                        }
+                   
+                }
                 
                 if (target.startsWith("#wf")){                    
                     var dataCollectionId = target.slice(4);
@@ -3053,164 +3367,80 @@ MXDataCollectionGrid.prototype.attachCallBackAfterRender = function() {
                         $(target).html(html);
                     }  
                 }
-                
-                
-                
             });
     };
-    
     var timer3 = setTimeout(tabsEvents, 500, _this);
- 
 };
+
 
 MXDataCollectionGrid.prototype.getPanel = function(dataCollectionGroup) {
     var _this = this;
-    this.store = Ext.create('Ext.data.Store', {
-        fields: ["dataCollectionGroup"]
-    });
-    this.panel = Ext.create('Ext.grid.Panel', {
-        border: 1,
-        padding: 5,
+
+    this.panel = Ext.create('Ext.panel.Panel', {  
         id: this.id,
-        store: this.store,
-       
-        disableSelection: true,
         tbar: this.getToolBar(),
-        columns: this.getColumns(),
-        viewConfig: {
-            enableTextSelection: true,
-            stripeRows: false
-        },
-        listeners: {
-            viewready: function() {
-                function loadMagnifiers() {
-                    for (var i = 0; i < _this.dataCollectionGroup.length; i++) {
-                        var elementId = _this.dataCollectionGroup[i].DataCollection_dataCollectionId + "_thumb";
-                        $('#' + elementId).Lazy();
-
-                    }
-                }
-            }
-        }
-
-    });
+        
+        items: [_this.activePanel.getPanel(dataCollectionGroup)]
+        });
 
     this.panel.on('boxready', function() {
         _this.attachCallBackAfterRender();
     });
 
     return this.panel;
-};
+}
 
-
-
-
-/**
-* Parses statistics and return the best one
-*
-* @method _getAutoprocessingStatistics
-* @param {Object} data Record with all the information that it is stored in the store
-* @return {Object} return all statistics sorted by best values
-*/
-MXDataCollectionGrid.prototype._getAutoprocessingStatistics = function(data) {
-    /** This converts and array of comma separated value in a array */
-    function getArrayValues(value) {
-        /** It splits every value */
-        return _.map(_.trim(value).split(","), function(singleValue) { return _.trim(singleValue); });
-    }
-
-    var autoProc_spaceGroups = getArrayValues(data.AutoProc_spaceGroups);
-    var autoProcIds = getArrayValues(data.autoProcIds);
-    var completenessList = getArrayValues(data.completenessList);
-    var resolutionsLimitHigh = getArrayValues(data.resolutionsLimitHigh);
-    var resolutionsLimitLow = getArrayValues(data.resolutionsLimitLow);
-    var scalingStatisticsTypes = getArrayValues(data.scalingStatisticsTypes);
-    var rMerges = getArrayValues(data.rMerges);
-    var cell_a = getArrayValues(data.Autoprocessing_cell_a);
-    var cell_b = getArrayValues(data.Autoprocessing_cell_b);
-    var cell_c = getArrayValues(data.Autoprocessing_cell_c);
-
-    var cell_alpha = getArrayValues(data.Autoprocessing_cell_alpha);
-    var cell_beta = getArrayValues(data.Autoprocessing_cell_beta);
-    var cell_gamma = getArrayValues(data.Autoprocessing_cell_gamma);
-
-
-    data = {};
-    /** Returning if no autoprocs */
-    if (autoProcIds) {
-        if (autoProcIds[0] == "") {
-            return [];
-        }
-    }
-    for (var i = 0; i < autoProcIds.length; i++) {
-        if (data[autoProcIds[i]] == null) {
-            data[autoProcIds[i]] = {
-                autoProcId: autoProcIds[i],
-                spaceGroup: autoProc_spaceGroups[i]
-            };
-        }
-
-        data[autoProcIds[i]][scalingStatisticsTypes[i]] = ({
-            autoProcId: autoProcIds[i],
-            scalingStatisticsType: scalingStatisticsTypes[i],
-            completeness: Number(completenessList[i]).toFixed(0),
-            resolutionsLimitHigh: Number(resolutionsLimitHigh[i]).toFixed(1),
-            resolutionsLimitLow: Number(resolutionsLimitLow[i]).toFixed(1),
-            rMerge: Number(rMerges[i]).toFixed(1),
-            spaceGroup: autoProc_spaceGroups[i],
-            cell_a: cell_a[i],
-            cell_b: cell_b[i],
-            cell_c: cell_c[i],
-            cell_alpha: cell_alpha[i],
-            cell_beta: cell_beta[i],
-            cell_gamma: cell_gamma[i]
-
-        });
-
-    }
-
-    /** Convert from map to array */
-    var ids = _.map(data, 'autoProcId');
-    var result = [];
-    for ( i = 0; i < ids.length; i++) {
-        result.push(data[ids[i]]);
-    }
-
-    function sortByBest(a, b) {
-        var spaceGroupA = a.spaceGroup.replace(/\s/g, "");
-        var spaceGroupB = b.spaceGroup.replace(/\s/g, "");              
-        return (_.indexOf(ExtISPyB.spaceGroups, spaceGroupA) > _.indexOf(ExtISPyB.spaceGroups, spaceGroupB));
-    }
-
-    var sorted = result.sort(sortByBest).reverse();    
-    /** Add new attribute for ranking order */
-    for ( i = 0; i < sorted.length; i++) {
-        sorted[i]["rank"] = i + 1;
-    }
-
-    return sorted;
-};
 
 MXDataCollectionGrid.prototype.getToolBar = function() {
     var _this = this;
+    function onMenuClicked(widget){
+        if (_this.activePanel != widget){
+            _this.activePanel = widget;
+            if (Ext.getCmp(_this.id + "_search").getValue() != "") {
+                _this.reloadData(_this.filterBy(Ext.getCmp(_this.id + "_search").getValue()));
+            } else {
+                _this.reloadData(_this.dataCollectionGroup);
+            }
+        }
+    }
+
+    var menu =  Ext.create('Ext.menu.Menu', {     
+        items: [{
+            text: 'Data Collection',
+            handler: function(){
+                _this.renderingType = "DATACOLLECTION";
+                onMenuClicked(_this.uncollapsedDataCollectionGrid);
+            }
+        },{
+            text: 'Summary',            
+            handler: function(){
+                _this.renderingType = "DATACOLLECTION_COLLAPSED";
+                onMenuClicked(_this.collapsedDataCollectionGrid);
+            }
+        },{
+            text: 'Plates',            
+            handler: function(){
+                _this.renderingType = "PLATES";
+                if (_this.activePanel != _this.platesDataCollectionGrid){
+                    _this.activePanel = _this.platesDataCollectionGrid;
+                    if (Ext.getCmp(_this.id + "_search").getValue() != "") {
+                        _this.platesDataCollectionGrid.reloadPlates(_this.filterBy(Ext.getCmp(_this.id + "_search").getValue()),true);
+                    }
+                    else {
+                        _this.platesDataCollectionGrid.reloadPlates(_this.dataCollectionGroup,false);
+                    }
+                }
+            }
+        }]
+   });
+
     return Ext.create('Ext.toolbar.Toolbar', {
         width: 500,
         items: [
-            {
-                xtype: 'checkboxfield',
-                boxLabel: 'Summary',
-                id: this.id + "_collapse",
-                listeners: {
-                    change: function(field, e) {
-                        _this.collapsed = e;
-                        if (Ext.getCmp(_this.id + "_search").getValue() != "") {
-                            _this.filterBy(Ext.getCmp(_this.id + "_search").getValue());
-                        }
-                        else {
-                            _this.reloadData(_this.dataCollectionGroup);
-                        }
-                    }
-                }
+           {
+                text:'View',
+                iconCls: 'bmenu',  // <-- icon
+                menu : menu  // assign menu by instance
             },
             '->', 
             {
@@ -3221,7 +3451,13 @@ MXDataCollectionGrid.prototype.getToolBar = function() {
                 listeners: {
                     specialkey: function(field, e) {
                         if (e.getKey() == e.ENTER) {
-                            _this.filterBy(field.getValue());
+                            _this.filter = field.getValue();
+
+                            if (_this.renderingType == "PLATES"){
+                                _this.reloadPlates(_this.filterBy(field.getValue()));
+                            } else {
+                                _this.reloadData(_this.filterBy(field.getValue()));
+                            }
                         }
                     }
                 }
@@ -3230,126 +3466,13 @@ MXDataCollectionGrid.prototype.getToolBar = function() {
         ]
     });
 };
-MXDataCollectionGrid.prototype.getColumns = function() {
-    var _this = this;
-    var columns = [
-        {
-
-            dataIndex: 'dataCollectionGroup',
-            name: 'dataCollectionGroup',
-            flex: 1.5,
-            hidden: false,
-            renderer: function(grid, e, record) {
-                
-                var data = record.data;                              
-                var html = "";                               
-                /** For thumbnail */
-                data.urlThumbnail = EXI.getDataAdapter().mx.dataCollection.getThumbNailById(data.lastImageId);
-                data.url = EXI.getDataAdapter().mx.dataCollection.getImageById(data.lastImageId);
-                data.ref = '#/mx/beamlineparameter/datacollection/' + data.DataCollection_dataCollectionId + '/main';
-                data.runNumber = data.DataCollection_dataCollectionNumber;
-                data.prefix = data.DataCollection_imagePrefix;
-                data.comments = data.DataCollectionGroup_comments;
-                data.sample = data.BLSample_name;
-                data.folder = data.DataCollection_imageDirectory;
-
-                
-                try{
-                    if (data.autoProcIntegrationId){                        
-                        data.resultsCount = _.uniq(data.autoProcIntegrationId.replace(/ /g,'').split(",")).length;
-                    }
-                }
-                catch(e){}
-                /** For Phasing */
-                
-                if (data.phasingStepType) {
-                    var phasingSteps = data.phasingStepType.split(",");
-                    data.phasingStepLength = phasingSteps.length;
-                   
-                }
-                
-                /** For crystal */
-                data.xtal1 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 1);
-                data.xtal2 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 2);
-                data.xtal3 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 3);
-                data.xtal4 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 4);
-
-                /** Image quality indicator **/
-                data.indicator = EXI.getDataAdapter().mx.dataCollection.getQualityIndicatorPlot(record.data.DataCollection_dataCollectionId);
-
-                /** For online data analysis */
-                //var online = (new OnlineResultSectionDataCollection().parseData(record.data));
-                //data.autoprocessing = _.filter(online, function(b) { return b.name == "Autoprocessing"; });
-
-               
-                //data.screening = _.filter(online, function(b) { return b.name == "Screening"; });
-                
-                /*if (data.autoprocessing.length > 0){
-                   data.isScreeningVisible = false;
-                }
-                else{
-                    data.isScreeningVisible = true;
-                }*/
-                //else{
-                //    data.ScreeningOutput_indexingSuccess = null;
-                //    data.ScreeningOutput_strategySuccess = null;
-               // }
-                data.onlineresults = _this._getAutoprocessingStatistics(record.data);
-                
-                /** We dont show screen if there are results of autoprocessing */
-                data.isScreeningVisible = true;
-                if (data.onlineresults){
-                    if (data.onlineresults.length > 0){
-                        data.isScreeningVisible = false;
-                    }                    
-                }
-                /** For the workflows **/
-                if (record.data.WorkflowStep_workflowStepType) {
-                    data.workflows = new WorkflowSectionDataCollection().parseWorkflow(record.data);
-                }
-                if (data.workflows == null) {
-                    data.workflows = [];
-                }
-
-                if (!_this.collapsed) {                    
-                    dust.render("mxdatacollectiongrid.template", data, function(err, out) {                                                                       
-                        html = html + out;
-                    });                    
-                    /*dust.render("online.mxdatacollectiongrid.template", data, function(err, out) {
-                        html = html + out;
-                    });*/
-                }
-                else {
-                    dust.render("collapsed.mxdatacollectiongrid.template", data, function(err, out) {
-                        html = html + out;
-                    });
-                }
-                return html;
-
-            }
-        },
-        {
-            header: 'IDs',
-            dataIndex: 'dataCollectionGroup',
-            name: 'dataCollectionGroup',
-            flex: 1.5,
-            hidden: true,
-            renderer: function(grid, e, record) {
-                var html = "";
-                dust.render("ids.mxdatacollectiongrid.template", record.data, function(err, out) {
-                    html = out;
-                });
-                return html;
-
-            }
-        }         
-    ];
-    return columns;
-};
 
 MXDataCollectionGrid.prototype.reloadData = function(dataCollections) {
-    this.store.loadData(dataCollections);
+    this.activePanel.store.loadData(dataCollections);
     this.attachCallBackAfterRender();
+    this.panel.removeAll();
+
+    this.panel.add(this.activePanel.getPanel(this.dataCollectionGroup));
 };
 /**
 * Filters data by prefix, protein acronym or sample
@@ -3370,13 +3493,13 @@ MXDataCollectionGrid.prototype.filterBy = function(searchTerm) {
         }
     });
     Ext.getCmp(this.id + "_found").setText(filtered.length + " items found");
-    this.reloadData(filtered);
+    return filtered;
 };
 
 MXDataCollectionGrid.prototype.load = function(dataCollectionGroup) {    
     this.dataCollectionGroup = dataCollectionGroup;
     this.dataCollectionGroup.reverse();
-    this.store.loadData(this.dataCollectionGroup);
+    this.activePanel.store.loadData(this.dataCollectionGroup);
 };
 function OnlineResultSectionDataCollection(args) {
 	
@@ -3647,6 +3770,183 @@ OnlineResultSectionDataCollection.prototype.getPhasingHTML = function(dataCollec
 	return html;
 };
 
+/**
+* Displays the plates of the data collections by session or acronym of the protein
+*
+* @class MXDataCollectionGrid
+* @constructor
+*/
+function PlatesDataCollectionGrid(args) {
+    DataCollectionGrid.call(this,args);
+}
+
+PlatesDataCollectionGrid.prototype._getAutoprocessingStatistics = DataCollectionGrid.prototype._getAutoprocessingStatistics;
+
+
+PlatesDataCollectionGrid.prototype.getPanel = function (dataCollectionGroup) {
+    var _this = this;
+    this.panel = Ext.create('Ext.grid.Panel', {
+        border: 1,        
+        store: this.store,               
+        columns: this.getColumns(),      
+        listeners: {
+            viewready: function() {             
+            }
+        }
+    });
+    return this.panel;
+}
+
+PlatesDataCollectionGrid.prototype.getColumns = function() {
+    var _this = this;
+    var columns = [
+        {
+            dataIndex: 'dataCollectionGroup',
+            name: 'dataCollectionGroup',
+            flex: 1.5,
+            hidden: false,
+            renderer: function(grid, e, record) {
+
+                var data = record.data;                              
+                var html = "";
+
+                if (data.autoProcIntegrationId){
+                    data.resultsCount = _.uniq(data.autoProcIntegrationId.replace(/ /g,'').split(",")).length;
+                }
+                
+                dust.render("plates.mxdatacollectiongrid.template", data, function(err, out) {                                                                       
+                    html = html + out;
+                }); 
+                
+                var onSuccess = function (sender, samples) {
+                    if (samples){
+                        var cells = {};
+                        for (var i = 0; i < samples.length; i++) {
+                            var sample = samples[i];
+                            var selected = false;
+                            if (!_.isEmpty(pucks[sample.Container_containerId].initSelected)){
+                                selected = pucks[sample.Container_containerId].initSelected.includes(sample.BLSample_location);
+                            }
+                            var dataCollectionIds = pucks[sample.Container_containerId].dataCollectionIds[sample.BLSample_location];
+                            var state = "FILLED";
+                            if (dataCollectionIds != null && dataCollectionIds.length > 0){
+                                state = "COLLECTED";
+                            }
+                            // Parse data
+                            if (cells[sample.Container_containerId] == null){
+                                cells[sample.Container_containerId] = [];
+                            }
+                            
+                            cells[sample.Container_containerId].push({
+                                location : sample.BLSample_location,
+                                state : state,
+                                selected : selected,
+                                sample_name : sample.BLSample_name,
+                                protein_acronym : sample.Protein_acronym,
+                                protein_name : sample.Protein_name,
+                                containerId : sample.Container_containerId,
+                                container_code : sample.Container_code,
+                                dewarId : sample.Dewar_dewarId,
+                                dataCollectionIds : dataCollectionIds
+                            });
+                        }
+                        
+                        for (containerId in pucks){
+                            pucks[containerId].load(cells[containerId]);
+                            var infoHtml = "";
+                            
+                            dust.render("plates.info.mxdatacollectiongrid.template", cells[containerId][0], function(err, out) {                                                                       
+                                infoHtml = infoHtml + out;
+                            }); 
+                            
+                            $("#puck-panel-" + containerId + "-info").html(infoHtml);
+                        }
+                    }
+                };
+                
+                if (data.containerIds.length > 0){
+                    var pucksPanelHeight = 300;
+                    var pucks = {};
+                    var tree = $("<div ><div id='a' style='height:" + (pucksPanelHeight)+"px;'>" + html + "</div></div>");
+                    for (id in data.containerIds){
+                        var containerIdNumber = Number(data.containerIds[id]);
+                        var container = _.filter(_this.mxDataCollectionGrid.dataCollectionGroup,{"Container_containerId" : containerIdNumber});
+                        
+                        if(container){
+                            var dataCollectionIds = {};
+                            for (var i = 1 ; i <= container[0].Container_capacity ; i++) {
+                                var sampleByLocation = _.filter(container,{"BLSample_location":i.toString()});
+                                if (sampleByLocation.length > 0) {
+                                    var ids = [];
+                                    for (sample in sampleByLocation){
+                                        ids.push(sampleByLocation[sample].DataCollection_dataCollectionId);
+                                    }
+                                    dataCollectionIds[i] = ids.toString();
+                                }
+                            }
+                            
+                            pucks[containerIdNumber] = new UniPuckWidget({mainRadius : pucksPanelHeight/4, 
+                                                                        enableMouseOver : true, 
+                                                                        enableClick : true, 
+                                                                        containerId : containerIdNumber, 
+                                                                        initSelected : data.selected[containerIdNumber],
+                                                                        dataCollectionIds : dataCollectionIds
+                                                                    });
+                            if (container[0].Container_capacity == 10){
+                                pucks[containerIdNumber] = new SpinePuckWidget({mainRadius :  pucksPanelHeight/4, 
+                                                                                enableMouseOver : true, 
+                                                                                enableClick : true, 
+                                                                                containerId : containerIdNumber, 
+                                                                                dataCollectionId : container.DataCollection_dataCollectionId, 
+                                                                                initSelected : data.selected[containerIdNumber],
+                                                                                dataCollectionIds : dataCollectionIds
+                                                                            });
+                            }
+                            tree.find("#puck-panel-" + data.containerIds[id]).html(pucks[containerIdNumber].getPanel());
+                        }
+                    }
+                    
+                    EXI.getDataAdapter({onSuccess : onSuccess}).mx.sample.getSamplesByContainerId(data.containerIds);
+                    html = tree.html();
+                };
+
+                return html;
+            }
+        },
+        {
+            header: 'IDs',
+            dataIndex: 'dataCollectionGroup',
+            name: 'dataCollectionGroup',
+            flex: 1.5,
+            hidden: true,
+            renderer: function(grid, e, record) {
+                var html = "";
+                dust.render("ids.mxdatacollectiongrid.template", record.data, function(err, out) {
+                    html = out;
+                });
+                return html;
+
+            }
+        }
+    ];
+    return columns;
+};
+
+PlatesDataCollectionGrid.prototype.reloadPlates = function(data, filtered) {
+    var selected = {};
+    if (filtered) {
+        for (sample in data){
+            if (selected[data[sample].Container_containerId] == null){
+                selected[data[sample].Container_containerId] = [data[sample].BLSample_location];
+            } else {
+                selected[data[sample].Container_containerId].push(data[sample].BLSample_location);
+            }
+        }
+    }
+    
+    var containerIds =_.filter(Object.keys(_.keyBy(data, "Container_containerId")), function(element){return isNumber(element);});                                                      
+    this.mxDataCollectionGrid.reloadData([{containerIds : containerIds, selected : selected}]);
+}
 function ThumbnailSectionDatacollection(args) {
 }
 
@@ -3671,6 +3971,49 @@ ThumbnailSectionDatacollection.prototype.getHTML = function(data) {
 };
 
 
+/**
+* Displays the data collections by session or acronym of the protein in a collapsed way
+*
+* @class MXDataCollectionGrid
+* @constructor
+*/
+function UncollapsedDataCollectionGrid(args) {
+    this.template = "mxdatacollectiongrid.template";
+    DataCollectionGrid.call(this,args);
+}
+
+UncollapsedDataCollectionGrid.prototype._getAutoprocessingStatistics = DataCollectionGrid.prototype._getAutoprocessingStatistics;
+UncollapsedDataCollectionGrid.prototype.getColumns = DataCollectionGrid.prototype.getColumns;
+
+UncollapsedDataCollectionGrid.prototype.getPanel = function (dataCollectionGroup) {
+    var _this = this;
+    this.panel = Ext.create('Ext.grid.Panel', {
+        border: 1,
+        
+        store: this.store,
+       
+        disableSelection: true,
+        columns: this.getColumns(),
+        viewConfig: {
+            enableTextSelection: true,
+            stripeRows: false
+        },
+        listeners: {
+            viewready: function() {
+                function loadMagnifiers() {
+                    for (var i = 0; i < _this.mxDataCollectionGrid.dataCollectionGroup.length; i++) {
+                        var elementId = _this.mxDataCollectionGrid.dataCollectionGroup[i].DataCollection_dataCollectionId + "_thumb";
+                        $('#' + elementId).Lazy();
+
+                    }
+                }
+            }
+        }
+
+    });
+
+    return this.panel;
+}
 function WorkflowSectionDataCollection(args) {
 	this.noFoundClass = "summary_datacollection_noFound";
 	this.failedClass = "summary_datacollection_failed";
@@ -4488,12 +4831,107 @@ SummaryPhasingGrid.prototype.getPanel = function() {
 
 
 
+function ConfirmShipmentView(args) {
+
+    this.sampleChangerWidget = null;
+    this.selectedPuck = null;
+
+}
+
+ConfirmShipmentView.prototype.getPanel = function () {
+
+    this.puckPreviewPanel = Ext.create('Ext.panel.Panel', {
+        cls     : 'border-grid',
+        title: 'Selected Puck',
+        width : 300,
+        height : 265,
+        margin : 60,
+        items : []
+    });
+
+    this.panel = Ext.create('Ext.panel.Panel', {
+        height : 600,
+        layout: {
+            type: 'hbox',
+            align: 'center',
+            pack: 'center'
+        },
+        margin : 5,
+        items : [this.puckPreviewPanel],
+			
+	});
+	
+	return this.panel;
+
+}
+
+ConfirmShipmentView.prototype.loadSampleChanger = function (sampleChangerName, puckData) {
+    var _this = this;
+    var data = {
+        radius : 200,
+        isLoading : false
+    };
+    var sampleChangerWidget = null;
+    if (sampleChangerName == "FlexHCD") {
+        sampleChangerWidget = new FlexHCDWidget(data);
+    } else if (sampleChangerName == "SC3Widget") {
+        sampleChangerWidget = new SC3Widget(data);
+    }
+    this.sampleChangerWidget = sampleChangerWidget;
+    this.panel.insert(0,sampleChangerWidget.getPanel());
+    this.sampleChangerWidget.render();
+    this.sampleChangerWidget.setClickListeners();
+    this.sampleChangerWidget.load(puckData);
+
+    this.sampleChangerWidget.onPuckSelected.attach(function(sender,puck){
+        _this.selectPuck(puck);
+    });
+}
+
+ConfirmShipmentView.prototype.selectPuck = function (puck) {
+    if (this.selectedPuck) {
+        if (this.selectedPuck == puck) {
+            $("#" + this.selectedPuck.id).attr("class","puck");
+            this.puckPreviewPanel.removeAll();
+            this.selectedPuck = null;
+        } else {
+            $("#" + this.selectedPuck.id).attr("class","puck");
+            this.puckPreviewPanel.removeAll();
+            this.selectedPuck = puck;
+            $("#" + this.selectedPuck.id).attr("class","puck-selected");
+        this.drawSelectedPuck(puck);
+        }
+    } else {
+        this.selectedPuck = puck;
+        $("#" + this.selectedPuck.id).attr("class","puck-selected");
+        this.drawSelectedPuck(puck);
+    }
+}
+
+ConfirmShipmentView.prototype.drawSelectedPuck = function (puck) {
+    var data = {
+        puckType : 1,
+        containerId : puck.containerId,
+        mainRadius : 100,
+        x : 50,
+        y : 10,
+        enableMouseOver : true
+    };
+    var puckContainer = new PuckWidgetContainer(data);
+    if (puck.capacity == 10) {
+        data.puckType = 2;
+        puckContainer = new PuckWidgetContainer(data);
+    }
+    this.puckPreviewPanel.add(puckContainer.getPanel());
+    puckContainer.puckWidget.load(puck.data.cells);
+}
 function ContainerPrepareSpreadSheet(){
     this.id = BUI.id();    
 }
 
 
 ContainerPrepareSpreadSheet.prototype.load = function(dewars){
+    debugger
   var hotSettings = {
     data: dewars,
     columns: [
@@ -4540,6 +4978,7 @@ ContainerPrepareSpreadSheet.prototype.load = function(dewars){
         'Sample Changer Location'
     ]
 };
+    
   this.spreadSheet =  new Handsontable(document.getElementById(this.id), hotSettings);
 };
 ContainerPrepareSpreadSheet.prototype.getPanel = function(){
@@ -4587,6 +5026,148 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function(){
     });
     return this.panel;    
 };
+function ContainerPrepareSpreadSheetTest(){
+    this.id = BUI.id();
+
+    this.onSelectRow = new Event(this);
+    // this.allowedCapacity = null;
+
+}
+
+ContainerPrepareSpreadSheetTest.prototype.getPanel = function() {
+    var _this = this;
+
+    this.store = Ext.create('Ext.data.Store', {
+        storeId:'spreadSheedStore',
+        fields:['shippingName', 'barCode', 'containerCode', 'containerType', 'sampleCount', 'beamlineName','sampleChangerLocation','dewarId','containerId','capacity'],
+        data: []
+    });
+
+    this.panel = Ext.create('Ext.grid.Panel', {
+        title: 'Loaded or to be Loaded on MxCube',
+        store: this.store,
+        cls     : 'border-grid',
+        height  :590,
+        flex    : 0.5,
+        columns: [
+            {
+                dataIndex: 'rowIndex',
+                sortable : false,
+                autoSizeColumn: true,
+                // other config you need..
+                renderer : function(value, metaData, record, rowIndex)
+                {
+                    return rowIndex+1;
+                }
+            },
+            {
+                header: 'Shipment',
+                dataIndex: 'shippingName',
+                type: 'text',
+                flex: 1,
+                readOnly: true
+            },           
+            {
+                header: 'Barcode',
+                dataIndex: 'barCode',
+                type: 'text',
+                flex: 1,
+                readOnly: true
+            },
+            {
+                header: 'Container',
+                dataIndex: 'containerCode',
+                type: 'text',
+                flex: 1,
+                readOnly: true
+            },
+            {
+                header: 'Container type',
+                dataIndex: 'containerType',
+                type: 'text',
+                flex: 1,
+                readOnly: true
+            },
+            {
+                header: 'Samples',
+                dataIndex: 'sampleCount',
+                type: 'text',
+                flex: 1,
+                readOnly: true
+            },
+            { 
+                header : 'Beamline',
+                dataIndex: 'beamlineName',
+                type: 'dropdown',			        	 								
+                flex: 1,
+                source: EXI.credentialManager.getBeamlines()
+            },
+            {
+                header: 'Sample Changer Location',
+                dataIndex: 'sampleChangerLocation',
+                flex: 1,
+                type: 'text'
+            }       
+        ],
+        viewConfig: {
+            listeners: {
+                refresh: function(dataview) {
+                    dataview.panel.columns[0].autoSize();//works on the first colum
+                }
+            }
+        },
+        listeners: {
+            // beforeselect: function (selModel, record) {
+            //     if (_this.allowedCapacity) {
+            //         return record.get('capacity') == _this.allowedCapacity;
+            //     }
+            // },
+            itemclick: function(grid, record, item, index, e) {
+                _this.onSelectRow.notify(grid.getSelectionModel().getSelection()[0]);             
+            }
+        },
+        margin  : 5,
+        items   : [
+            {
+                html : "<div style='height:700px;' id='" + this.id +"'></div>",
+                flex : 1,
+                height : 400                              
+            }
+            
+        ]
+    });
+
+    return this.panel;
+
+}
+
+ContainerPrepareSpreadSheetTest.prototype.load = function(dewars) {
+    var data = [];
+    //Parse data
+    for (dewar in dewars) {
+        if (dewars[dewar].sampleCount > 0){
+            var containerType = "Unipuck";
+            if (dewars[dewar].capacity){
+                if (dewars[dewar].capacity == 10) {
+                    containerType = "Spinepuck";
+                }
+            }
+            data.push({
+                shippingName : dewars[dewar].shippingName,
+                barCode : dewars[dewar].barCode,
+                containerCode : dewars[dewar].containerCode,
+                containerType : containerType,
+                sampleCount : dewars[dewar].sampleCount,
+                beamlineName : dewars[dewar].beamlineName,
+                sampleChangerLocation : dewars[dewar].sampleChangerLocation,
+                dewarId : dewars[dewar].dewarId,
+                containerId : dewars[dewar].containerId,
+                capacity : dewars[dewar].capacity
+            });
+        }
+    }
+    this.store.loadData(data);
+}
 /**
 * This class renders a grid that allows user to select the dewars from a list.
 *
@@ -4822,6 +5403,318 @@ DewarListSelectorGrid.prototype.getPanel = function(){
     
 };
 
+/**
+* This class renders a grid that allows user to select the dewars from a list.
+*
+* @class DewarListSelectorGrid
+* @constructor
+*/
+function DewarListSelectorGridTest(args){
+    this.height = 600;
+    if (args != null){
+        if (args.height  != null){
+            this.height = args.height;
+            
+        }
+    }
+    
+    this.filterByDate = true;
+    
+    this.onSelect = new Event(this);
+    this.onDeselect = new Event(this);
+    this.onSelectionChange = new Event(this);
+}
+
+
+/**
+* My method description.  Like other pieces of your comment blocks, 
+* this can span multiple lines.
+*
+* @method load
+* @param {Object} dewars Array of containers
+*/
+DewarListSelectorGridTest.prototype.load = function(dewars){
+    var _this = this;
+    this.dewars = dewars;
+    /** Filter by Dewars */ 
+      
+    var filtered = _.keyBy(dewars, "shippingId");
+    var data = [];
+    _(filtered).forEach(function(value) {
+        if (_this.filterByDate){
+            if (value.shippingStatus){
+                if (value.shippingStatus.toUpperCase() == "PROCESSING"){
+                    data.push(value);
+                    return;
+                }                        
+            }       
+        
+            /** Filtering only future sessions */            
+            if (value.sessionStartDate){
+                if (moment().diff(moment(value.sessionStartDate, "'MMMM Do YYYY, h:mm:ss a'")) <= 0){
+                    data.push(value);
+                }
+            }
+            else{
+                /** No session or not parseable */
+                data.push(value);
+            }
+        }
+        else{
+                data.push(value);
+        }
+        
+    });
+        
+    this.panel.setTitle(data.length + " shipments candidates for " + EXI.proposalManager.getProposals()[0].code + EXI.proposalManager.getProposals()[0].number);    
+    this.store.loadData(data);
+
+};
+
+/**
+* Return the number of containers and samples for a given dewar 
+*
+* @method getStatsByDewarId
+* @param {Integer} dewarId DewarId
+*/
+DewarListSelectorGridTest.prototype.getStatsByDewarId = function(shippingId){ 
+    var _this = this;
+    var containers = _.filter(this.dewars, function(e){return e.shippingId == shippingId;});
+    var sampleCount = 0;
+    _(containers).forEach(function(value) {
+        sampleCount = sampleCount + value.sampleCount;
+    });      
+    return {
+                samples     : sampleCount,
+                dewars      : Object.keys(_.groupBy(containers, "dewarId")).length,
+                containers   : containers.length
+        
+    };
+};
+
+DewarListSelectorGridTest.prototype.getSelectedData = function() {
+	var elements = this.panel.getSelectionModel().selected.items;
+	var data = [];
+	for (var i = 0; i < elements.length; i++) {
+		data.push(elements[i].data);
+	}
+	return data;
+};
+
+DewarListSelectorGridTest.prototype.getStore = function(){
+    this.store = Ext.create('Ext.data.Store', {
+        fields:['beamlineLocation', 'storageLocation','containerStatus','containerType','sessionStartDate','creationDate','beamLineOperator','shippingStatus','shippingName', 'barCode', 'beamlineName', 'dewarCode', 'dewarStatus', 'sampleChangerLocation', 'sampleCount', 'sessionStartDate', 'type']
+    });
+    return this.store;
+};
+DewarListSelectorGridTest.prototype.getPanel = function(){
+    var _this = this;
+   
+    this.tbar = Ext.create('Ext.toolbar.Toolbar', {
+    
+    items: [
+       
+        {
+            xtype       : 'checkboxfield',
+            boxLabel    : 'Display only shipments scheduled for future sessions',
+            checked     : this.filterByDate,
+            listeners : {
+                change : function( cb, newValue, oldValue, eOpts ){
+                    _this.filterByDate = newValue;
+                    _this.load(_this.dewars);
+                }
+                
+            }
+        }
+    ]
+    });
+
+    this.panel = Ext.create('Ext.grid.Panel', {
+            title: 'Select dewars',
+            store: this.getStore(),
+            cls : 'border-grid',           
+            height : this.height, 
+            flex : 0.5, 
+            tbar : this.tbar,                 
+            margin : 5,
+            columns: [ 
+                {
+                    text    : 'Shipment',
+                    columns : [
+                         { text: 'Name',  dataIndex: 'shippingName', width: 150 },
+                         { text: 'Status',  dataIndex: 'shippingStatus', flex: 1 },
+                         { text: 'Created on',  dataIndex: 'creationDate', flex: 1,   hidden : true,
+                            renderer : function(grid, a, record){
+                                if (record.data.creationDate){
+                                    return moment(record.data.creationDate, "'MMMM Do YYYY, h:mm:ss a'").format("DD/MM/YYYY");
+                                }     
+                                
+                            } 
+                        },
+                                                 
+                    ]                                         
+                },
+                {
+                    text    : 'Experiment',
+                    columns : [
+                            { text: 'Start on',  dataIndex: 'sessionStartDate', flex: 2, 
+                            renderer : function(grid, a, record){
+                                if (record.data.sessionStartDate){
+                                    return moment(record.data.sessionStartDate, "'MMMM Do YYYY, h:mm:ss a'").format("DD/MM/YYYY");
+                                }     
+                                
+                            } 
+                        },
+                            { text: 'beamline', dataIndex: 'beamlineName', flex: 1 },     
+                            { text: 'Local contact',  dataIndex: 'beamLineOperator', flex: 2, hidden : true  }                 
+                    ]                                         
+                },              
+                 {      
+                        text: '#Dewars/#Parcels (#Samples)',     
+                        flex: 1,
+                        renderer : function(grid, e, record){
+                            var stats =  _this.getStatsByDewarId(record.data.shippingId);
+                            return stats.dewars + " / " + stats.containers + " (" +  stats.samples + ")";
+                            
+                        }
+                },
+                {
+                    xtype: 'actioncolumn',
+                    flex : 0.3,
+                    items: [
+                               
+                                 {
+                                    icon: '../images/icon/add.png',
+                                    handler: function (grid, rowIndex, colIndex) {
+                                            grid.getSelectionModel().select(rowIndex);
+                                            
+                                            _this.onSelect.notify(_this.store.getAt(rowIndex).data);
+                                    },
+                                     isDisabled : function(view, rowIndex, colIndex, item, record) {
+                                            // Returns true if 'editable' is false (, null, or undefined)
+                                            return record.data.shippingStatus == "processing";
+                                    }
+                                 }
+                                   
+                            
+                    ]
+                },
+                  {
+                    xtype: 'actioncolumn',
+                     flex : 0.3,
+                    items: [
+                              
+                                 {
+                                    icon: '../images/icon/ic_highlight_remove_black_48dp.png',
+                                    handler: function (grid, rowIndex, colIndex) {
+                                        
+                                            grid.getSelectionModel().select(rowIndex);
+                                            
+                                            _this.onSelect.notify(_this.store.getAt(rowIndex).data);
+                                    },
+                                     isDisabled : function(view, rowIndex, colIndex, item, record) {
+                                            // Returns true if 'editable' is false (, null, or undefined)
+                                            return record.data.shippingStatus != "processing";
+                                    }
+                                 }
+                                   
+                            
+                    ]
+                }
+            ],
+             viewConfig : {
+                stripeRows : true,
+                getRowClass : function(record, rowIndex, rowParams, store){
+
+                    if (record.data.shippingStatus == "processing"){
+                         return "warning-grid-row";                       
+                    }
+                   
+                }
+	    	},
+    });
+    return this.panel;
+    
+};
+
+function LoadShipmentView () {
+    var _this = this;
+
+    var data = {
+        radius : 120,
+        isLoading : false
+    };
+    
+    this.containerListEditor = new ContainerPrepareSpreadSheetTest({height : 600});
+    this.previewPanelView = new PreviewPanelView();
+    this.sampleChangerWidget = new FlexHCDWidget(data);
+    if (typeof(Storage) != "undefined") {
+        var sampleChangerName = sessionStorage.getItem('sampleChangerName');
+        if (sampleChangerName) {
+            if (sampleChangerName == "FlexHCD") {
+                this.sampleChangerWidget = new FlexHCDWidget(data);
+            } else if (sampleChangerName == "SC3Widget") {
+                this.sampleChangerWidget = new SC3Widget(data);
+            }
+        }
+    }
+
+    this.onSelectRow = new Event(this);
+    this.onPuckSelected = new Event(this);
+    this.onSampleChangerSelected = new Event(this);
+    this.onLoadButtonClicked = new Event(this);
+    this.onEmptyButtonClicked = new Event(this);
+
+    this.containerListEditor.onSelectRow.attach(function(sender, row){
+		_this.onSelectRow.notify(row);
+	});
+
+    this.sampleChangerWidget.onPuckSelected.attach(function(sender, puck){
+		_this.onPuckSelected.notify(puck);
+	});
+
+    this.previewPanelView.onEmptyButtonClicked.attach(function(sender){
+        _this.onEmptyButtonClicked.notify();
+    });
+
+}
+
+LoadShipmentView.prototype.getPanel = function () {
+    var _this = this;
+
+    var widgetContainer = Ext.create('Ext.panel.Panel', {
+        width : 400,
+        height : 400,
+        margin : 20,
+        items : [
+                    this.sampleChangerWidget.getPanel()     
+        ]
+    });
+
+    var verticalPanel = Ext.create('Ext.panel.Panel', {
+        // layout : 'hbox',
+            items : [
+                        this.previewPanelView.getPanel(),
+                        widgetContainer    
+            ]
+    });
+
+    this.panel = Ext.create('Ext.panel.Panel', {
+        layout : 'hbox',
+        height : 600,
+        margin : 5,
+        items : [
+                    this.containerListEditor.getPanel(),
+                    verticalPanel  
+        ]
+    });
+
+    this.panel.on('boxready', function() {
+        _this.sampleChangerWidget.setClickListeners();
+    });
+
+    return this.panel;
+}
 function PrepareMainView() {
 	this.icon = '../images/icon/contacts.png';
 	this.queueGridList = [];
@@ -4831,7 +5724,7 @@ function PrepareMainView() {
     var _this = this;
     
     this.dewarListSelector = new DewarListSelectorGrid({height : 600});
-    this.dewarListSelector.onSelect.attach(function(sender, dewar){                       
+    this.dewarListSelector.onSelect.attach(function(sender, dewar){                     
             if (dewar.shippingStatus == "processing"){
                 _this.updateStatus(dewar.shippingId, "at_ESRF");
             } 
@@ -4894,6 +5787,505 @@ PrepareMainView.prototype.load = function() {
     EXI.getDataAdapter({onSuccess : onSuccessProposal, onError:onError}).proposal.dewar.getDewarsByProposal();
 };
 
+function PrepareMainViewTest() {
+	this.icon = '../images/icon/contacts.png';
+	this.queueGridList = [];
+    
+	MainView.call(this);
+    
+    var _this = this;
+    
+    this.dewarListSelector = new DewarListSelectorGridTest({height : 600});
+    this.sampleChangerSelector = new SampleChangerSelector();
+    this.loadShipmentView = new LoadShipmentView();
+    this.confirmShipmentView = new ConfirmShipmentView();
+
+    this.dewarListSelector.onSelect.attach(function(sender, dewar){                       
+            if (dewar.shippingStatus == "processing"){
+                _this.updateStatus(dewar.shippingId, "at_ESRF");
+            } 
+            if (dewar.shippingStatus != "processing"){
+                _this.updateStatus(dewar.shippingId, "processing");
+            }      
+     });
+     
+    this.dewarListSelector.onSelectionChange.attach(function(sender, dewars){
+    });
+    
+    this.currentStep = 1;
+    if (typeof(Storage) != "undefined") {
+        if (sessionStorage.getItem('currentStep')) {
+            this.currentStep = Math.min(sessionStorage.getItem('currentStep'),3);
+        }
+    }
+    
+
+    this.selectedContainerId = null;
+    this.selectedContainerCapacity = null;
+    this.selectedPuck = null;
+    this.sampleChangerName = null;
+
+    this.sampleChangerSelector.onSampleChangerSelected.attach(function(sender,changerName){
+        $('#next-button').attr("disabled", false);
+        _this.sampleChangerName = changerName;
+        _this.save('sampleChangerName', changerName);
+        if (typeof(Storage) != "undefined") {
+            sessionStorage.removeItem('puckData');
+        }
+        var data = {
+            radius : 143,
+            isLoading : false
+        };
+        if (changerName == "FlexHCD") {
+            _this.loadShipmentView.sampleChangerWidget = new FlexHCDWidget(data);
+        } else if (changerName == "SC3Widget") {
+            _this.loadShipmentView.sampleChangerWidget = new SC3Widget(data);
+        }
+        _this.loadShipmentView.sampleChangerWidget.onPuckSelected.attach(function(sender, puck){
+            _this.loadShipmentView.onPuckSelected.notify(puck);
+        });
+    });
+
+    this.loadShipmentView.onSelectRow.attach(function(sender, row){
+        if (row) {
+            if (_this.selectedPuck){
+                _this.deselectPuck();
+            }
+            if (_this.selectedContainerId) {
+                if (_this.selectedContainerId == row.get('containerId')){
+                    _this.deselectRow();
+                    _this.loadShipmentView.previewPanelView.clean();
+                } else {
+                    _this.deselectRow();
+                    _this.setSelectedRow(row);
+                }
+            } else {
+                _this.setSelectedRow(row);
+            }
+        }
+	});
+
+    this.loadShipmentView.onPuckSelected.attach(function(sender, puck){
+        if (_this.selectedPuck) {
+            if (_this.selectedPuck == puck) {
+                _this.deselectPuck();
+                _this.loadShipmentView.previewPanelView.clean();
+            } else {
+                _this.deselectPuck();
+                _this.setSelectedPuck(puck);
+            }
+        } else {
+            _this.setSelectedPuck(puck);
+        }
+	});
+
+    this.loadShipmentView.onLoadButtonClicked.attach(function(sender){
+        _this.loadShipment(_this.selectedPuck, _this.selectedContainerId);
+    });
+
+    this.loadShipmentView.onEmptyButtonClicked.attach(function(sender){
+        _this.selectedPuck.emptyAll();
+        _this.drawSelectedPuck(_this.selectedPuck);
+        _this.storeSampleChangerWidget(_this.loadShipmentView.sampleChangerWidget);
+    });
+
+}
+
+PrepareMainViewTest.prototype.setSelectedRow = function (row) {
+    this.loadShipmentView.containerListEditor.panel.getSelectionModel().select(this.loadShipmentView.containerListEditor.store.indexOf(row));
+    this.selectedContainerId = row.get('containerId');
+    this.selectedContainerCapacity = row.get('capacity');
+    this.drawSelectedPuckFromRow(this.selectedContainerId, this.selectedContainerCapacity, row.get('containerCode'));
+    this.loadShipmentView.sampleChangerWidget.disablePucksOfDifferentCapacity(this.selectedContainerCapacity);
+}
+
+PrepareMainViewTest.prototype.setSelectedPuck = function (puck) {
+    this.selectedPuck = puck;
+    if (this.selectedContainerId){
+        this.loadShipment(puck, this.selectedContainerId);
+    } else {
+        $("#" + puck.id).attr("class","puck-selected");
+        this.drawSelectedPuck(puck);
+    }
+}
+
+PrepareMainViewTest.prototype.updateStatus = function(shippingId, status) {
+    var _this = this;
+    _this.dewarListSelector.panel.setLoading("Updating shipment Status");
+    var onStatusSuccess = function(sender, dewar) {     
+        EXI.mainStatusBar.showReady("Processing update successfully");
+        _this.dewarListSelector.panel.setLoading(false);
+        _this.load();
+    };
+    var onError = function(data){
+            EXI.setError(data);
+    };
+    
+    EXI.getDataAdapter({onSuccess : onStatusSuccess, onError : onError}).proposal.shipping.updateStatus(shippingId,status);
+};
+
+PrepareMainViewTest.prototype.getPanel = function() {
+    var _this = this;
+
+    this.container = Ext.create('Ext.panel.Panel' , {
+        items : []
+    });
+
+	this.panel =  Ext.create('Ext.panel.Panel', {
+            items : [
+                        this.getToolBar(), this.container,  this.getButtons()
+            ]
+	});
+
+    this.panel.on('boxready', function() {
+        if (_this.currentStep == 1) {
+            $('#previous-button-div').hide();
+        }
+        if (_this.currentStep == 2) {
+            $('#next-button').attr("disabled", true);
+        }
+        if (_this.currentStep < 4) {        
+            $('#done-button-div').hide();
+        }
+        if (_this.currentStep == 4) {
+            $('#next-button-div').hide();
+        }
+        $('#next-button').unbind('click').click(function (sender){
+            if (_this.currentStep < 4) {
+                $('#step-' + _this.currentStep).removeClass('active-step');
+                $('#step-' + _this.currentStep).attr("disabled", "disabled");
+                if (_this.currentStep == 1) {
+                    _this.save('containers',JSON.stringify(_this.containers));
+                    $('#next-button').attr("disabled", true);
+                }
+                _this.currentStep++;
+                if (_this.currentStep > 1) {
+                    $('#previous-button-div').show();
+                }
+                if (_this.currentStep == 4) {
+                    $('#next-button-div').hide();
+                    $('#done-button-div').show();
+                }
+                $('#step-' + _this.currentStep).addClass('active-step');
+                $('#step-' + _this.currentStep).attr("disabled", false);
+                _this.container.removeAll();
+                _this.reload();
+                _this.save('currentStep',_this.currentStep);
+            }
+        });
+        $('#previous-button').unbind('click').click(function (sender){
+            if (_this.currentStep > 0) {
+                $('#step-' + _this.currentStep).removeClass('active-step');
+                $('#step-' + _this.currentStep).attr("disabled", "disabled");
+                _this.currentStep--;
+                if (_this.currentStep < 4) {
+                    $('#next-button-div').show();
+                    $('#done-button-div').hide();
+                }
+                if (_this.currentStep == 1) {
+                    $('#previous-button-div').hide();
+                    $('#next-button').attr("disabled", false);                        
+                }
+                if (_this.currentStep == 2) {
+                    $('#next-button').attr("disabled", true);                        
+                }
+                $('#step-' + _this.currentStep).addClass('active-step');
+                $('#step-' + _this.currentStep).attr("disabled", false);
+                _this.container.removeAll();
+                _this.reload();
+                _this.save('currentStep',_this.currentStep);   
+                if (_this.currentStep == 3) {
+                    _this.storeSampleChangerWidget(_this.confirmShipmentView.sampleChangerWidget);
+                    _this.checkStoreData();                    
+                }             
+            }
+        });
+        $('#done-button').unbind('click').click(function (sender){
+            _this.confirmShipmentView;
+        });
+        for (var i = 1 ; i <= 4 ; i++){
+            if (i == _this.currentStep){
+                $('#step-' + i).addClass('active-step');
+            } else {
+                $('#step-' + i).attr("disabled", true);
+            }
+        }
+        _this.reload();
+        _this.checkStoreData();
+    });
+        
+
+    return this.panel;
+};
+
+PrepareMainViewTest.prototype.getToolBar = function () {
+    var html = "";
+	dust.render("toolbar.prepare.template", [], function(err, out){
+		html = out;
+	});
+
+    return {html : html};
+}
+
+PrepareMainViewTest.prototype.getButtons = function () {
+    var html = "";
+	dust.render("buttons.prepare.template", [], function(err, out){
+		html = out;
+	});
+
+    return {html : html};
+}
+
+
+PrepareMainViewTest.prototype.load = function() {
+    var _this = this;
+    _this.panel.setTitle("Prepare Experiment");
+};
+
+PrepareMainViewTest.prototype.reload = function() {
+    var _this = this;
+    this.container.removeAll();
+    if (this.currentStep == 1) {
+        _this.container.add(_this.dewarListSelector.getPanel());
+        _this.dewarListSelector.panel.setLoading();
+        var onSuccessProposal = function(sender, containers) {        
+            _this.containers = containers;
+            
+            _this.dewarListSelector.load(containers);
+            _this.dewarListSelector.panel.setLoading(false);
+            
+        };
+        var onError = function(sender, error) {        
+            EXI.setError("Ops, there was an error");
+            _this.dewarListSelector.panel.setLoading(false);
+        };
+        
+        EXI.getDataAdapter({onSuccess : onSuccessProposal, onError:onError}).proposal.dewar.getDewarsByProposal();
+    } else if (this.currentStep == 2){
+        this.container.add(this.sampleChangerSelector.getPanel());
+    } else if (this.currentStep == 3) {
+        this.container.add(this.loadShipmentView.getPanel());
+        if (this.containers == null) {
+            if (typeof(Storage) != "undefined"){
+                this.containers = JSON.parse(sessionStorage.getItem('containers'));
+            }
+        }
+        this.loadShipmentView.containerListEditor.load(_.filter(this.containers, function(e){return e.shippingStatus == "processing";}));        
+    } else if (this.currentStep == 4) {
+        this.container.add(this.confirmShipmentView.getPanel());
+        if (this.loadShipmentView.sampleChangerWidget) {
+            this.confirmShipmentView.loadSampleChanger(this.loadShipmentView.sampleChangerWidget.name,this.loadShipmentView.sampleChangerWidget.getPuckData());
+        }
+    }
+}
+
+PrepareMainViewTest.prototype.checkStoreData = function () {
+    if (typeof(Storage) != "undefined"){
+            var sampleChangerName = sessionStorage.getItem('sampleChangerName');
+            if (sampleChangerName) {
+                var puckData = JSON.parse(sessionStorage.getItem('puckData'));
+                if (puckData) {
+                    this.loadShipmentView.sampleChangerWidget.load(puckData);
+                }
+            }
+            if (this.currentStep == 3){
+                this.loadShipmentView.containerListEditor.load(_.filter(this.containers, function(e){return e.shippingStatus == "processing";}));
+            }
+    }
+}
+
+PrepareMainViewTest.prototype.deselectRow = function () {
+    this.loadShipmentView.containerListEditor.panel.getSelectionModel().deselectAll();
+    this.selectedContainerId = null;
+    this.selectedSampleCount = null;
+    this.loadShipmentView.sampleChangerWidget.allowAllPucks();
+}
+
+PrepareMainViewTest.prototype.deselectPuck = function () {
+    $("#" + this.selectedPuck.id).attr("class","puck");
+    this.selectedPuck = null; 
+}
+
+PrepareMainViewTest.prototype.returnToSelectionStatus = function () {
+    this.deselectRow();
+    if (this.selectedPuck) {
+        this.deselectPuck();        
+    }
+}
+
+PrepareMainViewTest.prototype.drawSelectedPuck = function (puck) {
+    var data = {
+        puckType : 1,
+        containerId : puck.containerId,
+        mainRadius : 100,
+        x : 100,
+        y : 10,
+        enableMouseOver : true
+    };
+    var puckContainer = new PuckWidgetContainer(data);
+    if (puck.capacity == 10) {
+        data.puckType = 2;
+        puckContainer = new PuckWidgetContainer(data);
+    }
+    
+    this.loadShipmentView.previewPanelView.loadPuck(puckContainer, {
+                info : [{
+                    text : 'SC Location',
+                    value : puck.id.substring(puck.id.indexOf('-')+1)
+                }]
+            }, false, puck.isEmpty);
+
+    puckContainer.puckWidget.load(puck.data.cells);
+}
+
+PrepareMainViewTest.prototype.drawSelectedPuckFromRow = function (containerId, capacity, containerCode) {
+    var _this = this;
+    function onSuccess (sender, samples) {
+        if (samples){
+            var data = {
+                puckType : 1,
+                containerId : containerId,
+                mainRadius : 100,
+                x : 100,
+                y : 10,
+                enableMouseOver : true
+            };
+            var puckContainer = new PuckWidgetContainer(data);
+            if (capacity == 10) {
+                data.puckType = 2;
+                puckContainer = new PuckWidgetContainer(data);
+            }
+            _this.loadShipmentView.previewPanelView.loadPuck(puckContainer, {
+                info : [{
+                    text : 'Container',
+                    value : containerCode
+                },{
+                    text : 'Container Id',
+                    value : containerId
+                }]
+            }, true);
+            puckContainer.puckWidget.loadSamples(samples);
+        }
+    }
+
+    EXI.getDataAdapter({onSuccess : onSuccess}).mx.sample.getSamplesByContainerId(containerId);
+}
+
+PrepareMainViewTest.prototype.loadShipment = function (puck, containerId) {
+    var _this = this;
+    function onSuccess (sender, samples) {
+        if (samples) {
+            puck.emptyAll();
+            puck.loadSamples(samples);
+        }
+        _this.returnToSelectionStatus();
+        _this.setSelectedPuck(puck);
+        // _this.loadShipmentView.previewPanelView.setEmptyButton();
+        _this.storeSampleChangerWidget(_this.loadShipmentView.sampleChangerWidget);
+    }
+
+    EXI.getDataAdapter({onSuccess : onSuccess}).mx.sample.getSamplesByContainerId(containerId);
+}
+
+PrepareMainViewTest.prototype.save = function (key, value) {
+    if (typeof(Storage) != 'undefined') {
+        sessionStorage.setItem(key,value);
+    }
+}
+
+PrepareMainViewTest.prototype.storeSampleChangerWidget = function (sampleChangerWidget) {
+    var puckData = sampleChangerWidget.getPuckData();
+    this.save('puckData',JSON.stringify(puckData));
+}
+function PreviewPanelView (args) {
+    this.width = 400;
+    this.onEmptyButtonClicked = new Event(this);
+}
+
+PreviewPanelView.prototype.getPanel = function () {
+    var _this = this;
+
+    this.infoPanel = Ext.create('Ext.panel.Panel', {
+        cls     : 'border-grid',
+        width : this.width/2,
+        height : 50,
+        items : []
+    });
+
+    this.instructionsButton = Ext.create('Ext.Button', {
+        text: '',
+        width: this.width/2,
+        height: 50,
+        scale: 'large',
+        // disabled : true,
+        style: {
+            background: '#444444'
+        },
+        listeners: {
+            click: function(button) {
+                if (button.text == "EMPTY") {
+                    _this.onEmptyButtonClicked.notify();
+                }
+            }
+        }
+    });
+
+    var infoContainer = Ext.create('Ext.panel.Panel', {
+        layout : 'hbox',
+        width : this.width,
+        height : 50,
+        items : [this.infoPanel,this.instructionsButton]
+    });
+
+    this.previewPanel = Ext.create('Ext.panel.Panel', {
+        cls     : 'border-grid',
+        title: 'Selected Puck',
+        width : this.width,
+        height : 265,
+        items : []
+    });
+
+    this.panel = Ext.create('Ext.panel.Panel', {
+        margin : 5,
+        width : this.width,
+        height : 315,
+        items : [this.previewPanel,infoContainer]
+    });
+
+    return this.panel;
+
+}
+
+PreviewPanelView.prototype.loadPuck = function (puckContainer, data, fromRow, isEmpty) {
+    this.clean();
+    this.previewPanel.add(puckContainer.getPanel());
+    var html = "";
+	dust.render("puck.info.prepare.template", data, function(err, out){
+		html = out;
+	});
+    this.infoPanel.removeAll();
+    this.infoPanel.add({
+                            html : html,
+                            margin:6
+                    });
+    if (fromRow) {
+        this.instructionsButton.setText("Click on sample<br/>changer to load");
+    } else {
+        if (!isEmpty) {
+            this.instructionsButton.setText("EMPTY");
+        }
+    }
+}
+
+PreviewPanelView.prototype.clean = function () {
+    this.previewPanel.removeAll();
+    this.infoPanel.removeAll();
+    this.instructionsButton.setText("");
+}
+
+PreviewPanelView.prototype.setEmptyButton = function () {
+    this.instructionsButton.setText("EMPTY");
+}
 function WorkflowStepMainView() {
 	this.icon = 'images/icon/ic_satellite_black_18dp.png';
 	MainView.call(this);
@@ -6055,6 +7447,841 @@ EnergyScanGrid.prototype.getPanel = function(dataCollectionGroup) {
 EnergyScanGrid.prototype.load = function(energyScanList) {
     this.store.loadData(energyScanList);   
 };
+function SampleChangerWidget (args) {
+	this.id = BUI.id();
+	this.pucks = {};
+	this.clockwise = 1;
+	this.initAlpha = 0;
+	this.isLoading = true;
+	this.radius = 200;
+	this.name = '';
+	this.onPuckSelected = new Event(this);
+
+	if (args) {
+		if (args.radius){
+			this.radius = args.radius;
+		}
+		if (args.isLoading != null){
+			this.isLoading = args.isLoading;
+		}
+	}
+}
+
+/**
+* Create certain types of pucks following a circular path
+*
+* @method createPucks
+* @param {Integer} puckType The type of puck (1 is Uni, 2 is Spine)
+* @param {Integer} n The number of pucks
+* @param {Double} initAlpha Initial angle where to start to add pucks
+* @param {Double} dist The distance to the center of the puck where the cells are positioned
+* @param {Double} marginPercent Factor to control the separation between cells
+* @param {Object} args Extra information for add pucks like a second row of pucks by defining a dAlpha and a new dist
+*/
+SampleChangerWidget.prototype.createPucks = function (puckType, n, initAlpha, dist, marginPercent, args) {
+	var rad = dist*Math.sin((Math.PI/this.data.cells)*marginPercent);
+	this.pucks[puckType] = [];
+	for (var i = 0 ; Math.abs(i) < n ; i += this.clockwise) {
+		var ang = i*2*Math.PI/n;
+		var puckIndex = this.getPuckIndexFromAngle(this.initAlpha, 1, this.initAlpha + this.clockwise*(2*Math.PI*(1 - 1/this.data.cells)), this.data.cells, initAlpha + ang);		
+		var puckId = this.id + "-" + puckIndex + "-1";
+		if (args) {
+			puckId = this.id + "-" + puckIndex + "-3";
+		}
+		var cx = dist*Math.sin(initAlpha + ang) + this.data.radius - rad;
+		var cy = -dist*Math.cos(initAlpha + ang) + this.data.radius - rad;
+		this.pucks[puckType].push(new PuckWidgetContainer({puckType : puckType, id : puckId, mainRadius : rad, x : cx , y : cy, isLoading : this.isLoading}));
+		
+		if (args) {
+			if (args.dAlpha != null && args.dist != null){
+				cx = args.dist*Math.sin(initAlpha + ang + args.dAlpha) + this.data.radius - rad;
+				cy = -args.dist*Math.cos(initAlpha + ang + args.dAlpha) + this.data.radius - rad;
+				this.pucks[puckType].push(new PuckWidgetContainer({puckType : puckType, id : this.id + "-" + puckIndex + "-2", mainRadius : rad, x : cx , y : cy, isLoading : this.isLoading}));
+				
+				cx = args.dist*Math.sin(initAlpha + ang - args.dAlpha) + this.data.radius - rad;
+				cy = -args.dist*Math.cos(initAlpha + ang - args.dAlpha) + this.data.radius - rad;
+				this.pucks[puckType].push(new PuckWidgetContainer({puckType : puckType, id : this.id + "-" + puckIndex + "-1", mainRadius : rad, x : cx , y : cy, isLoading : this.isLoading}));
+			}
+		}
+	}
+}
+
+SampleChangerWidget.prototype.getPuckIndexFromAngle = function (x0,y0,x1,y1,angle) {
+	return Math.round((y1-y0)*(angle-x0)/(x1-x0) + y0);
+}
+
+SampleChangerWidget.prototype.getPanel = function () {
+	
+	var _this = this;
+	
+	this.panel =  Ext.create('Ext.panel.Panel', {
+			
+		   // cls:'border-grid',
+		    layout:'absolute',
+            items : [
+						{
+							html : this.getStructure(),
+							frame: false,
+							border: false,
+							bodyStyle: 'background:transparent;'
+						}
+			],
+			
+	});
+
+	for (puckType in this.pucks) {
+		for (puck in this.pucks[puckType]){
+			var puck = this.pucks[puckType][puck];
+			this.panel.add(puck.getPanel());
+		}
+	}
+	
+	return this.panel;
+	
+}
+
+/**
+* Load the pucks using correctly parsed data
+*
+* @method load
+* @param {Object} data Keys are the locations and the values are puckWidget data 
+*/
+SampleChangerWidget.prototype.load = function (data) {
+	for (i in Object.keys(data)){
+		var location = Object.keys(data)[i];
+		var puck = this.findPuckById(this.id + "-" + location);
+		puck.load(data[location].cells);
+	}
+}
+
+
+SampleChangerWidget.prototype.getStructure = function () {
+	var html = "";
+	dust.render("structure.sampleChanger.template", this.data, function(err, out){
+		html = out;
+	});
+	
+	return html;
+}
+
+SampleChangerWidget.prototype.findPuckById = function (id) {
+	var allPucks = this.getAllPucks();
+	return _.find(allPucks, function(o) {return o.puckWidget.id == id}).puckWidget;
+}
+
+SampleChangerWidget.prototype.getAllPucks = function () {
+	var allPucks = [];
+	for (puckType in this.pucks) {
+		allPucks = allPucks.concat(this.pucks[puckType]);
+	}
+	return allPucks;
+}
+
+SampleChangerWidget.prototype.render = function () {
+    var allPucks = this.getAllPucks();
+    for (puck in allPucks){
+        var puck = allPucks[puck].puckWidget;
+        for (cell in puck.data.cells){
+            puck.render(puck.data.cells[cell].location);
+        }
+    }
+}
+
+SampleChangerWidget.prototype.setClickListeners = function () {
+    var _this = this;
+	var allPucks = this.getAllPucks();
+	for (puckIndex in allPucks) {
+		var puck = allPucks[puckIndex];
+		$("#" + puck.puckWidget.id).css('cursor','pointer');
+		$("#" + puck.puckWidget.id).unbind('click').click(function(sender){
+			if (!sender.target.classList.contains('disabled')){
+				_this.onPuckSelected.notify(_this.findPuckById(sender.target.id));
+			}
+		});
+	}
+}
+
+SampleChangerWidget.prototype.disablePucksOfDifferentCapacity = function (capacity) {
+	var _this = this;
+	var allPucks = this.getAllPucks();
+	for (puckIndex in allPucks) {
+		var puck = allPucks[puckIndex];
+		if (puck.capacity != capacity) {
+			$("#" + puck.puckWidget.id).addClass("disabled");
+		}
+	}
+}
+
+SampleChangerWidget.prototype.allowAllPucks = function () {
+	var _this = this;
+	var allPucks = this.getAllPucks();
+	for (puckIndex in allPucks) {
+		var puck = allPucks[puckIndex];
+		$("#" + puck.puckWidget.id).removeClass("disabled");
+	}
+}
+
+SampleChangerWidget.prototype.getPuckData = function () {
+	var allPucks = this.getAllPucks();
+	var puckData = {};
+    for (puckContainerIndex in allPucks) {
+        var puckContainer = allPucks[puckContainerIndex];
+        var location = puckContainer.puckWidget.id.substring(puckContainer.puckWidget.id.indexOf('-')+1);
+        puckData[location] = puckContainer.puckWidget.data;
+    }
+	return puckData;
+}
+function FlexHCDWidget (args) {
+	
+	SampleChangerWidget.call(this,args);
+	
+	this.name = 'FlexHCD';
+	this.initAlpha = -7*2*Math.PI/16;
+	this.data = {
+		radius : this.radius,
+		cells : 8,
+		lines : [],
+		text :[]
+	};
+	
+	this.createStructure();
+	this.createPucks(1, this.data.cells/2, -7*Math.PI/8, this.data.radius/2, 0.5, {dAlpha : Math.PI/16, dist : 3*this.data.radius/4});
+	this.createPucks(2, this.data.cells/2, -5*Math.PI/8, this.data.radius/2, 0.5, {dAlpha : Math.PI/16, dist : 3*this.data.radius/4});
+	
+}
+
+FlexHCDWidget.prototype.getPuckIndexFromAngle = SampleChangerWidget.prototype.getPuckIndexFromAngle;
+FlexHCDWidget.prototype.createPucks = SampleChangerWidget.prototype.createPucks;
+FlexHCDWidget.prototype.getPanel = SampleChangerWidget.prototype.getPanel;
+FlexHCDWidget.prototype.load = SampleChangerWidget.prototype.load;
+FlexHCDWidget.prototype.getStructure = SampleChangerWidget.prototype.getStructure;
+FlexHCDWidget.prototype.findPuckById = SampleChangerWidget.prototype.findPuckById;
+FlexHCDWidget.prototype.getAllPucks = SampleChangerWidget.prototype.getAllPucks;
+FlexHCDWidget.prototype.render = SampleChangerWidget.prototype.render;
+FlexHCDWidget.prototype.setClickListeners = SampleChangerWidget.prototype.setClickListeners;
+FlexHCDWidget.prototype.disablePucksOfDifferentCapacity = SampleChangerWidget.prototype.disablePucksOfDifferentCapacity;
+FlexHCDWidget.prototype.allowAllPucks = SampleChangerWidget.prototype.allowAllPucks;
+FlexHCDWidget.prototype.getPuckData = SampleChangerWidget.prototype.getPuckData;
+
+FlexHCDWidget.prototype.createStructure = function () {
+	for (var i = 0 ; i < this.data.cells/2 ; i++){
+		var ang = i*2*Math.PI/this.data.cells;
+		var line = {
+			x1 : this.data.radius*Math.sin(ang) + this.data.radius,
+			y1 : this.data.radius*Math.cos(ang) + this.data.radius,
+			x2 : -this.data.radius*Math.sin(ang) + this.data.radius,
+			y2 : -this.data.radius*Math.cos(ang) + this.data.radius
+		};
+		this.data.lines.push(line);
+	}
+	
+	var textR = this.data.radius/4;
+	for (var i = 0 ; i < this.data.cells ; i++){
+		var ang = i*2*Math.PI/this.data.cells;
+		var textNumber = {
+			text : i+1,
+			x : textR*Math.sin(this.initAlpha + ang) + this.data.radius,
+			y : -textR*Math.cos(this.initAlpha + ang) + this.data.radius
+		};
+		this.data.text.push(textNumber);
+	}
+}
+
+/**
+* Abstract class for creating a puck widget
+*
+* @class PuckWidget
+* @constructor
+*/
+function PuckWidget(args){
+	this.id = BUI.id();
+	
+	this.mainRadius = 150;
+	this.dataCollectionIds = {};
+	this.containerId = 0;
+	this.enableMouseOver = false;
+	this.enableClick = false;
+	this.initSelected = {};
+	this.isLoading = true;
+	this.capacity = 10;
+	
+	this.isUnipuck = false;
+	this.isEmpty = true;
+	
+	if (args){
+		if (args.id) {
+			this.id = args.id;
+		}
+		if (args.mainRadius){
+			this.mainRadius = args.mainRadius;
+		}
+		if (args.isUnipuck){
+			this.isUnipuck = args.isUnipuck;			
+		}
+		if (args.dataCollectionIds){
+			this.dataCollectionIds = args.dataCollectionIds;
+		}
+		if (args.containerIds){
+			this.containerIds = args.containerIds;
+		}
+		if (args.enableMouseOver != null){
+			this.enableMouseOver = args.enableMouseOver;
+		}
+		if (args.enableClick != null){
+			this.enableClick = args.enableClick;
+		}
+		if (args.initSelected){
+			this.initSelected = args.initSelected;
+		}
+		if (args.isLoading != null){
+			this.isLoading = args.isLoading;
+		}
+	}
+	
+	this.shapeRadiusX = this.mainRadius/10;
+	this.shapeRadiusY = this.mainRadius/20;
+	
+	this.data = {
+				mainRadius : this.mainRadius,
+				cells : [],
+				id : this.id,
+				isUnipuck : this.isUnipuck,
+				shapeRadiusX : this.shapeRadiusX,
+				shapeRadiusY : this.shapeRadiusY,
+				containerId : this.containerId,
+				enableClick : this.enableClick,
+				enableMouseOver : this.enableMouseOver,
+				dataCollectionIds : this.dataCollectionIds,
+				isLoading : this.isLoading
+	};
+	
+	this.onClick = new Event(this);
+	this.onMouseOver = new Event(this);
+	this.onMouseOut = new Event(this);
+}
+
+/**
+* Add a certain number of cell objects to the data following a circle.
+*
+* @method addCirclePathCells
+* @param {Object} data The data of the puck
+* @param {Integer} n The number of cells to add
+* @param {Double} marginPercent Factor to control the separation between cells
+* @param {Double} dist The distance to the center of the puck where the cells are positioned
+*/
+PuckWidget.prototype.addCirclePathCells = function (data, n, marginPercent, dist) {
+	var rad = Math.min(dist*Math.sin((Math.PI/n)*marginPercent), 
+						(data.mainRadius - dist)*marginPercent);
+	
+	for (var i = 0 ; i < n ; i++){
+		var ang = i*2*Math.PI/n;
+		var newCell = 		{
+								x :-dist*Math.sin(ang) + data.mainRadius,
+								y :-dist*Math.cos(ang) + data.mainRadius,
+								color :'#FFFFFF', 
+								radius : rad,								
+								id : this.id + "-" + Number(data.cells.length + 1),
+								state : "EMPTY",
+								location : Number(data.cells.length + 1),
+								selected : false,
+								dataCollectionIds : data.dataCollectionIds[Number(data.cells.length + 1)]
+							};
+		data.cells.push(newCell);
+	}
+	return data;
+	
+}
+
+PuckWidget.prototype.getPanel = function () {
+	var html = "";
+	dust.render("puck.template", this.data, function(err, out){
+		html = out;
+	});
+	
+	return html;
+};
+
+/**
+* Set all the cells of the puck as EMPTY
+*
+* @method load
+*/
+PuckWidget.prototype.emptyAll = function () {
+	for (cellIndex in this.data.cells) {
+		this.data.cells[cellIndex].state = "EMPTY";
+		this.render(this.data.cells[cellIndex].location,true);
+	}
+	this.isEmpty = true;
+}
+
+/**
+* Load sample data to the puck given the result of sample query by containerId
+*
+* @method loadSamples
+* @param {Object} samples Result of the sample query by containerId
+*/
+PuckWidget.prototype.loadSamples = function (samples, selectedLocation) {
+	var cells = [];
+	for (var i = 0; i < samples.length; i++) {
+		var sample = samples[i];
+		var dataCollectionIds = this.dataCollectionIds[sample.BLSample_location];
+		var state = "FILLED";
+		if (dataCollectionIds != null && dataCollectionIds.length > 0){
+			state = "COLLECTED";
+		}
+		var selected = false;
+		if (selectedLocation != null){
+			selected = sample.BLSample_location == selectedLocation;
+		}
+		
+		// Parse data
+		cells.push({
+			location : sample.BLSample_location,
+			state : state,
+			selected : selected,
+			sample_name : sample.BLSample_name,
+			protein_acronym : sample.Protein_acronym,
+			protein_name : sample.Protein_name,
+			dataCollectionIds : dataCollectionIds
+		});
+	}
+	this.load(cells);
+}
+
+
+/**
+* Load sample data to the puck given that the data is correctly parsed
+*
+* @method load
+* @param {Object} data Data correctly parsed
+*/
+PuckWidget.prototype.load = function (data) {
+	var _this = this;
+	$("#" + _this.data.id + "-loading-text").remove();
+	
+	for (sample in data){
+		var id = this.id + "-" + data[sample].location;
+		var cellIndex = this.findCellIndexById(id);
+		this.data.cells[cellIndex].state = data[sample].state;
+		this.data.cells[cellIndex].selected = data[sample].selected;
+		this.data.cells[cellIndex].sample_name = data[sample].sample_name;
+		this.data.cells[cellIndex].protein_acronym = data[sample].protein_acronym;
+		this.data.cells[cellIndex].protein_name = data[sample].protein_name;
+		this.isEmpty = false;
+	}
+
+	for (i in this.data.cells){
+		var currentId = this.id + "-" + Number(Number(i) + 1);
+
+		if (this.enableMouseOver){
+			$("#" + currentId).unbind('mouseover').mouseover(function(sender){
+				var cellIndex = _this.findCellIndexById(sender.target.id);
+				
+				_this.onMouseOver.notify(sender.target.id.split("-")[1]);
+				_this.focus(sender.target.id.split("-")[1],true);
+				
+				// TOOLTIP
+				if (_this.data.cells[cellIndex].sample_name){
+	
+					var tooltipHtml = "";
+					dust.render("plates.tooltip.mxdatacollectiongrid.template", _this.data.cells[cellIndex], function(err, out) {
+						tooltipHtml = out;
+					});
+					$('body').append(tooltipHtml);
+					$('#hoveringTooltipDiv').css({
+						"top" : $(this).offset().top - 3*_this.data.cells[i].radius,
+						"left" : $(this).offset().left + 1.5*_this.data.cells[i].radius
+					});
+					if (_this.data.cells[cellIndex].y - _this.data.mainRadius < 0) {
+						$('#hoveringTooltipDiv').css({
+							"top" : $(this).offset().top + 2*_this.data.cells[i].radius,
+							"left" : $(this).offset().left + _this.data.cells[i].radius
+						});
+					}
+				}
+
+			});
+			
+			$("#" + currentId).unbind('mouseout').mouseout(function(sender){
+				_this.onMouseOut.notify();
+				_this.focus(sender.target.id.split("-")[1],false);
+
+				// TOOLTIP
+				$('#hoveringTooltipDiv').remove();
+				
+			});
+
+		}
+		
+		if (this.enableClick) {
+			$("#" + currentId).unbind('click').click(function(sender){
+				var cellIndex = _this.findCellIndexById(sender.target.id);
+				_this.render(_this.data.cells[cellIndex].location,true);
+				// TOOLTIP
+				$('#hoveringTooltipDiv').remove();
+			});
+		}
+		
+		this.render(this.data.cells[i].location,true);
+	}
+};
+
+PuckWidget.prototype.focus = function (location, bool) {
+	if (bool){
+		$("#" + this.id + "-" + location).attr("class", "cell_focus");
+		$("#" + this.id + "-" + location + "-inner").attr("class", "cell_inner_hidden");		
+	} else {
+		this.render(location,true);
+	}
+}
+
+PuckWidget.prototype.render = function (location) {
+	var cellIndex = this.findCellIndexById(this.id + "-" + location);
+	switch (this.data.cells[cellIndex].state) {
+		case "FILLED":
+			$("#" + this.id + "-" + location).attr("class","cell_filled");
+			$("#" + this.id + "-" + location + "-label").attr("fill", "white");		
+			$("#" + this.id + "-" + location + "-inner").attr("class", "cell_inner_filled");
+			break;
+		case "COLLECTED":
+			$("#" + this.id + "-" + location).attr("class","cell_collected");
+			$("#" + this.id + "-" + location + "-label").attr("fill", "white");		
+			$("#" + this.id + "-" + location + "-inner").attr("class","cell_inner_filled");
+			break;
+		case "RESULTS":
+			$("#" + this.id + "-" + location).attr("class","cell_results");
+			$("#" + this.id + "-" + location + "-label").attr("fill", "white");		
+			$("#" + this.id + "-" + location + "-inner").attr("class","cell_inner_filled");
+			break;
+		case "ERROR":
+			$("#" + this.id + "-" + location).attr("class","cell_error");
+			$("#" + this.id + "-" + location + "-inner").attr("class", "cell_inner_filled");
+			$("#" + this.id + "-" + location + "-label").attr("fill", "white");		
+			break;
+		case "EMPTY":
+			$("#" + this.id + "-" + location).attr("class", "cell_empty");
+			$("#" + this.id + "-" + location + "-inner").attr("class", "cell_inner_hidden");
+			$("#" + this.id + "-" + location + "-label").attr("fill", "black");
+			break;
+	}
+	if (this.data.cells[cellIndex].selected) {
+		$("#" + this.id + "-" + location).addClass("cell_selected")
+	}
+}
+
+PuckWidget.prototype.findCellIndexById = function (id) {
+	for (cellIndex in this.data.cells) {
+		if (this.data.cells[cellIndex].id == id){
+			return cellIndex;
+		}
+	}
+}
+function PuckWidgetContainer(args) {
+	var _this = this;
+	
+	this.mouseOverCell = new Event(this);
+	this.mouseOutCell = new Event(this);
+	
+	this.x = 0;
+	this.y = 0;
+	
+	if (args){
+		if (args.puckType) {
+			switch (args.puckType) {
+				case 1:
+					this.puckWidget = new UniPuckWidget(args);
+					this.capacity = 16;
+					break;
+				case 2:
+					this.puckWidget = new SpinePuckWidget(args);
+					this.capacity = 10;
+					break;
+			}
+		}
+		if (args.x){
+			this.x = args.x;
+		}
+		if (args.y){
+			this.y = args.y;
+		}
+	}
+	
+	if(!this.puckWidget) {
+		this.puckWidget = new SpineCellWidget(args);
+	}
+	
+	this.puckWidget.onClick.attach(function(sender, cell){
+		
+		
+	});
+	
+	this.puckWidget.onMouseOver.attach(function(sender, location){
+		_this.mouseOverCell.notify(location);
+	});
+	
+	this.puckWidget.onMouseOut.attach(function(sender){
+		_this.mouseOutCell.notify();
+	});
+}
+
+PuckWidgetContainer.prototype.getPanel = function () {
+	
+	var _this = this;
+	
+	this.panel =  Ext.create('Ext.panel.Panel', {
+			id: this.puckWidget.id + "-container",
+		   x: this.x,
+		   y: this.y,
+		   width : 2*this.puckWidget.data.mainRadius + 1,
+		   height : 2*this.puckWidget.data.mainRadius + 1,
+		//    cls:'border-grid',
+		   frame: false,
+			border: false,
+			bodyStyle: 'background:transparent;',
+		    
+            items : [
+						{
+							html : this.puckWidget.getPanel(),
+							width : 2*this.puckWidget.data.mainRadius + 1,
+							height : 2*this.puckWidget.data.mainRadius + 1
+						}
+			],
+			
+	});
+	
+	return this.panel;
+	
+}
+
+PuckWidgetContainer.prototype.load = function (data) {
+	this.puckWidget.load(data);
+}
+
+PuckWidgetContainer.prototype.focus = function (location, bool) {
+	this.puckWidget.focus(location, bool);
+}
+
+
+
+function SampleChangerSelector () {
+    this.sampleChangerWidget = null;
+
+    // this.onPuckSelected = new Event(this);
+    this.onSampleChangerSelected = new Event(this);
+}
+
+SampleChangerSelector.prototype.getPanel = function() {
+
+    this.panel = Ext.create('Ext.panel.Panel', {
+        layout: {
+            type: 'vbox',
+            align: 'center',
+            pack: 'center'
+        },
+        width: 500,
+        height: 600,
+        tbar : this.getToolbar(),
+        items : []
+    });
+
+    this.container = Ext.create('Ext.panel.Panel', {
+        layout: {
+            type: 'vbox',
+            align: 'center',
+            pack: 'center'
+        },
+        margin: 5,
+        items : [this.panel]
+    });
+    return this.container;
+}
+
+// SampleChangerSelector.prototype.loadSampleChanger = function (sampleChangerWidget) {
+//     this.sampleChangerWidget = sampleChangerWidget;
+//     this.panel.insert(0,sampleChangerWidget.getPanel());
+//     this.sampleChangerWidget.render();
+//     this.setClickListeners();
+// }
+
+SampleChangerSelector.prototype.createSampleChanger = function (changerName) {
+    var data = {
+        radius : 200,
+        isLoading : false
+    };
+    if (changerName == "FlexHCD") {
+        this.sampleChangerWidget = new FlexHCDWidget(data);
+    } else if (changerName == "SC3Widget") {
+        this.sampleChangerWidget = new SC3Widget(data);
+    }
+    this.panel.removeAll();
+    this.panel.add(this.sampleChangerWidget.getPanel());
+    this.sampleChangerWidget.render();
+    // this.setClickListeners();
+}
+
+SampleChangerSelector.prototype.getToolbar = function() {
+    var _this = this;
+    function changerSelected (changer) {
+        _this.createSampleChanger(changer.text);
+        _this.onSampleChangerSelected.notify(changer.text);
+    }
+
+    var menu =  Ext.create('Ext.menu.Menu', {     
+        items: [{
+            text: 'FlexHCD',
+            handler: changerSelected
+        },{
+            text: 'SC3Widget',            
+            handler: changerSelected
+        }]
+   });
+
+   return Ext.create('Ext.toolbar.Toolbar', {
+        width: 500,
+        items: [
+           {
+                text:'Sample Changer',
+                menu : menu  // assign menu by instance
+            }
+        ]
+    });
+}
+
+// SampleChangerSelector.prototype.setClickListeners = function () {
+//     var _this = this;
+// 	for (puckType in this.sampleChangerWidget.pucks) {
+// 		for (puckIndex in this.sampleChangerWidget.pucks[puckType]){
+// 			var puck = this.sampleChangerWidget.pucks[puckType][puckIndex];
+// 			$("#" + puck.puckWidget.id).css('cursor','pointer');
+// 			$("#" + puck.puckWidget.id).unbind('click').click(function(sender){
+// 				_this.onPuckSelected.notify(_this.sampleChangerWidget.findPuckById(sender.target.id));
+// 			});
+// 		}
+// 	}
+// }
+function SC3Widget (args) {
+	
+	SampleChangerWidget.call(this,args);
+	
+	this.name = 'SC3Widget';
+	this.clockwise = -1;
+
+	this.data = {
+		radius : this.radius,
+		cells : 5,
+		text : []
+	};
+	
+	this.createStructure();
+	this.createPucks(2, this.data.cells, 0, this.data.radius/2, 0.8);
+}
+
+SC3Widget.prototype.getPuckIndexFromAngle = SampleChangerWidget.prototype.getPuckIndexFromAngle;
+SC3Widget.prototype.createPucks = SampleChangerWidget.prototype.createPucks;
+SC3Widget.prototype.getPanel = SampleChangerWidget.prototype.getPanel;
+SC3Widget.prototype.load = SampleChangerWidget.prototype.load;
+SC3Widget.prototype.getStructure = SampleChangerWidget.prototype.getStructure;
+SC3Widget.prototype.findPuckById = SampleChangerWidget.prototype.findPuckById;
+SC3Widget.prototype.getAllPucks = SampleChangerWidget.prototype.getAllPucks;
+SC3Widget.prototype.render = SampleChangerWidget.prototype.render;
+SC3Widget.prototype.setClickListeners = SampleChangerWidget.prototype.setClickListeners;
+SC3Widget.prototype.disablePucksOfDifferentCapacity = SampleChangerWidget.prototype.disablePucksOfDifferentCapacity;
+SC3Widget.prototype.allowAllPucks = SampleChangerWidget.prototype.allowAllPucks;
+SC3Widget.prototype.getPuckData = SampleChangerWidget.prototype.getPuckData;
+
+SC3Widget.prototype.createStructure = function () {
+	var textR = this.data.radius*0.9;
+	for (var i = 0 ; i < this.data.cells ; i++){
+		var ang = i*2*Math.PI/this.data.cells;
+		var textNumber = {
+			text : i+1,
+			x : -textR*Math.sin(ang) + this.data.radius,
+			y : -textR*Math.cos(ang) + this.data.radius
+		};
+		this.data.text.push(textNumber);
+	}
+}
+/**
+* Abstract class for creating a puck widget
+*
+* @class SpinePuckWidget
+* @constructor
+*/
+function SpinePuckWidget(args){
+	if (args == null){
+		args = {};
+	}
+	args.isUnipuck = false;
+	PuckWidget.call(this, args);
+	this.data = this.parseData(this.data);	
+	this.capacity = 10;
+}
+
+SpinePuckWidget.prototype.getPanel = PuckWidget.prototype.getPanel;
+SpinePuckWidget.prototype.load = PuckWidget.prototype.load;
+SpinePuckWidget.prototype.addCirclePathCells = PuckWidget.prototype.addCirclePathCells;
+SpinePuckWidget.prototype.focus = PuckWidget.prototype.focus;
+SpinePuckWidget.prototype.render = PuckWidget.prototype.render;
+SpinePuckWidget.prototype.findCellIndexById = PuckWidget.prototype.findCellIndexById;
+SpinePuckWidget.prototype.loadSamples = PuckWidget.prototype.loadSamples;
+SpinePuckWidget.prototype.emptyAll = PuckWidget.prototype.emptyAll;
+
+SpinePuckWidget.prototype.parseData = function (data) {
+	var n = 10;
+	var marginPercent = 0.8;
+	var dist = 3*data.mainRadius/4;
+	
+	data = this.addCirclePathCells(data,n,marginPercent,dist);
+	
+	return data;
+};
+
+
+
+/**
+* Abstract class for creating a puck widget
+*
+* @class UniPuckWidget
+* @constructor
+*/
+function UniPuckWidget(args){
+	if (args == null){
+		args = {};
+	}
+	args.isUnipuck = true;
+	PuckWidget.call(this, args);
+
+	this.data = this.parseData(this.data);
+	this.capacity = 16;
+}
+
+UniPuckWidget.prototype.getPanel = PuckWidget.prototype.getPanel;
+UniPuckWidget.prototype.load = PuckWidget.prototype.load;
+UniPuckWidget.prototype.addCirclePathCells = PuckWidget.prototype.addCirclePathCells;
+UniPuckWidget.prototype.focus = PuckWidget.prototype.focus;
+UniPuckWidget.prototype.render = PuckWidget.prototype.render;
+UniPuckWidget.prototype.findCellIndexById = PuckWidget.prototype.findCellIndexById;
+UniPuckWidget.prototype.loadSamples = PuckWidget.prototype.loadSamples;
+UniPuckWidget.prototype.emptyAll = PuckWidget.prototype.emptyAll;
+
+UniPuckWidget.prototype.parseData = function (data) {
+	var n = 5;
+	var marginPercent = 0.8;
+	/** distance between center point and the well/cell */
+	var dist = 4*data.mainRadius/11;
+	
+	data = this.addCirclePathCells(data,n,marginPercent,dist);
+	
+	n = 11;
+	marginPercent = 0.8;
+	dist = 3*data.mainRadius/4;
+	data = this.addCirclePathCells(data,n,marginPercent,dist);
+	
+	return data;
+};
+
+
+
 
 /**
 * XFEScanGrid displays the information fo a XFE

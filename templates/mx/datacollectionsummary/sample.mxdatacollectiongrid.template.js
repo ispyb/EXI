@@ -19,7 +19,7 @@
     <tr>
         <td>Container</td>
         <td  class='column_parameter_value'> 
-            {.Container_containerType} - {.Container_capacity}  
+            {.Container_containerId} -- {.Container_containerType} - {.Container_capacity}  
         </td>
     </tr>
     <tr>

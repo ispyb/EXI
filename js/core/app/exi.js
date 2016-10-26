@@ -14,7 +14,7 @@ function Exi(args) {
 	this.keepTabs = false;
 	
 	
-	this.controllers = [new ExiController(), new ProposalExiController(), new ShippingExiController()];
+	this.controllers = [new ExiController(), new ProposalExiController(), new ShippingExiController(), new TestController()];
 	
 	if (args != null){
 		if (args.menu != null){
