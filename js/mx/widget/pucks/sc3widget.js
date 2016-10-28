@@ -1,8 +1,14 @@
+/**
+* This class extends the SampleChangerWidget class for a SC3
+*
+* @class FlexHCDWidget
+* @constructor
+*/
 function SC3Widget (args) {
 	
 	SampleChangerWidget.call(this,args);
 	
-	this.name = 'SC3Widget';
+	this.name = 'SC3';
 	this.clockwise = -1;
 
 	this.data = {
@@ -13,7 +19,7 @@ function SC3Widget (args) {
 	
 	this.createStructure();
 	this.createPucks(2, this.data.cells, 0, this.data.radius/2, 0.8);
-}
+};
 
 SC3Widget.prototype.getPuckIndexFromAngle = SampleChangerWidget.prototype.getPuckIndexFromAngle;
 SC3Widget.prototype.createPucks = SampleChangerWidget.prototype.createPucks;
@@ -29,7 +35,11 @@ SC3Widget.prototype.allowAllPucks = SampleChangerWidget.prototype.allowAllPucks;
 SC3Widget.prototype.getPuckData = SampleChangerWidget.prototype.getPuckData;
 SC3Widget.prototype.getAllFilledPucks = SampleChangerWidget.prototype.getAllFilledPucks;
 
-
+/**
+* Creates the particular structure of the SC3
+*
+* @method createStructure
+*/
 SC3Widget.prototype.createStructure = function () {
 	var textR = this.data.radius*0.9;
 	for (var i = 0 ; i < this.data.cells ; i++){
@@ -41,4 +51,14 @@ SC3Widget.prototype.createStructure = function () {
 		};
 		this.data.text.push(textNumber);
 	}
-}
+};
+
+/**
+* Converts the idLocation to the corresponding location in the SC3 by convention
+*
+* @method convertIdToSampleChangerLocation
+* @return The corresponding location in the SC3 by convention
+*/
+SC3Widget.prototype.convertIdToSampleChangerLocation = function (idLocation) {
+	return Number(idLocation.split("-")[0]);
+};

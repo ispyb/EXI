@@ -1,5 +1,16 @@
 function PreviewPanelView (args) {
     this.width = 400;
+    this.height = 265;
+
+    if (args) {
+        if (args.width) {
+            this.width = args.width;
+        }
+        if (args.height) {
+            this.height = args.height;
+        }
+    }
+
     this.onEmptyButtonClicked = new Event(this);
 }
 
@@ -7,7 +18,7 @@ PreviewPanelView.prototype.getPanel = function () {
     var _this = this;
 
     this.infoPanel = Ext.create('Ext.panel.Panel', {
-        cls     : 'border-grid',
+        // cls     : 'border-grid',
         width : this.width/2,
         height : 50,
         items : []
@@ -18,7 +29,6 @@ PreviewPanelView.prototype.getPanel = function () {
         width: this.width/2,
         height: 50,
         scale: 'large',
-        // disabled : true,
         style: {
             background: '#444444'
         },
@@ -39,17 +49,18 @@ PreviewPanelView.prototype.getPanel = function () {
     });
 
     this.previewPanel = Ext.create('Ext.panel.Panel', {
-        cls     : 'border-grid',
+        // cls     : 'border-grid',
         title: 'Selected Puck',
         width : this.width,
-        height : 265,
+        height : this.height,
         items : []
     });
 
     this.panel = Ext.create('Ext.panel.Panel', {
         margin : 5,
+        cls : 'rounded-border',
         width : this.width,
-        height : 315,
+        height : this.height + 50,
         items : [this.previewPanel,infoContainer]
     });
 

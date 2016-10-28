@@ -1,96 +1,139 @@
-function SampleChangerSelector () {
+/**
+* This class renders a grid for selecting a sample changer and a panel containing the sample changer widget
+*
+* @class SampleChangerSelector
+* @constructor
+*/
+function SampleChangerSelector (args) {
+    var _this = this;
+
+    this.height = 600;
+    this.width = 1000;
+    if (args != null){
+        if (args.height){
+            this.height = args.height;
+        }
+        if (args.width){
+            this.width = args.width;
+        }
+    }
+
+    var SCtypes = {
+        header : "Type (Sample Changer)",
+        values : ["FlexHCD","SC3"]
+    };
+    var beamlines = {
+        header : "Beamlines",
+        values : EXI.credentialManager.getBeamlines()
+    };
+
+    this.sampleChangerGrid = new BootstrapGrid({template : "bootstrap.grid.template"});
+    this.sampleChangerGrid.load(SCtypes);
+    this.beamlinesGrid = new BootstrapGrid({template : "bootstrap.grid.template"});
+    this.beamlinesGrid.load(beamlines);
+
     this.sampleChangerWidget = null;
 
-    // this.onPuckSelected = new Event(this);
+    this.sampleChangerGrid.rowSelected.attach(function(sender,text){
+        _this.beamlinesGrid.deselectAll();
+        _this.sampleChangerWidget = _this.createSampleChanger(text);
+        _this.addSampleChanger(_this.sampleChangerWidget);
+    });
+    this.beamlinesGrid.rowSelected.attach(function(sender,text){
+        _this.sampleChangerGrid.deselectAll();
+        _this.sampleChangerWidget = _this.createSampleChanger(text);
+        _this.addSampleChanger(_this.sampleChangerWidget);
+    });
     this.onSampleChangerSelected = new Event(this);
-}
+};
 
+/**
+* Loads a Ext.panel.panel containing a bootstrap grid and a sample changer widget
+*
+* @method getPanel
+* @return 
+*/
 SampleChangerSelector.prototype.getPanel = function() {
 
-    this.panel = Ext.create('Ext.panel.Panel', {
+    this.sampleChangerPanel = Ext.create('Ext.panel.Panel', {
         layout: {
-            type: 'vbox',
-            align: 'center',
+            type: 'hbox',
             pack: 'center'
-        },
-        width: 500,
-        height: 600,
-        tbar : this.getToolbar(),
+        }, 
+        width: 410,
+        height: 410,
+        margin : 50,
         items : []
     });
 
-    this.container = Ext.create('Ext.panel.Panel', {
-        layout: {
-            type: 'vbox',
-            align: 'center',
-            pack: 'center'
-        },
-        margin: 5,
-        items : [this.panel]
+    this.panel = Ext.create('Ext.panel.Panel', {
+         layout: {
+            type: 'hbox',
+            pack: 'left'
+        },     
+        // cls : 'border-grid',  
+        height : this.height, 
+        width : this.width,
+        title : 'Select a sample changer type or a beamline',
+        items : [
+                    {
+                        xtype : 'container',
+                        layout: 'vbox',  
+                        cls : 'rounded-border',
+                        margin : 20,
+                        items: [
+                                    this.sampleChangerGrid.getPanel(),
+                                    this.beamlinesGrid.getPanel()
+                        ]
+                    },
+                    this.sampleChangerPanel
+             ]
     });
-    return this.container;
-}
 
-// SampleChangerSelector.prototype.loadSampleChanger = function (sampleChangerWidget) {
-//     this.sampleChangerWidget = sampleChangerWidget;
-//     this.panel.insert(0,sampleChangerWidget.getPanel());
-//     this.sampleChangerWidget.render();
-//     this.setClickListeners();
-// }
+    return this.panel;
+};
 
+
+/**
+* Returns a sampleChangerWidget given its name
+*
+* @method createSampleChanger
+* @param changerName The name of the sample changer widget
+* @return A Sample Changer Widget
+*/
 SampleChangerSelector.prototype.createSampleChanger = function (changerName) {
     var data = {
         radius : 200,
         isLoading : false
     };
-    if (changerName == "FlexHCD") {
-        this.sampleChangerWidget = new FlexHCDWidget(data);
-    } else if (changerName == "SC3Widget") {
-        this.sampleChangerWidget = new SC3Widget(data);
+    var sampleChangerWidget = new FlexHCDWidget(data);
+    if (changerName == "SC3") {
+        sampleChangerWidget = new SC3Widget(data);
     }
-    this.panel.removeAll();
-    this.panel.add(this.sampleChangerWidget.getPanel());
-    this.sampleChangerWidget.render();
-    // this.setClickListeners();
-}
+    sampleChangerWidget.render();
+    return sampleChangerWidget;
+};
 
-SampleChangerSelector.prototype.getToolbar = function() {
-    var _this = this;
-    function changerSelected (changer) {
-        _this.createSampleChanger(changer.text);
-        _this.onSampleChangerSelected.notify(changer.text);
-    }
+/**
+* Adds a sample changer widget to the sample changer panel
+*
+* @method addSampleChanger
+* @param sampleChangerWidget The sample changer widget to be added
+* @return
+*/
+SampleChangerSelector.prototype.addSampleChanger = function (sampleChangerWidget) {
+    this.sampleChangerPanel.removeAll();
+    this.sampleChangerPanel.add(sampleChangerWidget.getPanel());
+    this.onSampleChangerSelected.notify(sampleChangerWidget.name);
+};
 
-    var menu =  Ext.create('Ext.menu.Menu', {     
-        items: [{
-            text: 'FlexHCD',
-            handler: changerSelected
-        },{
-            text: 'SC3Widget',            
-            handler: changerSelected
-        }]
-   });
-
-   return Ext.create('Ext.toolbar.Toolbar', {
-        width: 500,
-        items: [
-           {
-                text:'Sample Changer',
-                menu : menu  // assign menu by instance
-            }
-        ]
-    });
-}
-
-// SampleChangerSelector.prototype.setClickListeners = function () {
-//     var _this = this;
-// 	for (puckType in this.sampleChangerWidget.pucks) {
-// 		for (puckIndex in this.sampleChangerWidget.pucks[puckType]){
-// 			var puck = this.sampleChangerWidget.pucks[puckType][puckIndex];
-// 			$("#" + puck.puckWidget.id).css('cursor','pointer');
-// 			$("#" + puck.puckWidget.id).unbind('click').click(function(sender){
-// 				_this.onPuckSelected.notify(_this.sampleChangerWidget.findPuckById(sender.target.id));
-// 			});
-// 		}
-// 	}
-// }
+/**
+* Selects a row from the beamline grid given a beamline name
+*
+* @method selectRowByBeamlineName
+* @param beamlineName The name of the beamline selected
+* @return
+*/
+SampleChangerSelector.prototype.selectRowByBeamlineName = function (beamlineName) {
+    this.beamlinesGrid.selectRowByValue(beamlineName);
+};

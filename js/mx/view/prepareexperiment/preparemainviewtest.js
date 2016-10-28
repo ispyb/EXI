@@ -1,3 +1,9 @@
+/**
+* This class renders the steps and panels of every class used in the prepare experiment tab
+*
+* @class PrepareMainViewTest
+* @constructor
+*/
 function PrepareMainViewTest() {
 	this.icon = '../images/icon/contacts.png';
 	this.queueGridList = [];
@@ -5,10 +11,13 @@ function PrepareMainViewTest() {
 	MainView.call(this);
     
     var _this = this;
+
+    this.height = 550;
+    this.width = 1300;
     
-    this.dewarListSelector = new DewarListSelectorGridTest({height : 600});
-    this.sampleChangerSelector = new SampleChangerSelector();
-    this.loadShipmentView = new LoadShipmentView();
+    this.dewarListSelector = new DewarListSelectorGridTest({height : this.height - 12, width : this.width - 60});
+    this.sampleChangerSelector = new SampleChangerSelector({height : this.height - 12, width : this.width - 0});
+    this.loadSampleChangerView = new LoadSampleChangerView({height : this.height - 12, width : this.width - 0});
     this.confirmShipmentView = new ConfirmShipmentView();
 
     this.dewarListSelector.onSelect.attach(function(sender, dewar){  
@@ -39,28 +48,16 @@ function PrepareMainViewTest() {
 
     this.sampleChangerSelector.onSampleChangerSelected.attach(function(sender,changerName){
         $('#next-button').attr("disabled", false);
+        $('#step-3').attr("disabled", false);
         _this.sampleChangerName = changerName;
         _this.save('sampleChangerName', changerName);
         if (typeof(Storage) != "undefined") {
             sessionStorage.removeItem('puckData');
         }
-        _this.loadShipmentView.sampleChangerName = changerName;
-        // _this.loadShipmentView.generateSampleChangerWidget(changerName);
-        // var data = {
-        //     radius : 143,
-        //     isLoading : false
-        // };
-        // if (changerName == "FlexHCD") {
-        //     _this.loadShipmentView.sampleChangerWidget = new FlexHCDWidget(data);
-        // } else if (changerName == "SC3Widget") {
-        //     _this.loadShipmentView.sampleChangerWidget = new SC3Widget(data);
-        // }
-        // _this.loadShipmentView.sampleChangerWidget.onPuckSelected.attach(function(sender, puck){
-        //     _this.loadShipmentView.onPuckSelected.notify(puck);
-        // });
+        _this.loadSampleChangerView.sampleChangerName = changerName;
     });
 
-    this.loadShipmentView.onSelectRow.attach(function(sender, row){
+    this.loadSampleChangerView.onSelectRow.attach(function(sender, row){
         if (row) {
             if (_this.selectedPuck){
                 _this.deselectPuck();
@@ -68,7 +65,7 @@ function PrepareMainViewTest() {
             if (_this.selectedContainerId) {
                 if (_this.selectedContainerId == row.get('containerId')){
                     _this.deselectRow();
-                    _this.loadShipmentView.previewPanelView.clean();
+                    _this.loadSampleChangerView.previewPanelView.clean();
                 } else {
                     _this.deselectRow();
                     _this.setSelectedRow(row);
@@ -79,11 +76,11 @@ function PrepareMainViewTest() {
         }
 	});
 
-    this.loadShipmentView.onPuckSelected.attach(function(sender, puck){
+    this.loadSampleChangerView.onPuckSelected.attach(function(sender, puck){
         if (_this.selectedPuck) {
             if (_this.selectedPuck == puck) {
                 _this.deselectPuck();
-                _this.loadShipmentView.previewPanelView.clean();
+                _this.loadSampleChangerView.previewPanelView.clean();
             } else {
                 _this.deselectPuck();
                 _this.setSelectedPuck(puck);
@@ -93,28 +90,27 @@ function PrepareMainViewTest() {
         }
 	});
 
-    this.loadShipmentView.onLoadButtonClicked.attach(function(sender){
-        _this.loadShipment(_this.selectedPuck, _this.selectedContainerId);
+    this.loadSampleChangerView.onLoadButtonClicked.attach(function(sender){
+        _this.loadSampleChangerPuck(_this.selectedPuck, _this.selectedContainerId);
     });
 
-    this.loadShipmentView.onEmptyButtonClicked.attach(function(sender){
+    this.loadSampleChangerView.onEmptyButtonClicked.attach(function(sender){
         _this.selectedPuck.emptyAll();
         _this.drawSelectedPuck(_this.selectedPuck);
-        _this.storeSampleChangerWidget(_this.loadShipmentView.sampleChangerWidget);
+        _this.storeSampleChangerWidget(_this.loadSampleChangerView.sampleChangerWidget);
     });
-
-}
+};
 
 PrepareMainViewTest.prototype.setSelectedRow = function (row) {
-    this.loadShipmentView.containerListEditor.panel.getSelectionModel().select(this.loadShipmentView.containerListEditor.store.indexOf(row));
+    this.loadSampleChangerView.containerListEditor.panel.getSelectionModel().select(this.loadSampleChangerView.containerListEditor.store.indexOf(row));
     this.selectedContainerId = row.get('containerId');
     this.selectedContainerCapacity = row.get('capacity');
     this.drawSelectedPuckFromRow(this.selectedContainerId, this.selectedContainerCapacity, row.get('containerCode'));
-    this.loadShipmentView.sampleChangerWidget.disablePucksOfDifferentCapacity(this.selectedContainerCapacity);
-}
+    this.loadSampleChangerView.sampleChangerWidget.disablePucksOfDifferentCapacity(this.selectedContainerCapacity);
+};
 
 /**
- * TODO: COMMENT
+* Method executed once a puck from the sample changer widget is clicked.
 *
 * @method setSelectedPuck
 * @return 
@@ -122,12 +118,12 @@ PrepareMainViewTest.prototype.setSelectedRow = function (row) {
 PrepareMainViewTest.prototype.setSelectedPuck = function (puck) {
     this.selectedPuck = puck;
     if (this.selectedContainerId){
-        this.loadShipment(puck, this.selectedContainerId);
+        this.loadSampleChangerPuck(puck, this.selectedContainerId);
     } else {
         $("#" + puck.id).attr("class","puck-selected");
         this.drawSelectedPuck(puck);
     }
-}
+};
 
 
 /**
@@ -153,7 +149,75 @@ PrepareMainViewTest.prototype.updateStatus = function(shippingId, status) {
 };
 
 /**
-* Loads a Ext.panel.panel constaining a Ext.panel.Panel that will render the steps inside
+* Manages the showing and hiding buttons
+*
+* @method manageButtons
+* @return 
+*/
+PrepareMainViewTest.prototype.manageButtons = function () {
+    if (this.currentStep == 1) {
+        $('#previous-button-div').hide();
+        $('#next-button').attr("disabled", false); 
+    } else {
+        $('#previous-button-div').show();
+    }
+    if (this.currentStep == 2) {
+        $('#next-button').attr("disabled", true);
+    }
+    if (this.currentStep < 4) {
+        $('#next-button-div').show();  
+        $('#done-button-div').hide();
+    }
+    if (this.currentStep == 4) {
+        $('#next-button-div').hide();
+        $('#done-button-div').show();
+    }
+};
+
+/**
+* Manages the step change when the buttons next or previous are clicked
+*
+* @method changeStep
+* @param {Integer} direction An integer that is positive for the next button and negative for the previous button
+* @return 
+*/
+PrepareMainViewTest.prototype.changeStep = function (direction) {
+    $('#step-' + this.currentStep).removeClass('active-step');
+    this.currentStep += direction;
+    this.manageButtons();
+    this.manageStepButtons();
+    $('#step-' + this.currentStep).addClass('active-step');
+    this.container.removeAll();
+    this.load();
+    this.save('currentStep',this.currentStep);
+};
+
+/**
+* Manages the disable state of the step buttons
+*
+* @method manageStepButtons
+* @return 
+*/
+PrepareMainViewTest.prototype.manageStepButtons = function () {
+    if (this.currentStep != 3 && this.currentStep != 4) {
+        $('#step-4').attr("disabled", true);
+    } else {
+        $('#step-4').attr("disabled", false);
+    }
+    if (this.loadSampleChangerView.sampleChangerName == "") {
+        $('#step-3').attr("disabled", true);
+    } else {
+        $('#step-3').attr("disabled", false);
+    }
+    for (var i = 1 ; i <= 4 ; i++){
+        if (i == this.currentStep){
+            $('#step-' + i).addClass('active-step');
+        }
+    }
+};
+
+/**
+* Loads a Ext.panel.panel constaining a Ext.panel.Panel that will render the steps inside and sets the click events for the buttons
 *
 * @method getPanel
 * @return 
@@ -162,88 +226,53 @@ PrepareMainViewTest.prototype.getPanel = function() {
     var _this = this;
 
     /** Main container where the steps are rendered */
-    this.container = Ext.create('Ext.panel.Panel' , {items : []});
+    this.container = Ext.create('Ext.panel.Panel' , {
+        layout: {
+            type: 'hbox',
+            pack: 'center'
+        }, 
+        height : this.height,
+        width : this.width,
+        cls : 'rounded-border',
+        items : []}
+    );
 
 	this.panel =  Ext.create('Ext.panel.Panel', {
-            items : [
-                        this.getToolBar(), this.container,  this.getButtons()
-            ]
+        layout: {
+            type: 'vbox',
+            align: 'center'
+        },
+        width : 100,
+        height : this.height + 200,
+        // cls : 'border-grid',
+        items : [
+                    this.getToolBar(), this.container,  this.getButtons()
+        ]
 	});
 
     this.panel.on('boxready', function() {
-        if (_this.currentStep == 1) {
-            $('#previous-button-div').hide();
-        }
-        if (_this.currentStep == 2) {
-            $('#next-button').attr("disabled", true);
-        }
-        if (_this.currentStep < 4) {        
-            $('#done-button-div').hide();
-        }
-        if (_this.currentStep == 4) {
-            $('#next-button-div').hide();
-        }
         $('#next-button').unbind('click').click(function (sender){
             if (_this.currentStep < 4) {
-                $('#step-' + _this.currentStep).removeClass('active-step');
-                $('#step-' + _this.currentStep).attr("disabled", "disabled");
-                if (_this.currentStep == 1) {
-                    _this.save('containers',JSON.stringify(_this.containers));
-                    $('#next-button').attr("disabled", true);
-                }
-                _this.currentStep++;
-                if (_this.currentStep > 1) {
-                    $('#previous-button-div').show();
-                }
-                if (_this.currentStep == 4) {
-                    $('#next-button-div').hide();
-                    $('#done-button-div').show();
-                }
-                $('#step-' + _this.currentStep).addClass('active-step');
-                $('#step-' + _this.currentStep).attr("disabled", false);
-                _this.container.removeAll();
-                _this.reload();
-                _this.save('currentStep',_this.currentStep);
+                _this.changeStep(1);
             }
         });
         $('#previous-button').unbind('click').click(function (sender){
             if (_this.currentStep > 0) {
-                $('#step-' + _this.currentStep).removeClass('active-step');
-                $('#step-' + _this.currentStep).attr("disabled", "disabled");
-                _this.currentStep--;
-                if (_this.currentStep < 4) {
-                    $('#next-button-div').show();
-                    $('#done-button-div').hide();
-                }
-                if (_this.currentStep == 1) {
-                    $('#previous-button-div').hide();
-                    $('#next-button').attr("disabled", false);                        
-                }
-                if (_this.currentStep == 2) {
-                    $('#next-button').attr("disabled", true);                        
-                }
-                $('#step-' + _this.currentStep).addClass('active-step');
-                $('#step-' + _this.currentStep).attr("disabled", false);
-                _this.container.removeAll();
-                _this.reload();
-                _this.save('currentStep',_this.currentStep);   
-                if (_this.currentStep == 3) {
-                    _this.storeSampleChangerWidget(_this.confirmShipmentView.sampleChangerWidget);
-                    _this.checkStoreData();                    
-                }             
+                _this.changeStep(-1);             
             }
         });
         $('#done-button').unbind('click').click(function (sender){
             _this.confirmShipmentView;            
         });
-        for (var i = 1 ; i <= 4 ; i++){
-            if (i == _this.currentStep){
-                $('#step-' + i).addClass('active-step');
-            } else {
-                $('#step-' + i).attr("disabled", true);
+        $('.step-btn').unbind('click').click(function (sender){
+            if(sender.target.getAttribute("disabled") != "disabled"){
+                var direction = Number(sender.target.innerHTML) - _this.currentStep;
+                _this.changeStep(direction);
             }
-        }
-        _this.reload();
+        });
+        _this.manageStepButtons();
+        _this.manageButtons();
+        _this.load();
         _this.checkStoreData();
     });
         
@@ -251,6 +280,12 @@ PrepareMainViewTest.prototype.getPanel = function() {
     return this.panel;
 };
 
+/**
+* Returns the toolbar containing the steps of the prepare experiment process.
+*
+* @method getToolBar
+* @return The toolbar html containing the steps of the prepare experiment process
+*/
 PrepareMainViewTest.prototype.getToolBar = function () {
     var html = "";
 	dust.render("toolbar.prepare.template", [], function(err, out){
@@ -258,35 +293,43 @@ PrepareMainViewTest.prototype.getToolBar = function () {
 	});
 
     return {html : html};
-}
+};
 
+/**
+* Returns the buttons next and previous of the prepare experiment process.
+*
+* @method getButtons
+* @return The buttons html of the prepare experiment process.
+*/
 PrepareMainViewTest.prototype.getButtons = function () {
     var html = "";
 	dust.render("buttons.prepare.template", [], function(err, out){
 		html = out;
 	});
 
-    return {html : html};
+    return {html : html, margin : 10};
 }
 
-
-PrepareMainViewTest.prototype.load = function() {    
+/**
+* Loads the container according to the current step.
+*
+* @method load
+* @return 
+*/
+PrepareMainViewTest.prototype.load = function() {
+    var _this = this; 
     this.panel.setTitle("Prepare Experiment");
-    this.reload();
-};
-
-PrepareMainViewTest.prototype.reload = function() {
-    var _this = this;
     this.container.removeAll();
     if (this.currentStep == 1) {
         _this.container.add(_this.dewarListSelector.getPanel());
         _this.dewarListSelector.panel.setLoading();
         var onSuccessProposal = function(sender, containers) {        
             _this.containers = containers;
-            
+            _this.save('containers',JSON.stringify(_this.containers));
             _this.dewarListSelector.load(containers);
             _this.dewarListSelector.panel.setLoading(false);
-            
+            $('#step-3').attr("disabled", true);
+            _this.loadSampleChangerView.sampleChangerName = "";
         };
         var onError = function(sender, error) {        
             EXI.setError("Ops, there was an error");
@@ -295,65 +338,102 @@ PrepareMainViewTest.prototype.reload = function() {
         
         EXI.getDataAdapter({onSuccess : onSuccessProposal, onError:onError}).proposal.dewar.getDewarsByProposal();
     } else if (this.currentStep == 2){
-        this.container.add(this.sampleChangerSelector.getPanel());
-    } else if (this.currentStep == 3) {
-        this.container.add(this.loadShipmentView.getPanel());
         if (this.containers == null) {
             if (typeof(Storage) != "undefined"){
                 this.containers = JSON.parse(sessionStorage.getItem('containers'));
             }
         }
-        this.loadShipmentView.containerListEditor.load(_.filter(this.containers, function(e){return e.shippingStatus == "processing";}));        
+        var beamlinesSelected = _.uniq(_.map(_.filter(this.containers, function(e){return e.shippingStatus == "processing";}),'beamlineName'));
+        this.container.add(this.sampleChangerSelector.getPanel());
+        if (beamlinesSelected.length > 1) {
+            $.notify("Warning: Multiple beamlines selected", "warn");
+        } else if (beamlinesSelected.length == 1) {
+            this.sampleChangerSelector.selectRowByBeamlineName(beamlinesSelected[0]);
+        }
+    } else if (this.currentStep == 3) {
+        this.container.add(this.loadSampleChangerView.getPanel());
+        if (this.containers == null) {
+            if (typeof(Storage) != "undefined"){
+                this.containers = JSON.parse(sessionStorage.getItem('containers'));
+            }
+        }
+        this.loadSampleChangerView.containerListEditor.load(_.filter(this.containers, function(e){return e.shippingStatus == "processing";}));        
     } else if (this.currentStep == 4) {
         this.container.add(this.confirmShipmentView.getPanel());
-        if (this.loadShipmentView.sampleChangerWidget) {
-            this.confirmShipmentView.loadSampleChanger(this.loadShipmentView.sampleChangerWidget.name,this.loadShipmentView.sampleChangerWidget.getPuckData());
+        if (this.loadSampleChangerView.sampleChangerWidget) {
+            this.confirmShipmentView.loadSampleChanger(this.loadSampleChangerView.sampleChangerWidget.name,this.loadSampleChangerView.sampleChangerWidget.getPuckData());
         }
     }
-}
+};
 
+/**
+* Checks the session storage in case of refresh
+*
+* @method checkStoreData
+* @return 
+*/
 PrepareMainViewTest.prototype.checkStoreData = function () {
     if (typeof(Storage) != "undefined"){
         var sampleChangerName = sessionStorage.getItem('sampleChangerName');
         if (sampleChangerName) {
-            this.loadShipmentView.sampleChangerName = sampleChangerName;
-            // this.loadShipmentView.generateSampleChangerWidget(sampleChangerName);
-            // var puckData = JSON.parse(sessionStorage.getItem('puckData'));
-            // if (puckData) {
-            //     this.loadShipmentView.sampleChangerWidget.load(puckData);
-            // }
+            this.loadSampleChangerView.sampleChangerName = sampleChangerName;
         }
         if (this.currentStep == 3){
-            this.loadShipmentView.containerListEditor.load(_.filter(this.containers, function(e){return e.shippingStatus == "processing";}));
+            this.loadSampleChangerView.containerListEditor.load(_.filter(this.containers, function(e){return e.shippingStatus == "processing";}));
         }
     }
-}
+};
 
+/**
+* Takes care of deselecting a row in the loading step.
+*
+* @method deselectRow
+* @return 
+*/
 PrepareMainViewTest.prototype.deselectRow = function () {
-    this.loadShipmentView.containerListEditor.panel.getSelectionModel().deselectAll();
+    this.loadSampleChangerView.containerListEditor.panel.getSelectionModel().deselectAll();
     this.selectedContainerId = null;
     this.selectedSampleCount = null;
-    this.loadShipmentView.sampleChangerWidget.allowAllPucks();
+    this.loadSampleChangerView.sampleChangerWidget.allowAllPucks();
 }
 
+/**
+* Takes care of deselecting a puck in the loading step
+*
+* @method deselectPuck
+* @return 
+*/
 PrepareMainViewTest.prototype.deselectPuck = function () {
     $("#" + this.selectedPuck.id).attr("class","puck");
     this.selectedPuck = null; 
-}
+};
 
+/**
+* Returns to the initial state
+*
+* @method returnToSelectionStatus
+* @return 
+*/
 PrepareMainViewTest.prototype.returnToSelectionStatus = function () {
     this.deselectRow();
     if (this.selectedPuck) {
         this.deselectPuck();        
     }
-}
+};
 
+/**
+* Draws the selected puck on the preview panel
+*
+* @method drawSelectedPuck
+* @param {PuckWidget} puck The puck to be drawn
+* @return 
+*/
 PrepareMainViewTest.prototype.drawSelectedPuck = function (puck) {
     var data = {
         puckType : 1,
         containerId : puck.containerId,
-        mainRadius : 100,
-        x : 100,
+        mainRadius : 70,
+        x : 130,
         y : 10,
         enableMouseOver : true
     };
@@ -363,16 +443,25 @@ PrepareMainViewTest.prototype.drawSelectedPuck = function (puck) {
         puckContainer = new PuckWidgetContainer(data);
     }
     
-    this.loadShipmentView.previewPanelView.loadPuck(puckContainer, {
+    this.loadSampleChangerView.previewPanelView.loadPuck(puckContainer, {
                 info : [{
                     text : 'SC Location',
-                    value : puck.id.substring(puck.id.indexOf('-')+1)
+                    value : this.loadSampleChangerView.sampleChangerWidget.convertIdToSampleChangerLocation(puck.id.substring(puck.id.indexOf('-')+1))
                 }]
             }, false, puck.isEmpty);
 
     puckContainer.puckWidget.load(puck.data.cells);
-}
+};
 
+/**
+* Draws the selected row in puck form on the preview panel
+*
+* @method drawSelectedPuckFromRow
+* @param {Integer} containerId The container Id of the container corresponding to the row selected
+* @param {Integer} capacity The capacity of the container corresponding to the row selected
+* @param {Integer} containerCode The container code of the row selected
+* @return 
+*/
 PrepareMainViewTest.prototype.drawSelectedPuckFromRow = function (containerId, capacity, containerCode) {
     var _this = this;
     function onSuccess (sender, samples) {
@@ -380,8 +469,8 @@ PrepareMainViewTest.prototype.drawSelectedPuckFromRow = function (containerId, c
             var data = {
                 puckType : 1,
                 containerId : containerId,
-                mainRadius : 100,
-                x : 100,
+                mainRadius : 70,
+                x : 130,
                 y : 10,
                 enableMouseOver : true
             };
@@ -390,7 +479,7 @@ PrepareMainViewTest.prototype.drawSelectedPuckFromRow = function (containerId, c
                 data.puckType = 2;
                 puckContainer = new PuckWidgetContainer(data);
             }
-            _this.loadShipmentView.previewPanelView.loadPuck(puckContainer, {
+            _this.loadSampleChangerView.previewPanelView.loadPuck(puckContainer, {
                 info : [{
                     text : 'Container',
                     value : containerCode
@@ -404,15 +493,17 @@ PrepareMainViewTest.prototype.drawSelectedPuckFromRow = function (containerId, c
     }
 
     EXI.getDataAdapter({onSuccess : onSuccess}).mx.sample.getSamplesByContainerId(containerId);
-}
+};
 
 /**
- * TODO: COMMENT
+* Takes care of the process when a puck is selected after clicking a row, loading that puck with the selected container
 *
-* @method loadShipment
+* @method loadSampleChangerPuck
+* @param {PuckWidget} puck The puck of the sample changer widget to be loaded
+* @param {Integer} containerId The container Id of the container to be loaded
 * @return 
 */
-PrepareMainViewTest.prototype.loadShipment = function (puck, containerId) {
+PrepareMainViewTest.prototype.loadSampleChangerPuck = function (puck, containerId) {
     var _this = this;
     function onSuccess (sender, samples) {
         if (samples) {
@@ -421,20 +512,36 @@ PrepareMainViewTest.prototype.loadShipment = function (puck, containerId) {
         }
         _this.returnToSelectionStatus();
         _this.setSelectedPuck(puck);
-        // _this.loadShipmentView.previewPanelView.setEmptyButton();
-        _this.storeSampleChangerWidget(_this.loadShipmentView.sampleChangerWidget);
+        _this.storeSampleChangerWidget(_this.loadSampleChangerView.sampleChangerWidget);
+        var location = _this.loadSampleChangerView.sampleChangerWidget.convertIdToSampleChangerLocation(puck.id.substring(puck.id.indexOf('-')+1));
+        _this.loadSampleChangerView.containerListEditor.updateSampleChangerLocation(containerId,location);
     }
 
     EXI.getDataAdapter({onSuccess : onSuccess}).mx.sample.getSamplesByContainerId(containerId);
-}
+};
 
+/**
+* Saves a key-value pair on the session storage
+*
+* @method save
+* @param {String} key The key of the key-value pair
+* @param {String} value The value of the key-value pair
+* @return 
+*/
 PrepareMainViewTest.prototype.save = function (key, value) {
     if (typeof(Storage) != 'undefined') {
         sessionStorage.setItem(key,value);
     }
 }
 
+/**
+* Saves the puck data of a given sampleChangerWidget
+*
+* @method storeSampleChangerWidget
+* @param sampleChangerWidget The sample changer to be stored
+* @return 
+*/
 PrepareMainViewTest.prototype.storeSampleChangerWidget = function (sampleChangerWidget) {
     var puckData = sampleChangerWidget.getPuckData();
     this.save('puckData',JSON.stringify(puckData));
-}
+};

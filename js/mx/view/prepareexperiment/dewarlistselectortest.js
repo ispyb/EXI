@@ -6,13 +6,16 @@
 */
 function DewarListSelectorGridTest(args){
     this.height = 600;
+    this.width = 1000;
     if (args != null){
-        if (args.height  != null){
+        if (args.height){
             this.height = args.height;
-            
+        }
+        if (args.width){
+            this.width = args.width;
         }
     }
-    
+
     this.filterByDate = true;
     
     this.onSelect = new Event(this);
@@ -105,29 +108,28 @@ DewarListSelectorGridTest.prototype.getPanel = function(){
     var _this = this;
    
     this.tbar = Ext.create('Ext.toolbar.Toolbar', {
-    
-    items: [
-       
-        {
-            xtype       : 'checkboxfield',
-            boxLabel    : 'Display only shipments scheduled for future sessions',
-            checked     : this.filterByDate,
-            listeners : {
-                change : function( cb, newValue, oldValue, eOpts ){
-                    _this.filterByDate = newValue;
-                    _this.load(_this.dewars);
+        items: [
+            {
+                xtype       : 'checkboxfield',
+                boxLabel    : 'Display only shipments scheduled for future sessions',
+                checked     : this.filterByDate,
+                listeners : {
+                    change : function( cb, newValue, oldValue, eOpts ){
+                        _this.filterByDate = newValue;
+                        _this.load(_this.dewars);
+                    }
+                    
                 }
-                
             }
-        }
-    ]
+        ]
     });
 
     this.panel = Ext.create('Ext.grid.Panel', {
             title: 'Select dewars',
             store: this.getStore(),
-            cls : 'border-grid',           
+            // cls : 'border-grid',           
             height : this.height, 
+            width : this.width,  
             flex : 0.5, 
             tbar : this.tbar,                 
             margin : 5,
@@ -135,7 +137,7 @@ DewarListSelectorGridTest.prototype.getPanel = function(){
                 {
                     text    : 'Shipment',
                     columns : [
-                         { text: 'Name',  dataIndex: 'shippingName', width: 150 },
+                         { text: 'Name',  dataIndex: 'shippingName', flex : 1 },
                          { text: 'Status',  dataIndex: 'shippingStatus', flex: 1 },
                          { text: 'Created on',  dataIndex: 'creationDate', flex: 1,   hidden : true,
                             renderer : function(grid, a, record){
@@ -144,8 +146,7 @@ DewarListSelectorGridTest.prototype.getPanel = function(){
                                 }     
                                 
                             } 
-                        },
-                                                 
+                        },                     
                     ]                                         
                 },
                 {

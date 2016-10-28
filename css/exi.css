@@ -1,8 +1,14 @@
 /** Prepare experiment steps **/
 
-.btn-done {
-	background-color : #3892d3;
-	color : white;
+.rounded-border{
+    border-radius: 15px 25px;
+	border-color:#666666;
+	border-style: solid;
+    border-width: 2px;
+}
+
+.clickable-row {
+	cursor : pointer;
 }
 
 .disabled-row {
@@ -61,6 +67,11 @@
     display: table-cell;
     text-align: center;
     position: relative;
+}
+
+.btn-done {
+	background-color : #3892d3;
+	color : white;
 }
 
 .btn-circle {

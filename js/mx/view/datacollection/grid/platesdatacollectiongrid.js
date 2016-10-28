@@ -16,7 +16,7 @@ PlatesDataCollectionGrid.prototype.getPanel = function (dataCollectionGroup) {
         
     this.panel = Ext.create('Ext.grid.Panel', {
         border: 1,        
-        store: this.store,               
+        store: this.store,            
         columns: this.getColumns()
     });
     return this.panel;
