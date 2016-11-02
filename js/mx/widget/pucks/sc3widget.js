@@ -1,8 +1,14 @@
+/**
+* This class extends the SampleChangerWidget class for a SC3
+*
+* @class FlexHCDWidget
+* @constructor
+*/
 function SC3Widget (args) {
 	
 	SampleChangerWidget.call(this,args);
 	
-	this.name = 'SC3Widget';
+	this.name = 'SC3';
 	this.clockwise = -1;
 
 	this.data = {
@@ -13,7 +19,7 @@ function SC3Widget (args) {
 	
 	this.createStructure();
 	this.createPucks(2, this.data.cells, 0, this.data.radius/2, 0.8);
-}
+};
 
 SC3Widget.prototype.getPuckIndexFromAngle = SampleChangerWidget.prototype.getPuckIndexFromAngle;
 SC3Widget.prototype.createPucks = SampleChangerWidget.prototype.createPucks;
@@ -28,8 +34,14 @@ SC3Widget.prototype.disablePucksOfDifferentCapacity = SampleChangerWidget.protot
 SC3Widget.prototype.allowAllPucks = SampleChangerWidget.prototype.allowAllPucks;
 SC3Widget.prototype.getPuckData = SampleChangerWidget.prototype.getPuckData;
 SC3Widget.prototype.getAllFilledPucks = SampleChangerWidget.prototype.getAllFilledPucks;
+SC3Widget.prototype.loadSamples = SampleChangerWidget.prototype.loadSamples;
+SC3Widget.prototype.emptyAllPucks = SampleChangerWidget.prototype.emptyAllPucks;
 
-
+/**
+* Creates the particular structure of the SC3
+*
+* @method createStructure
+*/
 SC3Widget.prototype.createStructure = function () {
 	var textR = this.data.radius*0.9;
 	for (var i = 0 ; i < this.data.cells ; i++){
@@ -41,4 +53,28 @@ SC3Widget.prototype.createStructure = function () {
 		};
 		this.data.text.push(textNumber);
 	}
-}
+};
+
+/**
+* Converts the idLocation to the corresponding location in the SC3 by convention
+*
+* @method convertIdToSampleChangerLocation
+* @return The corresponding location in the SC3 by convention
+*/
+SC3Widget.prototype.convertIdToSampleChangerLocation = function (idLocation) {
+	return Number(idLocation.split("-")[1]);
+};
+
+/**
+* Converts the sample changer location in a SC3 to the id of the puck
+*
+* @method convertSampleChangerLocationToId
+* @return The corresponding id of the puck in the given location
+*/
+SC3Widget.prototype.convertSampleChangerLocationToId = function (sampleChangerLocation) {
+	if (sampleChangerLocation <= 5 && sampleChangerLocation > 0) {
+		return this.id + "-" + sampleChangerLocation + "-1";
+	} else {
+		return null;
+	}
+};
