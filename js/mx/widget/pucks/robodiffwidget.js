@@ -1,14 +1,14 @@
 /**
-* This class extends the SampleChangerWidget class for a FlexHCD
+* This class extends the SampleChangerWidget class for a RoboDiffWidget
 *
-* @class FlexHCDWidget
+* @class RoboDiffWidget
 * @constructor
 */
-function FlexHCDWidget (args) {
+function RoboDiffWidget (args) {
 	
 	SampleChangerWidget.call(this,args);
 	
-	this.name = 'FlexHCD';
+	this.name = 'RoboDiff';
 	this.initAlpha = -7*2*Math.PI/16;
 	this.data = {
 		radius : this.radius,
@@ -18,32 +18,31 @@ function FlexHCDWidget (args) {
 	};
 	
 	this.createStructure();
-	this.createPucks(1, this.data.cells/2, -7*Math.PI/8, this.data.radius/2, 0.5, {dAlpha : Math.PI/16, dist : 3*this.data.radius/4});
-	this.createPucks(2, this.data.cells/2, -5*Math.PI/8, this.data.radius/2, 0.5, {dAlpha : Math.PI/16, dist : 3*this.data.radius/4});
+	this.createPucks(2, this.data.cells, -7*Math.PI/8, this.data.radius/2, 0.5, {dAlpha : Math.PI/16, dist : 3*this.data.radius/4});
 };
 
-FlexHCDWidget.prototype.getPuckIndexFromAngle = SampleChangerWidget.prototype.getPuckIndexFromAngle;
-FlexHCDWidget.prototype.createPucks = SampleChangerWidget.prototype.createPucks;
-FlexHCDWidget.prototype.getPanel = SampleChangerWidget.prototype.getPanel;
-FlexHCDWidget.prototype.load = SampleChangerWidget.prototype.load;
-FlexHCDWidget.prototype.getStructure = SampleChangerWidget.prototype.getStructure;
-FlexHCDWidget.prototype.findPuckById = SampleChangerWidget.prototype.findPuckById;
-FlexHCDWidget.prototype.getAllPucks = SampleChangerWidget.prototype.getAllPucks;
-FlexHCDWidget.prototype.render = SampleChangerWidget.prototype.render;
-FlexHCDWidget.prototype.setClickListeners = SampleChangerWidget.prototype.setClickListeners;
-FlexHCDWidget.prototype.disablePucksOfDifferentCapacity = SampleChangerWidget.prototype.disablePucksOfDifferentCapacity;
-FlexHCDWidget.prototype.allowAllPucks = SampleChangerWidget.prototype.allowAllPucks;
-FlexHCDWidget.prototype.getPuckData = SampleChangerWidget.prototype.getPuckData;
-FlexHCDWidget.prototype.getAllFilledPucks = SampleChangerWidget.prototype.getAllFilledPucks;
-FlexHCDWidget.prototype.loadSamples = SampleChangerWidget.prototype.loadSamples;
-FlexHCDWidget.prototype.emptyAllPucks = SampleChangerWidget.prototype.emptyAllPucks;
+RoboDiffWidget.prototype.getPuckIndexFromAngle = SampleChangerWidget.prototype.getPuckIndexFromAngle;
+RoboDiffWidget.prototype.createPucks = SampleChangerWidget.prototype.createPucks;
+RoboDiffWidget.prototype.getPanel = SampleChangerWidget.prototype.getPanel;
+RoboDiffWidget.prototype.load = SampleChangerWidget.prototype.load;
+RoboDiffWidget.prototype.getStructure = SampleChangerWidget.prototype.getStructure;
+RoboDiffWidget.prototype.findPuckById = SampleChangerWidget.prototype.findPuckById;
+RoboDiffWidget.prototype.getAllPucks = SampleChangerWidget.prototype.getAllPucks;
+RoboDiffWidget.prototype.render = SampleChangerWidget.prototype.render;
+RoboDiffWidget.prototype.setClickListeners = SampleChangerWidget.prototype.setClickListeners;
+RoboDiffWidget.prototype.disablePucksOfDifferentCapacity = SampleChangerWidget.prototype.disablePucksOfDifferentCapacity;
+RoboDiffWidget.prototype.allowAllPucks = SampleChangerWidget.prototype.allowAllPucks;
+RoboDiffWidget.prototype.getPuckData = SampleChangerWidget.prototype.getPuckData;
+RoboDiffWidget.prototype.getAllFilledPucks = SampleChangerWidget.prototype.getAllFilledPucks;
+RoboDiffWidget.prototype.loadSamples = SampleChangerWidget.prototype.loadSamples;
+RoboDiffWidget.prototype.emptyAllPucks = SampleChangerWidget.prototype.emptyAllPucks;
 
 /**
 * Creates the particular structure of the FlexHCD
 *
 * @method createStructure
 */
-FlexHCDWidget.prototype.createStructure = function () {
+RoboDiffWidget.prototype.createStructure = function () {
 	for (var i = 0 ; i < this.data.cells/2 ; i++){
 		var ang = i*2*Math.PI/this.data.cells;
 		var line = {
@@ -54,7 +53,7 @@ FlexHCDWidget.prototype.createStructure = function () {
 		};
 		this.data.lines.push(line);
 	}
-	
+
 	var textR = this.data.radius*0.31;
 	var textRBig = this.data.radius*0.94;
 	var dAlpha = Math.PI/16;
@@ -92,7 +91,7 @@ FlexHCDWidget.prototype.createStructure = function () {
 * @method convertIdToSampleChangerLocation
 * @return The corresponding location in the FlexHCD by convention
 */
-FlexHCDWidget.prototype.convertIdToSampleChangerLocation = function (idLocation) {
+RoboDiffWidget.prototype.convertIdToSampleChangerLocation = function (idLocation) {
 	var n = Number(idLocation.split("-")[1]);
 	var i = Number(idLocation.split("-")[2]);
 	return (n-1)*3 + i;
@@ -104,7 +103,7 @@ FlexHCDWidget.prototype.convertIdToSampleChangerLocation = function (idLocation)
 * @method convertSampleChangerLocationToId
 * @return The corresponding id of the puck in the given location
 */
-FlexHCDWidget.prototype.convertSampleChangerLocationToId = function (sampleChangerLocation) {
+RoboDiffWidget.prototype.convertSampleChangerLocationToId = function (sampleChangerLocation) {
 	if (sampleChangerLocation <= 24 && sampleChangerLocation > 0) {
 		var n = Math.floor(sampleChangerLocation/3) + 1;
 		var i = sampleChangerLocation % 3;

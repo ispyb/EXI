@@ -1,11 +1,32 @@
-function ContainerPrepareSpreadSheetTest(){
+/**
+* This class renders a grid containing container information
+* @class ContainerPrepareSpreadSheetTest
+* @constructor
+*/
+function ContainerPrepareSpreadSheetTest(args){
     this.id = BUI.id();
 
+    this.height = 600;
+    this.width = 600;
+    if (args != null){
+        if (args.height){
+            this.height = args.height;
+        }
+        if (args.width){
+            this.width = args.width;
+        }
+    }
+
     this.onSelectRow = new Event(this);
-    // this.allowedCapacity = null;
+    this.onLoaded = new Event(this);
+};
 
-}
-
+/**
+* Returns a panel containing the grid of containers
+*
+* @method getPanel
+* @return A panel containing the grid of containers
+*/
 ContainerPrepareSpreadSheetTest.prototype.getPanel = function() {
     var _this = this;
 
@@ -18,11 +39,12 @@ ContainerPrepareSpreadSheetTest.prototype.getPanel = function() {
     this.panel = Ext.create('Ext.grid.Panel', {
         title: 'Loaded or to be Loaded on MxCube',
         store: this.store,
-        cls     : 'border-grid',
-        height  :590,
+        cls : 'border-grid',
+        height  : this.height,
+        width  : this.width,
         flex    : 0.5,
         columns: [
-            {
+            /*{
                 dataIndex: 'rowIndex',
                 sortable : false,
                 autoSizeColumn: true,
@@ -31,7 +53,7 @@ ContainerPrepareSpreadSheetTest.prototype.getPanel = function() {
                 {
                     return rowIndex+1;
                 }
-            },
+            },*/
             {
                 header: 'Shipment',
                 dataIndex: 'shippingName',
@@ -44,15 +66,29 @@ ContainerPrepareSpreadSheetTest.prototype.getPanel = function() {
                 dataIndex: 'dewarId',
                 type: 'text',
                 flex: 1,
+                hidden : true,
                 readOnly: true
             },              
              {
                 header: 'ContainerId',
                 dataIndex: 'containerId',
+                hidden : true,
                 type: 'text',
                 flex: 1,
                 readOnly: true
             },   
+             {
+                header: 'Container',
+                dataIndex: 'containerCode',
+                type: 'text',
+                flex: 1,
+                readOnly: true,
+                renderer : function(value, metaData, record, rowIndex){
+                    
+                    return record.data.containerCode +  " <span style='color:gray;font-size:10px; font-style:italic;'>(" + record.data.sampleCount +" samples)</span>";
+                }
+                
+            },
             {
                 header: 'Barcode',
                 dataIndex: 'barCode',
@@ -60,33 +96,38 @@ ContainerPrepareSpreadSheetTest.prototype.getPanel = function() {
                 flex: 1,
                 readOnly: true
             },
-            {
-                header: 'Container',
-                dataIndex: 'containerCode',
-                type: 'text',
-                flex: 1,
-                readOnly: true
-            },
+           
             {
                 header: 'Container type',
                 dataIndex: 'containerType',
                 type: 'text',
-                flex: 1,
-                readOnly: true
+                 flex: 0.75,
+                readOnly: true,
+                renderer : function(value, metaData, record, rowIndex){                    
+                    switch(record.data.containerType) {
+                            case "Unipuck":
+                                return   "<kbd style='color:white;font-size:11px;background-color:blue;'>UNIPUCK</kbd>";                                
+                             case "Spinepuck":
+                                return "<kbd style='color:black;font-size:11px;background-color:#CCCCCC;'>SPINEPUCK</kbd>";  
+                            default:
+                               return record.data.containerType;
+                        }
+                }
             },
             {
                 header: 'Samples',
                 dataIndex: 'sampleCount',
                 type: 'text',
-                flex: 1,
+                flex: 0.6,
+                hidden :true,
                 readOnly: true
             },
             { 
                 header : 'Beamline',
                 dataIndex: 'beamlineName',
                 type: 'dropdown',			        	 								
-                flex: 1,
-                source: EXI.credentialManager.getBeamlines()
+                flex: 0.6,
+                source: EXI.credentialManager.getBeamlineNames()
             },
             {
                 header: 'Sample Changer Location',
@@ -97,20 +138,15 @@ ContainerPrepareSpreadSheetTest.prototype.getPanel = function() {
         ],
         viewConfig: {
             listeners: {
-                refresh: function(dataview) {
+                /*refresh: function(dataview) {
                     dataview.panel.columns[0].autoSize();//works on the first colum
-                }
+                }*/
             }
         },
         listeners: {
-            // beforeselect: function (selModel, record) {
-            //     if (_this.allowedCapacity) {
-            //         return record.get('capacity') == _this.allowedCapacity;
-            //     }
-            // },
             itemclick: function(grid, record, item, index, e) {
-                _this.onSelectRow.notify(grid.getSelectionModel().getSelection()[0]);             
-            }
+                _this.onSelectRow.notify(record);             
+            },
         },
         margin  : 5,
         items   : [
@@ -123,10 +159,47 @@ ContainerPrepareSpreadSheetTest.prototype.getPanel = function() {
         ]
     });
 
-    return this.panel;
+    //arrowUp and arrowDown listeners. 
+    //Needs the first column of row Index
+    // this.panel.view.addElListener('keyup', function(event,row) {
+    //     if (event.keyCode == 38 || event.keyCode == 40) { 
+    //         _this.onSelectRow.notify(_this.panel.store.getAt(Number(row.cells[0].innerText)-1));
+    //     }
+    // });
 
+    return this.panel;
+};
+
+/**
+* Loads the processing dewars from the database
+*
+* @method loadProcessingDewars
+* @return
+*/
+ContainerPrepareSpreadSheetTest.prototype.loadProcessingDewars = function () {
+    var _this = this;
+
+    this.panel.setLoading();
+    var onSuccessProposal = function(sender, containers) {
+        var processingContainers = _.filter(containers, function(e){return e.shippingStatus == "processing";});
+        _this.load(processingContainers);
+        _this.panel.setLoading(false);
+        _this.onLoaded.notify(processingContainers);
+    };
+    var onError = function(sender, error) {        
+        EXI.setError("Ops, there was an error");
+        _this.panel.setLoading(false);
+    };
+    EXI.getDataAdapter({onSuccess : onSuccessProposal, onError:onError}).proposal.dewar.getDewarsByProposal();
 }
 
+/**
+* Loads an array of dewars to the store
+*
+* @method load
+* @param dewars
+* @return
+*/
 ContainerPrepareSpreadSheetTest.prototype.load = function(dewars) {
    
     var data = [];
@@ -154,4 +227,60 @@ ContainerPrepareSpreadSheetTest.prototype.load = function(dewars) {
         }
     }
     this.store.loadData(data);
-}
+};
+
+/**
+* Updates the sample changer location cell of the record with the corresponding container Id
+*
+* @method updateSampleChangerLocation
+* @param {Integer} containerId The container Id of the record to be updated
+* @param {Integer} location The new value for the sample changer location cell in the grid
+* @return
+*/
+ContainerPrepareSpreadSheetTest.prototype.updateSampleChangerLocation = function (containerId, location) {
+    var _this = this;
+
+    var recordsByContainerId = _.filter(_this.panel.store.data.items,function(o) {return o.data.containerId == containerId});
+
+    for (var i = 0 ; i < recordsByContainerId.length ; i++) {
+        var record = recordsByContainerId[i];
+        if (record.get('containerId') == containerId) {
+            var beamlineName = record.get('beamlineName');
+
+            var onSuccess = function(sender, containers) {
+                _this.loadProcessingDewars();
+            };
+            var onError = function(sender, error) {        
+                EXI.setError("Ops, there was an error");
+            };
+
+            EXI.getDataAdapter({onSuccess : onSuccess, onError:onError}).proposal.dewar.updateSampleLocation([containerId], [beamlineName], [location]);
+            return
+        }
+    }
+};
+
+/**
+* Returns the row with the given containerId
+*
+* @method getRowByContainerId
+* @param {Integer} containerId The container Id of the record to be returned
+* @return The row with the given containerId
+*/
+ContainerPrepareSpreadSheetTest.prototype.getRowByContainerId = function (containerId) {
+    var recordsByContainerId = _.filter(this.panel.store.data.items,function(o) {return o.data.containerId == containerId});
+    return recordsByContainerId[0];
+};
+
+/**
+* Adds a class to the record with the given containerId
+*
+* @method addClassToRow
+* @param {Integer} containerId The container Id of the record to be updated
+* @param {String} className The class to be added
+* @return
+*/
+ContainerPrepareSpreadSheetTest.prototype.addClassToRow = function (containerId, className) {
+    var record = this.getRowByContainerId(containerId);
+    Ext.fly(this.panel.getView().getNode(record)).addCls(className);
+};

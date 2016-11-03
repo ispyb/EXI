@@ -29,7 +29,7 @@ function PuckWidgetContainer(args) {
 	}
 	
 	if(!this.puckWidget) {
-		this.puckWidget = new SpineCellWidget(args);
+		this.puckWidget = new SpinePuckWidget(args);
 	}
 	
 	this.puckWidget.onClick.attach(function(sender, cell){
@@ -77,6 +77,10 @@ PuckWidgetContainer.prototype.getPanel = function () {
 
 PuckWidgetContainer.prototype.load = function (data) {
 	this.puckWidget.load(data);
+}
+
+PuckWidgetContainer.prototype.loadSamples = function (samples) {
+	this.puckWidget.loadSamples(samples);
 }
 
 PuckWidgetContainer.prototype.focus = function (location, bool) {

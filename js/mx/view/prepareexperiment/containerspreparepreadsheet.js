@@ -4,7 +4,7 @@ function ContainerPrepareSpreadSheet(){
 
 
 ContainerPrepareSpreadSheet.prototype.load = function(dewars){
-    debugger
+    
   var hotSettings = {
     data: dewars,
     columns: [
@@ -32,7 +32,7 @@ ContainerPrepareSpreadSheet.prototype.load = function(dewars){
         { 
             data : 'beamlineName',
             type: 'dropdown',			        	 								
-            source: EXI.credentialManager.getBeamlines()
+            source: EXI.credentialManager.getBeamlineNames()
         },
         {
             data: 'sampleChangerLocation',
