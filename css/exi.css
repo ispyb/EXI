@@ -1,8 +1,17 @@
 /** Prepare experiment steps **/
 
-.btn-done {
-	background-color : #3892d3;
-	color : white;
+.error-row .x-grid-cell { 
+    background-color: #ffe2e2; 
+    color: #900; 
+}
+
+.warning-row .x-grid-cell { 
+    background-color: #ffbb0f; 
+    color: #666666; 
+} 
+
+.clickable-row {
+	cursor : pointer;
 }
 
 .disabled-row {
@@ -61,6 +70,11 @@
     display: table-cell;
     text-align: center;
     position: relative;
+}
+
+.btn-done {
+	background-color : #3892d3;
+	color : white;
 }
 
 .btn-circle {

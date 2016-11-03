@@ -25,7 +25,21 @@ MxPrepare.prototype.init = function() {
 
 	Path.map("#/mx/prepare/main").to(function() {
 		EXI.clearNavigationPanel();
-	    var mainView = new PrepareMainViewTest();
+	    var mainView = new PrepareMainViewTest({currentStep : 1});
+		EXI.addMainPanel(mainView);
+	    mainView.load();
+	}).enter(this.setPageBackground);
+
+	Path.map("#/mx/prepare/main/selectSampleChanger").to(function() {
+		EXI.clearNavigationPanel();
+	    var mainView = new PrepareMainViewTest({currentStep : 2});
+		EXI.addMainPanel(mainView);
+	    mainView.load();
+	}).enter(this.setPageBackground);
+
+	Path.map("#/mx/prepare/main/loadSampleChanger").to(function() {
+		EXI.clearNavigationPanel();
+	    var mainView = new PrepareMainViewTest({currentStep : 3});
 		EXI.addMainPanel(mainView);
 	    mainView.load();
 	}).enter(this.setPageBackground);
