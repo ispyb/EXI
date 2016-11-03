@@ -4,7 +4,7 @@ function ContainerPrepareSpreadSheet(){
 
 
 ContainerPrepareSpreadSheet.prototype.load = function(dewars){
-    debugger
+    
   var hotSettings = {
     data: dewars,
     columns: [

@@ -1,7 +1,7 @@
 /**
-* Abstract class for creating a puck widget
+* Extends the PuckWidget class for a SpinePuck
 *
-* @class SpinePuckWidget
+* @class UniPuckWidget
 * @constructor
 */
 function SpinePuckWidget(args){
@@ -12,6 +12,7 @@ function SpinePuckWidget(args){
 	PuckWidget.call(this, args);
 	this.data = this.parseData(this.data);	
 	this.capacity = 10;
+
 }
 
 SpinePuckWidget.prototype.getPanel = PuckWidget.prototype.getPanel;
@@ -23,6 +24,12 @@ SpinePuckWidget.prototype.findCellIndexById = PuckWidget.prototype.findCellIndex
 SpinePuckWidget.prototype.loadSamples = PuckWidget.prototype.loadSamples;
 SpinePuckWidget.prototype.emptyAll = PuckWidget.prototype.emptyAll;
 
+/**
+* Parses the data
+*
+* @method parseData
+* @return {Object} data The data correctly parsed
+*/
 SpinePuckWidget.prototype.parseData = function (data) {
 	var n = 10;
 	var marginPercent = 0.8;
@@ -32,5 +39,3 @@ SpinePuckWidget.prototype.parseData = function (data) {
 	
 	return data;
 };
-
-

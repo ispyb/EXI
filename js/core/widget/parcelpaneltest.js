@@ -2,10 +2,10 @@
 /**
 * This is a form  for parcels. It includes all items includes in a parcel. Include pucks
 *
-* @class ParcelPanel
+* @class ParcelPanelTest
 * @constructor
 */
-function ParcelPanel(args) {
+function ParcelPanelTest(args) {
 	this.id = BUI.id();
 	this.height = 500;
 	this.width = 500;
@@ -30,17 +30,18 @@ function ParcelPanel(args) {
 *
 * @method addHeaderPanel
 */
-ParcelPanel.prototype.addHeaderPanel = function() {
+ParcelPanelTest.prototype.addHeaderPanel = function() {
 	var html = "No information";
-	dust.render("parcelformsummary", this.dewar, function(err, out){
+	dust.render("parcel.header.shipping.template", this.dewar, function(err, out){
 		html = out;
     });
-	this.panel.insert(
+    
+	this.panel.add(0,
 				{
 					xtype 	: 'container',
-					width	: 200,
+					width	: this.width - 50,
 					border : 1,
-					padding : 20,
+					padding : 5,
 					items 	: [	{html : html}
 				
 					]
@@ -48,31 +49,75 @@ ParcelPanel.prototype.addHeaderPanel = function() {
 	);
 };
 
-ParcelPanel.prototype.render = function() {
-	debugger
+ParcelPanelTest.prototype.render = function() {
+    var _this = this;
+
 	var dewar = this.dewar;
 	this.panel.removeAll();
-
 	this.addHeaderPanel();
 	
 	if (dewar != null){
 		if (dewar.containerVOs != null){
+
+            var pucksPanel = Ext.create('Ext.panel.Panel', {
+                layout      : 'hbox',
+                cls 		: "border-grid",
+                margin 		: 10,
+                width       : this.width - 50,
+                height       : this.height - 250,
+                autoScroll : true,
+                items       : []
+            });
+
+            this.panel.add(pucksPanel);
 			/** Sorting container by id **/
 			dewar.containerVOs.sort(function(a, b){return a.containerId - b.containerId;});
+            var puckPanelsMap = {};
+            var containerIds = [];
+            
 			for (var i = 0; i< dewar.containerVOs.length; i++){
 				var container = dewar.containerVOs[i];
-				/** Adding the puck layout **/
-				var puckPanel = new PuckPanel({height : 200});
-				debugger
-				this.panel.insert(puckPanel.getPanel());
-				puckPanel.load(container);
-				
+                var puckPanel = new PuckParcelPanel({width : 200, radius : 80, containerId : container.containerId, capacity : container.capacity, code : container.code});
+                puckPanel.onPuckRemoved.attach(function (sender, containerId) {
+                    _.remove(_this.dewar.containerVOs, {containerId: containerId});
+                    _this.load(_this.dewar);
+                });
+                puckPanel.onPuckSaved.attach(function (sender, puck) {
+                    _.remove(_this.dewar.containerVOs, {containerId: puck.containerId});
+                    _this.dewar.containerVOs.push(puck);
+                    _this.load(_this.dewar);
+                });
+                puckPanelsMap[container.containerId] = puckPanel;
+                containerIds.push(container.containerId);
+                pucksPanel.insert(puckPanel.getPanel());
 			}
+            
+            if (!_.isEmpty(puckPanelsMap)) {
+                
+                var onSuccess = function (sender, samples) {
+                    if (samples) {
+                        var samplesMap = {};
+                        for (var i = 0 ; i < samples.length ; i++) {
+                            var sample = samples[i];
+                            if (samplesMap[sample.Container_containerId]){
+                                samplesMap[sample.Container_containerId].push(sample);
+                            } else {
+                                samplesMap[sample.Container_containerId] = [sample];
+                            }
+                        }
+                        _.each(samplesMap, function(samples, containerId) {
+                            puckPanelsMap[containerId].load(samples);
+                        });
+                    }
+                }
+
+                EXI.getDataAdapter({onSuccess : onSuccess}).mx.sample.getSamplesByContainerId(containerIds);
+            }
 		}
 	}
 };
 
-ParcelPanel.prototype.load = function(dewar) {
+ParcelPanelTest.prototype.load = function(dewar) {
 	this.dewar = dewar;
 	try {
 		/** Rendering pucks **/
@@ -88,7 +133,7 @@ ParcelPanel.prototype.load = function(dewar) {
 *
 * @method addPuckToDewar
 */
-ParcelPanel.prototype.addPuckToDewar = function() {
+ParcelPanelTest.prototype.addPuckToDewar = function() {
 	var _this = this;
 	var onSuccess = function(sender, puck){
 		_this.dewar.containerVOs.push(puck);
@@ -102,7 +147,7 @@ ParcelPanel.prototype.addPuckToDewar = function() {
 *
 * @method showCaseForm
 */
-ParcelPanel.prototype.showCaseForm = function() {
+ParcelPanelTest.prototype.showCaseForm = function() {
 	var _this = this;
 	/** Opens a window with the cas form **/
 	var caseForm = new CaseForm();
@@ -126,6 +171,7 @@ ParcelPanel.prototype.showCaseForm = function() {
 						text : 'Save',
 						handler : function() {
 							_this.onSavedClick.notify(caseForm.getDewar());
+                            _this.render();
 							window.close();
 						}
 					}, {
@@ -138,7 +184,7 @@ ParcelPanel.prototype.showCaseForm = function() {
 	window.show();
 };
 
-ParcelPanel.prototype._getTopButtons = function() {
+ParcelPanelTest.prototype._getTopButtons = function() {
 	var _this = this;
 	var actions = [];
 	
@@ -181,29 +227,31 @@ ParcelPanel.prototype._getTopButtons = function() {
 };
 
 
-ParcelPanel.prototype.getPanel = function() {
+ParcelPanelTest.prototype.getPanel = function() {
 	var _this = this;
+
 	this.panel = Ext.create('Ext.panel.Panel', {
-		layout 		: 'hbox',
+        title       : 'Parcel',
 		cls 		: "border-grid",
 		margin 		: 10,
 		height 		: this.height,
 		width 		: this.width,
-		autoScroll	: true,
+		autoScroll	: false,
 		items 		: [],
-		listeners : {
-			afterrender : function(component, eOpts) {
-						_this.render();
-			}
-	    }
+		// listeners : {
+		// 	afterrender : function(component, eOpts) {
+		// 				_this.render();
+		// 	}
+	    // }
 	});
-	
-	this.panel.addDocked({
+
+    this.panel.addDocked({
 		id 		: _this.id + 'tbar',
 		height 	: 45,
 		xtype 	: 'toolbar',
 		items 	: _this._getTopButtons(),
 		cls 	: 'exi-top-bar'
 	});
+
 	return this.panel;
 };

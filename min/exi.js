@@ -1683,12 +1683,24 @@ ShippingExiController.prototype.init = function() {
 		});
 		
 		Path.map("#/shipping/:shippingId/main").to(function() {
-			var mainView = new ShippingMainView();
+			var mainView = new ShippingMainViewTest();
 			EXI.addMainPanel(mainView);
 			mainView.load(this.params['shippingId']);
 		}).enter(this.setPageBackground);
 
 		Path.map("#/shipping/main").to(function() {
+			var mainView = new ShippingMainViewTest();
+			EXI.addMainPanel(mainView);
+			mainView.load();
+		}).enter(this.setPageBackground);
+
+		Path.map("#/shipping/:shippingId/main/old").to(function() {
+			var mainView = new ShippingMainView();
+			EXI.addMainPanel(mainView);
+			mainView.load(this.params['shippingId']);
+		}).enter(this.setPageBackground);
+
+		Path.map("#/shipping/main/old").to(function() {
 			var mainView = new ShippingMainView();
 			EXI.addMainPanel(mainView);
 			mainView.load();
@@ -1696,6 +1708,130 @@ ShippingExiController.prototype.init = function() {
 		
 };
 
+/**
+* Given a dustjs template and some data, it returns a panel containing a bootstrap grid
+*
+* @class BootstrapGrid
+* @return 
+*/
+function BootstrapGrid(args) {
+    this.id = BUI.id();
+    this.data = {};
+    this.width = 300;
+    this.height = 300;
+    this.template = "";
+    if (args) {
+        if (args.width) {
+            this.width = args.width;
+        }
+        if (args.height) {
+            this.height = args.height;
+        }
+        if (args.template) {
+            this.template = args.template;
+        }
+    }
+    
+    this.data.id = this.id;
+
+    this.rowSelected = new Event(this);
+}
+
+/**
+* Returns an EXT.panel.Panel containing the html of the grid and sets the click listeners
+*
+* @method getPanel
+* @return 
+*/
+BootstrapGrid.prototype.getPanel = function () {
+    var _this = this;
+
+    this.panel = Ext.create('Ext.panel.Panel', {
+        width : this.width,
+        autoScroll:true,
+        autoHeight :true,
+        maxHeight: this.height,
+        title : this.data.header,
+        items : [{html : this.getHTML()}]
+    });
+
+    this.panel.on('boxready', function() {
+        _this.setClickListeners();
+    });
+
+    return this.panel;
+};
+
+/**
+* Sets the click listeners
+*
+* @method setClickListeners
+* @return 
+*/
+BootstrapGrid.prototype.setClickListeners = function () {
+    var _this = this;
+
+    $('#bootstrap-table-' + this.id).unbind('click').on('click', '.clickable-row', function(event) {
+        $(this).addClass('active-step').siblings().removeClass('active-step');
+        _this.rowSelected.notify(event.target.innerText);
+    });
+
+};
+
+/**
+* Selects a row given its value
+*
+* @method selectRowByValue
+* @return 
+*/
+BootstrapGrid.prototype.selectRowByValue = function (value) {
+    var rowIndex = this.data.values.indexOf(value);
+    if (rowIndex >= 0) {
+        $("#row-" + rowIndex + "-" + this.id).addClass('active-step').siblings().removeClass('active-step');
+        this.rowSelected.notify($("#row-" + rowIndex + "-" + this.id).innerText);
+    }
+};
+
+/**
+* Deselects all rows
+*
+* @method deselectAll
+* @return 
+*/
+BootstrapGrid.prototype.deselectAll = function () {
+    $('#bootstrap-table-' + this.id).find('.clickable-row').removeClass("active-step");
+};
+
+/**
+* Loads and returns the html code of the grid
+*
+* @method getPanel
+* @return 
+*/
+BootstrapGrid.prototype.getHTML = function () {
+    var html = "";
+	dust.render(this.template, this.data, function(err, out){
+		html = out;
+	});
+
+    return "<div id='bootstrap-grid-" + this.id + "'>" + html + "</div>";
+};
+
+/**
+* Loads the data of the grid
+*
+* @method load
+* @return 
+*/
+BootstrapGrid.prototype.load = function (data) {
+    this.data = data;
+    this.data.id = this.id;
+    if ($("#bootstrap-grid" + this.id).length) {
+        this.panel.setTitle(data.header);
+        $("#bootstrap-grid" + this.id).html(this.getHTML());
+        this.setClickListeners();
+    }
+};
 function MainMenu(args) {
 	this.id = BUI.id();
 	this.loginButtonId = 'loginButton' + this.id;
@@ -4033,12 +4169,16 @@ ContainerSpreadSheet.prototype.load = function(puck){
 */
 function ParcelGrid(args) {
 	this.height = 100;
+	this.width = 100;
 	this.btnEditVisible = true;
 	this.btnRemoveVisible = true;
 
 	if (args != null) {
 		if (args.height != null) {
 			this.height = args.height;
+		}
+		if (args.width != null) {
+			this.width = args.width;
 		}
 		if (args.btnEditVisible != null) {
 			this.btnEditVisible = args.btnEditVisible;
@@ -4084,7 +4224,7 @@ ParcelGrid.prototype.load = function(shipment) {
 			_this.panel.setLoading();
 			dewar["sessionId"] = dewar.firstExperimentId;
 			dewar["shippingId"] = _this.shipment.shippingId;
-			var adapter = new DataAdapter();
+			
 			var onSuccess = function(sender, shipment) {				
 				_this.panel.setLoading(false);
 			};			
@@ -4092,10 +4232,10 @@ ParcelGrid.prototype.load = function(shipment) {
     }
    
 	for ( var i in this.dewars) {
-		var parcelForm = new ParcelPanel({
-			height : 340
+		var parcelForm = new ParcelPanelTest({
+			height : 500,
+			width : this.width - 40
 		});
-		
 		this.panel.insert(parcelForm.getPanel());
 		parcelForm.load(this.dewars[i]);
 		parcelForm.onSavedClick.attach(onSaved);
@@ -4151,12 +4291,13 @@ ParcelGrid.prototype.edit = function(dewar) {
 
 ParcelGrid.prototype.getPanel = function() {
 	var _this = this;
-
+	
 	this.panel = Ext.create('Ext.panel.Panel', {
 		cls : 'border-grid',
-		height : 800,
-		autoScroll : true
-
+		width : this.width,
+		autoScroll:true,
+        autoHeight :true,
+        maxHeight: this.height
 	});
 
 	this.panel.addDocked({
@@ -4603,22 +4744,30 @@ ShipmentForm.prototype.getPanel = function() {
 
 	if (this.panel == null) {
 		this.panel = Ext.create('Ext.form.Panel', {
+			layout: 'hbox',
+			margin : 10,
 			bodyPadding : 5,
 			cls : 'border-grid',
 			buttons : buttons,
 			items : [ 
 						{
-		      					xtype : 'requiredtextfield',
-		      					fieldLabel : 'Name',
-		      					allowBlank : false,
-		      					labelWidth : 200,
-		      					width : 400,
-		      					margin : "10 20 0 10",
-		      					name : 'shippingName',
-		      					id : _this.id + 'shippingName',
-		      					value : '',
-				        },
-		        		this.sessionComboBox,
+							xtype : 'container',
+							layout: 'vbox',
+							items: [
+										{
+												xtype : 'requiredtextfield',
+												fieldLabel : 'Name',
+												allowBlank : false,
+												labelWidth : 200,
+												width : 400,
+												margin : "10 20 0 10",
+												name : 'shippingName',
+												id : _this.id + 'shippingName',
+												value : '',
+										},
+										this.sessionComboBox
+							]
+						},
 					    {
 		    					xtype : 'textareafield',
 		    					name : 'comments',
@@ -4629,8 +4778,14 @@ ShipmentForm.prototype.getPanel = function() {
 		    					margin : "10 20 0 10",
 		    					width : 500,
 						},
-    	          		this.labContactsSendingCombo,
-        	          	this.labContactsReturnCombo
+						{
+							xtype : 'container',
+							layout: 'vbox',
+							items: [
+										this.labContactsSendingCombo,
+										this.labContactsReturnCombo
+							]
+						}
 		]
 		});
 	}
@@ -4647,6 +4802,7 @@ ShipmentForm.prototype.getPanel = function() {
 * @constructor
 */
 function ShippingMainView() {
+	debugger
 	MainView.call(this);
 	var _this = this;
 	
@@ -4724,6 +4880,70 @@ ShippingMainView.prototype.load = function(shippingId) {
 	}
 };
 
+
+/**
+* This main class deals with the creation and edition of shipments
+*
+* @class ShippingMainView
+* @constructor
+*/
+function ShippingMainViewTest() {
+	MainView.call(this);
+	var _this = this;
+
+    /**
+	* 
+	* @property shipmentForm
+	*/
+    this.shipmentForm = new ShipmentForm();
+	this.shipmentForm.onSaved.attach(function(sender, shipment){
+		location.hash = "#/proposal/shipping/nav?nomain";
+	});
+
+    /**
+	* 
+	* @property parcelGrid
+	*/
+	this.parcelGrid = new ParcelGrid({height : 580, width : 1585});
+	
+}
+
+ShippingMainViewTest.prototype.getPanel = function() {
+	
+    this.panel =  Ext.create('Ext.panel.Panel', {
+        layout: {
+            type: 'vbox',
+            align: 'center'
+        },
+        cls : 'border-grid',
+        items : [
+                    this.shipmentForm.getPanel(),
+                    this.parcelGrid.getPanel()
+        ]
+	});
+
+    return this.panel;
+};
+
+
+ShippingMainViewTest.prototype.load = function(shippingId) {
+	var _this = this;
+	this.shippingId = shippingId;
+	
+	if (shippingId == null){
+		Ext.getCmp(this.id + "grid").disable(true);
+	}
+	this.panel.setTitle("Shipment");
+	if (shippingId != null){
+		this.panel.setLoading();
+		var onSuccess = function(sender, shipment){
+			_this.shipmentForm.load(shipment);
+			_this.parcelGrid.load(shipment);
+			_this.panel.setLoading(false);
+		};
+		EXI.getDataAdapter({onSuccess : onSuccess}).proposal.shipping.getShipment(shippingId);
+	}
+};
 function WelcomeMainView() {
 	this.icon = '../images/icon/rsz_ic_home_black_24dp.png';
 	MainView.call(this);
@@ -5237,6 +5457,7 @@ ParcelPanel.prototype.render = function() {
 				var container = dewar.containerVOs[i];
 				/** Adding the puck layout **/
 				var puckPanel = new PuckPanel({height : 200});
+				debugger
 				this.panel.insert(puckPanel.getPanel());
 				puckPanel.load(container);
 				
@@ -5361,6 +5582,7 @@ ParcelPanel.prototype.getPanel = function() {
 		cls 		: "border-grid",
 		margin 		: 10,
 		height 		: this.height,
+		width 		: this.width,
 		autoScroll	: true,
 		items 		: [],
 		listeners : {
@@ -5368,29 +5590,6 @@ ParcelPanel.prototype.getPanel = function() {
 						_this.render();
 			}
 	    }
-//	,
-//		toolbar : [ {
-//						text : 'Save',
-//						handler : function() {
-//								var adapter = new DataAdapter();
-//								_this.panel.setLoading();
-//								var dewar = caseForm.getDewar();
-//								var onSuccess = (function(sender, shipment) {
-//									_this.load(shipment);
-//									window.close();
-//									_this.panel.setLoading(false);
-//								});
-//								dewar["sessionId"] = dewar.firstExperimentId;
-//								dewar["shippingId"] = _this.shipment.shippingId;
-//								EXI.getDataAdapter({onSuccess : onSuccess}).proposal.dewar.saveDewar(_this.shipment.shippingId, dewar);
-//						}
-//					}, 
-//					{
-//							text : 'Cancel',
-//							handler : function() {
-//								window.close();
-//							}
-//					}]
 	});
 	
 	this.panel.addDocked({
@@ -5400,6 +5599,254 @@ ParcelPanel.prototype.getPanel = function() {
 		items 	: _this._getTopButtons(),
 		cls 	: 'exi-top-bar'
 	});
+	return this.panel;
+};
+
+
+/**
+* This is a form  for parcels. It includes all items includes in a parcel. Include pucks
+*
+* @class ParcelPanelTest
+* @constructor
+*/
+function ParcelPanelTest(args) {
+	this.id = BUI.id();
+	this.height = 500;
+	this.width = 500;
+
+	this.isSaveButtonHidden = false;
+	this.isHidden = false;
+
+	if (args != null) {
+		if (args.height != null) {
+			this.height = args.height;
+		}
+		if (args.width != null) {
+			this.width = args.width;
+		}
+	}
+	
+	this.onSavedClick = new Event(this);
+}
+
+/**
+* It inserts a panel into the this.panel with the template parcelformsummary
+*
+* @method addHeaderPanel
+*/
+ParcelPanelTest.prototype.addHeaderPanel = function() {
+	var html = "No information";
+	dust.render("parcel.header.shipping.template", this.dewar, function(err, out){
+		html = out;
+    });
+    
+	this.panel.add(0,
+				{
+					xtype 	: 'container',
+					width	: this.width - 50,
+					border : 1,
+					padding : 5,
+					items 	: [	{html : html}
+				
+					]
+				}
+	);
+};
+
+ParcelPanelTest.prototype.render = function() {
+    debugger
+	var dewar = this.dewar;
+	this.panel.removeAll();
+	this.addHeaderPanel();
+	
+	if (dewar != null){
+		if (dewar.containerVOs != null){
+
+            var pucksPanel = Ext.create('Ext.panel.Panel', {
+                layout      : 'hbox',
+                cls 		: "border-grid",
+                margin 		: 10,
+                width       : this.width - 50,
+                height       : this.height - 250,
+                autoScroll : true,
+                items       : []
+            });
+
+            this.panel.add(pucksPanel);
+			/** Sorting container by id **/
+			dewar.containerVOs.sort(function(a, b){return a.containerId - b.containerId;});
+            var puckPanelsMap = {};
+            var containerIds = [];
+            
+			for (var i = 0; i< dewar.containerVOs.length; i++){
+				var container = dewar.containerVOs[i];
+                var puckPanel = new PuckParcelPanel({radius : 80, containerId : container.containerId});
+                puckPanelsMap[container.containerId] = puckPanel;
+                containerIds.push(container.containerId);
+                pucksPanel.insert(puckPanel.getPanel());
+			}
+            
+            if (!_.isEmpty(puckPanelsMap)) {
+                
+                var onSuccess = function (sender, samples) {
+                    if (samples) {
+                        var samplesMap = {};
+                        for (var i = 0 ; i < samples.length ; i++) {
+                            var sample = samples[i];
+                            if (samplesMap[sample.Container_containerId]){
+                                samplesMap[sample.Container_containerId].push(sample);
+                            } else {
+                                samplesMap[sample.Container_containerId] = [sample];
+                            }
+                        }
+                        _.each(samplesMap, function(samples, containerId) {
+                            puckPanelsMap[containerId].load(samples);
+                        });
+                    }
+                }
+
+                EXI.getDataAdapter({onSuccess : onSuccess}).mx.sample.getSamplesByContainerId(containerIds);
+            }
+		}
+	}
+};
+
+ParcelPanelTest.prototype.load = function(dewar) {
+	this.dewar = dewar;
+	try {
+		/** Rendering pucks **/
+		this.render();
+	}
+	catch(e){
+		console.log(e);
+	}
+};
+
+/**
+* It inserts a new puck into the dewar and reloads the widget
+*
+* @method addPuckToDewar
+*/
+ParcelPanelTest.prototype.addPuckToDewar = function() {
+	var _this = this;
+	var onSuccess = function(sender, puck){
+		_this.dewar.containerVOs.push(puck);
+		_this.load(_this.dewar);
+	};
+	EXI.getDataAdapter({onSuccess : onSuccess}).proposal.shipping.addPuck(this.dewar.dewarId, this.dewar.dewarId);
+};
+
+/**
+* It displays a window with a case form
+*
+* @method showCaseForm
+*/
+ParcelPanelTest.prototype.showCaseForm = function() {
+	var _this = this;
+	/** Opens a window with the cas form **/
+	var caseForm = new CaseForm();
+	var window = Ext.create('Ext.window.Window', {
+	    title: 'Parcel',
+	    height: 450,
+	    width: 600,
+	    modal : true,
+	    layout: 'fit',
+	    items: [
+	            	caseForm.getPanel(_this.dewar)
+	    ],
+	    listeners : {
+			afterrender : function(component, eOpts) {
+				if (_this.puck != null){
+						_this.render(_this.puck);
+				}
+			}
+	    },
+	    buttons : [ {
+						text : 'Save',
+						handler : function() {
+							_this.onSavedClick.notify(caseForm.getDewar());
+                            _this.render();
+							window.close();
+						}
+					}, {
+						text : 'Cancel',
+						handler : function() {
+							window.close();
+						}
+					} ]
+	});
+	window.show();
+};
+
+ParcelPanelTest.prototype._getTopButtons = function() {
+	var _this = this;
+	var actions = [];
+	
+	
+	actions.push(this.code);
+	actions.push(this.status);
+	actions.push(this.storageCondition);
+	
+	actions.push(Ext.create('Ext.Action', {
+		icon : '../images/icon/edit.png',
+		text : 'Edit',
+		disabled : false,
+		handler : function(widget, event) {
+					_this.showCaseForm();
+		}
+	}));
+	
+	actions.push(Ext.create('Ext.Action', {
+		icon : '../images/print.png',
+		text : 'Print Labels',
+		disabled : false,
+		handler : function(widget, event) {
+			var dewarId = _this.dewar.dewarId;
+			var url = EXI.getDataAdapter().proposal.shipping.getDewarLabelURL(dewarId, dewarId);
+			location.href = url;
+			return;
+		}
+	}));
+	
+	actions.push(Ext.create('Ext.Action', {
+		icon : '../images/icon/add.png',
+		text : 'Add puck',
+		disabled : false,
+		handler : function(widget, event) {
+			_this.addPuckToDewar();
+		}
+	}));
+	
+	return actions;
+};
+
+
+ParcelPanelTest.prototype.getPanel = function() {
+	var _this = this;
+
+	this.panel = Ext.create('Ext.panel.Panel', {
+        title       : 'Parcel',
+		cls 		: "border-grid",
+		margin 		: 10,
+		height 		: this.height,
+		width 		: this.width,
+		autoScroll	: false,
+		items 		: [],
+		// listeners : {
+		// 	afterrender : function(component, eOpts) {
+		// 				_this.render();
+		// 	}
+	    // }
+	});
+
+    this.panel.addDocked({
+		id 		: _this.id + 'tbar',
+		height 	: 45,
+		xtype 	: 'toolbar',
+		items 	: _this._getTopButtons(),
+		cls 	: 'exi-top-bar'
+	});
+
 	return this.panel;
 };
 
@@ -5545,6 +5992,108 @@ ProposalGrid.prototype.getPanel = function() {
 
 
 
+
+/**
+* Renders a panel that contains a puck widget and two buttons
+*
+* @class PuckParcelPanel
+* @constructor
+*/
+function PuckParcelPanel(args) {
+	this.radius = 200;
+    this.containerId = 0;
+    this.data = {puckType : 1, 
+                mainRadius : this.radius - 20, 
+                x : 20, 
+                y : 20, 
+                enableMouseOver : true
+    };
+
+	if (args != null) {
+		if (args.radius != null) {
+			this.radius = args.radius;
+            this.data.mainRadius = this.radius - 20;
+		}
+        if (args.containerId != null) {
+			this.containerId = args.containerId;
+		}
+        if (args.puckType != null) {
+			this.data.puckType = args.puckType;
+		}
+	}
+	
+};
+
+PuckParcelPanel.prototype.getPanel = function () {
+
+    this.puck = new PuckWidgetContainer(this.data);
+
+    this.puckPanel = Ext.create('Ext.panel.Panel', {
+        width : 2*this.radius,
+        height : 2*this.radius,
+        // cls : 'border-grid',
+        items : [this.puck.getPanel()]
+	});
+
+    this.panel = Ext.create('Ext.panel.Panel', {
+        // cls : 'border-grid',
+        width : 2*this.radius,
+        height : 2*this.radius + 50,
+        items : [this.puckPanel,
+                this.getButtons()]
+	});
+
+    return this.panel;
+};
+
+PuckParcelPanel.prototype.load = function (samples) {
+    
+    if (container.capacity != 16) {
+        this.data.puckType = 2;
+    }
+    this.puck = new PuckWidgetContainer(this.data);
+    this.puckPanel.removeAll();
+    this.puckPanel.add(this.puck.getPanel());
+    
+    this.puck.loadSamples(samples);
+};
+
+/**
+* Returns a panel with the buttons
+*
+* @class getButtons
+* @return A panel with the buttons
+*/
+PuckParcelPanel.prototype.getButtons = function () {
+
+    this.buttons = Ext.create('Ext.panel.Panel', {
+        layout: {
+            type: 'hbox',
+            align: 'middle',
+            pack: 'center'
+        },
+        width : this.width,
+        height : 40,
+        items : [
+                {
+                xtype: 'button',
+                margin : 5,
+                text : 'Edit'
+            },{
+                xtype: 'button',
+                margin : 5,
+                text : 'Remove'
+            }
+        ]
+	});
+
+    // var html = "";
+    // dust.render("buttons.puck.parcel.shipping.template", [], function(err, out){
+	// 	html = out;
+    // });
+
+    return this.buttons;
+};
 
 function SessionGrid(args) {
 	this.height = 500;

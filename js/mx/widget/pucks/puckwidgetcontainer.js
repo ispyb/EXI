@@ -79,6 +79,10 @@ PuckWidgetContainer.prototype.load = function (data) {
 	this.puckWidget.load(data);
 }
 
+PuckWidgetContainer.prototype.loadSamples = function (samples) {
+	this.puckWidget.loadSamples(samples);
+}
+
 PuckWidgetContainer.prototype.focus = function (location, bool) {
 	this.puckWidget.focus(location, bool);
 }
