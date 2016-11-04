@@ -90,8 +90,13 @@ MXDataCollectionGrid.prototype.getToolBar = function() {
                         if (e.getKey() == e.ENTER) {
                             _this.filter = field.getValue();
 
-                            if (_this.renderingType == "PLATES"){                              
-                                _this.platesDataCollectionGrid.select(_this.filterBy(Ext.getCmp(_this.id + "_search").getValue()));
+                            if (_this.renderingType == "PLATES"){     
+                                if (Ext.getCmp(_this.id + "_search").getValue() != "") {                        
+                                    _this.platesDataCollectionGrid.select(_this.filterBy(Ext.getCmp(_this.id + "_search").getValue()));
+                                } else {
+                                    Ext.getCmp(_this.id + "_found").setText("");
+                                    _this.reloadData(_this.dataCollectionGroup);
+                                }
                             } else {
                                 _this.reloadData(_this.filterBy(field.getValue()));
                             }

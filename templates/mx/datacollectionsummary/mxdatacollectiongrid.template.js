@@ -20,9 +20,22 @@
                 <li><a data-toggle="tab" href="#dc_{.DataCollectionGroup_dataCollectionGroupId}">Data Collections <span class="badge" style='background-color:#337ab7;'>{.totalNumberOfDataCollections}</span></a></li>
                <li><a data-toggle="tab" href="#sa_{.DataCollection_dataCollectionId}">Sample</a></li>
                {!<li><a data-toggle="tab" href="#df_{.DataCollection_dataCollectionId}">Diffraction Plan</a></li>!}
-               <li><a data-toggle="tab" href="#re_{.DataCollection_dataCollectionId}">Results  <span class="badge" style='background-color:#337ab7;'>{.resultsCount}</span></a></li>
-               <li><a data-toggle="tab" href="#wf_{.DataCollection_dataCollectionId}">Workflow  <span class="badge" style='background-color:#337ab7;'>{.workflows.length}</span></a></li>
-           
+               {@gt key=resultsCount   value="0"}
+                    <li><a data-toggle="tab" href="#re_{.DataCollection_dataCollectionId}">Results  <span class="badge" style='background-color:#337ab7;'>{.resultsCount}</span></a></li>
+                {:else}
+                     <li class="disabled"><a data-toggle="tab"> Results</a></li>
+               {/gt}
+               {@gt key=workflows.length   value="0"}
+                    <li><a data-toggle="tab" href="#wf_{.DataCollection_dataCollectionId}">Workflow  <span class="badge" style='background-color:#337ab7;'>{.workflows.length}</span></a></li>
+               {:else}
+                     <li class="disabled"><a data-toggle="tab">Workflow</a></li>
+                {/gt}
+                {@gt key=hasPhasing   value="0"}
+                    <li><a data-toggle="tab" href="#ph_{.DataCollection_dataCollectionId}">Phasing</a></li>
+               {:else}
+                     <li class="disabled"><a data-toggle="tab">Phasing</a></li>
+                {/gt}
+             
             </ul>
          </div>
       </div>
@@ -101,6 +114,12 @@
                <div class="container-fluid">
                    <div class="col-xs-12 col-md-12">
                                {.DataCollectionGroup_comments}
+                                {?SpaceGroupModelResolvedByPhasing}
+                                    <div class="alert alert-success">
+                                        Automatic SAD appears to have worked with the space group {.SpaceGroupModelResolvedByPhasing} 
+                                    </div>
+                                {/SpaceGroupModelResolvedByPhasing}
+                               
                     </div>
                </div>
                
@@ -214,7 +233,7 @@
                 </div>
             </div>
          </div>
-         
+        {@gt key=resultsCount   value="0"}
         <div id="re_{.DataCollection_dataCollectionId}" class="tab-pane fade">
             <div class="container-fluid">
                <div class="row">
@@ -224,18 +243,29 @@
                 </div>
             </div>
          </div>
-       
-          <div id="wf_{.DataCollection_dataCollectionId}" class="tab-pane fade">
-            <div class="container-fluid">
-               <div class="row">
-                    <div class="col-xs-12 col-md-12" id="__wf_{.DataCollection_dataCollectionId}">
-                            <img style='display:block;margin-left: auto;margin-right: auto;height:150px;width:150px;'src='../images/loading-animation.gif' />                                           
+         {/gt} 
+         {@gt key=workflows.length   value="0"}
+            <div id="wf_{.DataCollection_dataCollectionId}" class="tab-pane fade">
+                <div class="container-fluid">
+                <div class="row">
+                        <div class="col-xs-12 col-md-12" id="__wf_{.DataCollection_dataCollectionId}">
+                                <img style='display:block;margin-left: auto;margin-right: auto;height:150px;width:150px;'src='../images/loading-animation.gif' />                                           
+                        </div>
                     </div>
                 </div>
             </div>
-         </div>
-           
-         
+          {/gt} 
+          {@gt key=hasPhasing   value=0}
+            <div id="ph_{.DataCollection_dataCollectionId}" class="tab-pane fade">
+                <div class="container-fluid">
+                <div class="row">
+                        <div class="col-xs-12 col-md-12" id="__wf_{.DataCollection_dataCollectionId}">
+                                <img style='display:block;margin-left: auto;margin-right: auto;height:150px;width:150px;'src='../images/loading-animation.gif' />                                           
+                        </div>
+                    </div>
+                </div>
+            </div>  
+         {/gt} 
       </div>
    </div>
 </div>

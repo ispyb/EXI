@@ -227,7 +227,6 @@ CaseGrid.prototype._getColumns = function() {
 			flex : 0.5,
 			renderer : function(grid, opts, record){
 				var deserialized = JSON.parse(record.data.serialized);
-				debugger
 				var dewarId = deserialized[0].Dewar_dewarId;
 				var items = [];
 				

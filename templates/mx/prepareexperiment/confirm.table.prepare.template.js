@@ -1,14 +1,8 @@
 <div class="container-fluid">
     {#pucks}
-    <hr>
     <div class="row">
         <div class="col-xs-6 col-md-6">
             <table class='table-sm table-condensed '>
-            <thead>
-                <tr>
-                    <th  colspan=2 style='padding:0 15px 0 15px;'> </th>
-                </tr>
-            </thead>
             <tbody>
                 <tr>
                     <td  style='padding:0 15px 0 15px;'>Container Code:</td>
@@ -25,7 +19,7 @@
             </tbody>
             </table>
         </div>
-        {!
+        
         <div class="col-xs-6 col-md-6">
             <table class='table-sm table-condensed '>
             <thead>
@@ -49,7 +43,7 @@
             </tbody>
             </table>
         </div>
-        !}
     </div>
+    <hr>
    {/pucks}
 </div>

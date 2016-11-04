@@ -6,10 +6,14 @@
  */
 function ShipmentForm(args) {
 	this.id = BUI.id();
+	this.width = 600;
 
 	if (args != null) {
 		if (args.creationMode != null) {
 			this.creationMode = args.creationMode;
+		}
+		if (args.width != null) {
+			this.width = args.width;
 		}
 	}
 	
@@ -207,22 +211,31 @@ ShipmentForm.prototype.getPanel = function() {
 
 	if (this.panel == null) {
 		this.panel = Ext.create('Ext.form.Panel', {
+			layout: 'hbox',
+			width : this.width,
+			margin : 10,
 			bodyPadding : 5,
 			cls : 'border-grid',
 			buttons : buttons,
 			items : [ 
 						{
-		      					xtype : 'requiredtextfield',
-		      					fieldLabel : 'Name',
-		      					allowBlank : false,
-		      					labelWidth : 200,
-		      					width : 400,
-		      					margin : "10 20 0 10",
-		      					name : 'shippingName',
-		      					id : _this.id + 'shippingName',
-		      					value : '',
-				        },
-		        		this.sessionComboBox,
+							xtype : 'container',
+							layout: 'vbox',
+							items: [
+										{
+												xtype : 'requiredtextfield',
+												fieldLabel : 'Name',
+												allowBlank : false,
+												labelWidth : 200,
+												width : 400,
+												margin : "10 20 0 10",
+												name : 'shippingName',
+												id : _this.id + 'shippingName',
+												value : '',
+										},
+										this.sessionComboBox
+							]
+						},
 					    {
 		    					xtype : 'textareafield',
 		    					name : 'comments',
@@ -233,8 +246,14 @@ ShipmentForm.prototype.getPanel = function() {
 		    					margin : "10 20 0 10",
 		    					width : 500,
 						},
-    	          		this.labContactsSendingCombo,
-        	          	this.labContactsReturnCombo
+						{
+							xtype : 'container',
+							layout: 'vbox',
+							items: [
+										this.labContactsSendingCombo,
+										this.labContactsReturnCombo
+							]
+						}
 		]
 		});
 	}

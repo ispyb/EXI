@@ -2,7 +2,6 @@ function PuckPanel(args) {
 	this.id = BUI.id();
 	this.height = 100;
 	this.width = this.height;
-
 	this.tbar = true;
 	
 	if (args != null) {
