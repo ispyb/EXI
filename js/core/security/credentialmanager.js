@@ -48,16 +48,51 @@ CredentialManager.prototype.getTechniqueByBeamline = function(beamlineName){
 
 };
 
-/** Returns an string with the name of all the beamlines **/
-CredentialManager.prototype.getBeamlines = function(){
+/**
+*  Returns an string with the name of all the beamlines
+*
+* @method getBeamlineNames
+* @return 
+*/
+CredentialManager.prototype.getBeamlineNames = function(){   
 	var connections = this.getConnections();
-  var beamlines = [];
+    var beamlines = [];
 	for (var i = 0; i < connections.length; i++) {
-      $.merge(beamlines, connections[i].beamlines.MX);
-      $.merge(beamlines, connections[i].beamlines.SAXS);
+      beamlines =_.concat(_.keys(_.keyBy(connections[i].beamlines.SAXS, "name")), _.keys(_.keyBy(connections[i].beamlines.MX, "name")))      
 	}
 	return beamlines;
+};
 
+/**
+*  Returns an array with all the configuration for every beamline
+*
+* @method getBeamlines
+* @return 
+*/
+CredentialManager.prototype.getBeamlines = function(){   
+	var connections = this.getConnections();
+    var beamlines = [];
+	for (var i = 0; i < connections.length; i++) {
+      beamlines =_.concat(connections[i].beamlines.SAXS, connections[i].beamlines.MX);     
+	}
+	return beamlines;
+};
+
+
+/**
+*  Returns an array with the name of all the beamlines of the selected technique
+*
+* @method getBeamlinesByTechnique
+* @param technique [MX, SAXS]
+* @return 
+*/
+CredentialManager.prototype.getBeamlinesByTechnique = function(technique){   
+	var connections = this.getConnections();
+    var beamlines = [];
+	for (var i = 0; i < connections.length; i++) {        
+        beamlines =_.concat(connections[i].beamlines[technique]);     
+	}
+	return beamlines;
 };
 
 CredentialManager.prototype.getConnections = function(){

@@ -1,5 +1,5 @@
 /**
-* Abstract class for creating a puck widget
+* Extends the PuckWidget class for a UniPuck
 *
 * @class UniPuckWidget
 * @constructor
@@ -13,7 +13,7 @@ function UniPuckWidget(args){
 
 	this.data = this.parseData(this.data);
 	this.capacity = 16;
-}
+};
 
 UniPuckWidget.prototype.getPanel = PuckWidget.prototype.getPanel;
 UniPuckWidget.prototype.load = PuckWidget.prototype.load;
@@ -23,7 +23,15 @@ UniPuckWidget.prototype.render = PuckWidget.prototype.render;
 UniPuckWidget.prototype.findCellIndexById = PuckWidget.prototype.findCellIndexById;
 UniPuckWidget.prototype.loadSamples = PuckWidget.prototype.loadSamples;
 UniPuckWidget.prototype.emptyAll = PuckWidget.prototype.emptyAll;
+UniPuckWidget.prototype.disableAllCells = PuckWidget.prototype.disableAllCells;
+UniPuckWidget.prototype.allowAllCells = PuckWidget.prototype.allowAllCells;
 
+/**
+* Parses the data
+*
+* @method parseData
+* @return {Object} data The data correctly parsed
+*/
 UniPuckWidget.prototype.parseData = function (data) {
 	var n = 5;
 	var marginPercent = 0.8;
@@ -39,5 +47,3 @@ UniPuckWidget.prototype.parseData = function (data) {
 	
 	return data;
 };
-
-
