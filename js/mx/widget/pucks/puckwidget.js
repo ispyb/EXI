@@ -71,7 +71,7 @@ function PuckWidget(args){
 	this.onClick = new Event(this);
 	this.onMouseOver = new Event(this);
 	this.onMouseOut = new Event(this);
-}
+};
 
 /**
 * Add a certain number of cell objects to the data following a circle.
@@ -102,8 +102,7 @@ PuckWidget.prototype.addCirclePathCells = function (data, n, marginPercent, dist
 		data.cells.push(newCell);
 	}
 	return data;
-	
-}
+};
 
 PuckWidget.prototype.getPanel = function () {
 	var html = "";
@@ -125,13 +124,16 @@ PuckWidget.prototype.emptyAll = function () {
 		this.render(this.data.cells[cellIndex].location,true);
 	}
 	this.isEmpty = true;
-}
+	this.containerId = 0;
+	$("#" + this.id).removeClass("puck-error");
+};
 
 /**
 * Load sample data to the puck given the result of sample query by containerId
 *
 * @method loadSamples
 * @param {Object} samples Result of the sample query by containerId
+* @param {Integer} selectedLocation Optional parameter for having a selected cell
 */
 PuckWidget.prototype.loadSamples = function (samples, selectedLocation) {
 	var cells = [];
@@ -161,8 +163,7 @@ PuckWidget.prototype.loadSamples = function (samples, selectedLocation) {
 		});
 	}
 	this.load(cells);
-}
-
+};
 
 /**
 * Load sample data to the puck given that the data is correctly parsed
@@ -250,6 +251,13 @@ PuckWidget.prototype.load = function (data) {
 	}
 };
 
+/**
+* Focus or unfocus one cell according to a boolean and its location 
+*
+* @method focus
+* @param {Integer} location The location of the cell on the puck
+* @param {Boolean} bool Whether or not to focus the cell
+*/
 PuckWidget.prototype.focus = function (location, bool) {
 	if (bool){
 		$("#" + this.id + "-" + location).attr("class", "cell_focus");
@@ -257,10 +265,17 @@ PuckWidget.prototype.focus = function (location, bool) {
 	} else {
 		this.render(location,true);
 	}
-}
+};
 
+/**
+* Sets the style classes of the cell on a given location
+*
+* @method render
+* @param {Integer} location The location of the cell on the puck
+*/
 PuckWidget.prototype.render = function (location) {
 	var cellIndex = this.findCellIndexById(this.id + "-" + location);
+        
 	switch (this.data.cells[cellIndex].state) {
 		case "FILLED":
 			$("#" + this.id + "-" + location).attr("class","cell_filled");
@@ -289,14 +304,47 @@ PuckWidget.prototype.render = function (location) {
 			break;
 	}
 	if (this.data.cells[cellIndex].selected) {
-		$("#" + this.id + "-" + location).addClass("cell_selected")
+		$("#" + this.id + "-" + location + "-inner").addClass("cell_selected");
 	}
-}
+};
 
+/**
+* Returns the cell Index in the data of the puck given its id
+*
+* @method findCellIndexById
+* @param {Integer} id The id of the cell
+* @return The cell Index in the data of the puck
+*/
 PuckWidget.prototype.findCellIndexById = function (id) {
 	for (cellIndex in this.data.cells) {
 		if (this.data.cells[cellIndex].id == id){
 			return cellIndex;
 		}
 	}
-}
+};
+
+/**
+* Adds the disabled class to each cell
+*
+* @method disableAllCells
+* @return
+*/
+PuckWidget.prototype.disableAllCells = function () {
+	for (var i = 0 ; i < this.data.cells.length ; i++) {
+		var cell = this.data.cells[i];
+		$("#" + cell.id).addClass("cell-disabled");
+	}
+};
+
+/**
+* Removes the disabled class to each cell
+*
+* @method allowAllCells
+* @return
+*/
+PuckWidget.prototype.allowAllCells = function () {
+	for (var i = 0 ; i < this.data.cells.length ; i++) {
+		var cell = this.data.cells[i];
+		$("#" + cell.id).removeClass("cell-disabled");
+	}
+};

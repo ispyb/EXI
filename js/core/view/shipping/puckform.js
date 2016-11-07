@@ -28,6 +28,7 @@ function PuckForm(args) {
 		
 	});*/
 	
+	this.onRemoved = new Event(this);
 	this.onSaved = new Event(this);
 }
 
@@ -98,7 +99,8 @@ PuckForm.prototype.removePuck = function() {
 	var _this = this;
 	this.panel.setLoading();
 	var onSuccess = function(sender, data){
-		
+		_this.panel.setLoading(false);
+        _this.onRemoved.notify(containerId);
 	};
 	var containerId = this.puck.containerId;
 	EXI.getDataAdapter({onSuccess: onSuccess}).proposal.shipping.removeContainerById(containerId,containerId,containerId );
@@ -122,7 +124,7 @@ PuckForm.prototype.save = function() {
 	var onSuccess = function(sender, puck){
 		_this.panel.setLoading(false);
 		_this.load(puck);
-		_this.onSaved.notify();
+		_this.onSaved.notify(puck);
 	};
 	EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.shipping.saveContainer(this.puck.containerId, this.puck.containerId, this.puck.containerId, puck);
 };

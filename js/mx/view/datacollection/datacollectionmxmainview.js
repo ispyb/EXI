@@ -10,8 +10,8 @@ function DataCollectionMxMainView() {
 	var _this = this;
 	
 	this.genericDataCollectionPanel = new MXDataCollectionGrid();
-    this.energyScanGrid = new EnergyScanGrid();
-    this.xfeScanGrid = new XFEScanGrid();
+        this.energyScanGrid = new EnergyScanGrid();
+        this.xfeScanGrid = new XFEScanGrid();
 }
 
 DataCollectionMxMainView.prototype.getPanel = MainView.prototype.getPanel;

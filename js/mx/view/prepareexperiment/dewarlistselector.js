@@ -6,13 +6,16 @@
 */
 function DewarListSelectorGrid(args){
     this.height = 600;
+    this.width = 1000;
     if (args != null){
-        if (args.height  != null){
+        if (args.height){
             this.height = args.height;
-            
+        }
+        if (args.width){
+            this.width = args.width;
         }
     }
-    
+
     this.filterByDate = true;
     
     this.onSelect = new Event(this);
@@ -22,8 +25,7 @@ function DewarListSelectorGrid(args){
 
 
 /**
-* My method description.  Like other pieces of your comment blocks, 
-* this can span multiple lines.
+* Loads a set if shipments
 *
 * @method load
 * @param {Object} dewars Array of containers
@@ -106,29 +108,28 @@ DewarListSelectorGrid.prototype.getPanel = function(){
     var _this = this;
    
     this.tbar = Ext.create('Ext.toolbar.Toolbar', {
-    
-    items: [
-       
-        {
-            xtype       : 'checkboxfield',
-            boxLabel    : 'Display only shipments scheduled for future sessions',
-            checked     : this.filterByDate,
-            listeners : {
-                change : function( cb, newValue, oldValue, eOpts ){
-                    _this.filterByDate = newValue;
-                    _this.load(_this.dewars);
+        items: [
+            {
+                xtype       : 'checkboxfield',
+                boxLabel    : 'Display only shipments scheduled for future sessions',
+                checked     : this.filterByDate,
+                listeners : {
+                    change : function( cb, newValue, oldValue, eOpts ){
+                        _this.filterByDate = newValue;
+                        _this.load(_this.dewars);
+                    }
+                    
                 }
-                
             }
-        }
-    ]
+        ]
     });
 
     this.panel = Ext.create('Ext.grid.Panel', {
             title: 'Select dewars',
             store: this.getStore(),
-            cls : 'border-grid',           
+            // cls : 'border-grid',           
             height : this.height, 
+            width : this.width,  
             flex : 0.5, 
             tbar : this.tbar,                 
             margin : 5,
@@ -136,7 +137,7 @@ DewarListSelectorGrid.prototype.getPanel = function(){
                 {
                     text    : 'Shipment',
                     columns : [
-                         { text: 'Name',  dataIndex: 'shippingName', width: 150 },
+                         { text: 'Name',  dataIndex: 'shippingName', flex : 1 },
                          { text: 'Status',  dataIndex: 'shippingStatus', flex: 1 },
                          { text: 'Created on',  dataIndex: 'creationDate', flex: 1,   hidden : true,
                             renderer : function(grid, a, record){
@@ -145,8 +146,7 @@ DewarListSelectorGrid.prototype.getPanel = function(){
                                 }     
                                 
                             } 
-                        },
-                                                 
+                        },                     
                     ]                                         
                 },
                 {
@@ -176,45 +176,33 @@ DewarListSelectorGrid.prototype.getPanel = function(){
                 {
                     xtype: 'actioncolumn',
                     flex : 0.3,
-                    items: [
-                               
+                    items: [                               
                                  {
                                     icon: '../images/icon/add.png',
                                     handler: function (grid, rowIndex, colIndex) {
-                                        
                                             grid.getSelectionModel().select(rowIndex);
-                                            
                                             _this.onSelect.notify(_this.store.getAt(rowIndex).data);
                                     },
                                      isDisabled : function(view, rowIndex, colIndex, item, record) {
-                                            // Returns true if 'editable' is false (, null, or undefined)
                                             return record.data.shippingStatus == "processing";
                                     }
-                                 }
-                                   
-                            
+                                 }                                                               
                     ]
                 },
                   {
                     xtype: 'actioncolumn',
                      flex : 0.3,
-                    items: [
-                              
+                    items: [                              
                                  {
                                     icon: '../images/icon/ic_highlight_remove_black_48dp.png',
-                                    handler: function (grid, rowIndex, colIndex) {
-                                        
-                                            grid.getSelectionModel().select(rowIndex);
-                                            
+                                    handler: function (grid, rowIndex, colIndex) {                                        
+                                            grid.getSelectionModel().select(rowIndex);                                            
                                             _this.onSelect.notify(_this.store.getAt(rowIndex).data);
                                     },
-                                     isDisabled : function(view, rowIndex, colIndex, item, record) {
-                                            // Returns true if 'editable' is false (, null, or undefined)
+                                     isDisabled : function(view, rowIndex, colIndex, item, record) {                                            
                                             return record.data.shippingStatus != "processing";
                                     }
                                  }
-                                   
-                            
                     ]
                 }
             ],
@@ -229,6 +217,5 @@ DewarListSelectorGrid.prototype.getPanel = function(){
                 }
 	    	},
     });
-    return this.panel;
-    
+    return this.panel;    
 };

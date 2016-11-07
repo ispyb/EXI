@@ -101,11 +101,11 @@ SessionGrid.prototype.getToolbar = function(sessions) {
                     _this.filterByBeamline(_this.beamlineFilter);
     };
             
-    for (var i =0; i<EXI.credentialManager.getBeamlines().length; i++){
+    for (var i =0; i<EXI.credentialManager.getBeamlineNames().length; i++){
         items.push({           
                 xtype: 'checkbox',
-                boxLabel : EXI.credentialManager.getBeamlines()[i],
-                name : EXI.credentialManager.getBeamlines()[i],
+                boxLabel : EXI.credentialManager.getBeamlineNames()[i],
+                name : EXI.credentialManager.getBeamlineNames()[i],
                 handler : myHandler 
             
         });

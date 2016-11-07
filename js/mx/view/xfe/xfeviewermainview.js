@@ -108,6 +108,7 @@ XfeViewerMainView.prototype.getGrid = function() {
 * @method setXColumn
 */
 XfeViewerMainView.prototype.setXColumn = function(labelName, selected) {
+      
     var label = _.filter(this.data.labels, function(o){ return o.name == labelName;});
     if (label){
         /** As X only can be one we set all x to false */
@@ -255,7 +256,7 @@ XfeViewerMainView.prototype.parseData = function() {
    
     /** We need first to clone in order to not touch the original data */
     var duplicatedData = _.cloneDeep(this.data.data);
-    
+   
     /** Getting the label X and data X */
     var labelX = _.filter(this.data.labels, function(o){ return o.x;})[0];
     var dataX =  this.getDataColumn(duplicatedData, [_.indexOf(this.data.labels, labelX)]);
@@ -404,7 +405,7 @@ XfeViewerMainView.prototype.plot = function() {
                 };
                 /** Parsing data it means remove labels, split by , and convert to number */
                 this.data.data = _.map(_.slice(lines, 1, lines.length - 1), convertToNumber);
-                
+                debugger
                 /** Fills the labels grid */
                 try {
                     
@@ -417,6 +418,7 @@ XfeViewerMainView.prototype.plot = function() {
                 try {
                     
                     this.renderPlot( this.data.labels,  this.data.data);
+                  
                 }
                 catch (e) {
                     EXI.setError(e.message);
@@ -437,6 +439,8 @@ XfeViewerMainView.prototype.load = function(xfeFluorescenceSpectrumId) {
     var _this = this;
     this.panel.setTitle("XRF Viewer");
     this.xfeFluorescenceSpectrumId = xfeFluorescenceSpectrumId;
+  
     this.plot();
+
 
 };

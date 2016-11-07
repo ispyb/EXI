@@ -63,7 +63,42 @@ var ExtISPyB ={
                'BM29'
             ],
             MX:[
-               "ID23-1","ID23-2","ID29","ID30A-1","ID30A-2","ID30A-3","ID30B","BM14U","BM30A"
+               { 
+                   name : "ID23-1",
+                   sampleChangerType : 'SC3'
+               },
+               { 
+                   name : "ID23-2",
+                   sampleChangerType : 'SC3'
+               },
+               { 
+                   name : "ID29",
+                   sampleChangerType : 'SC3'
+               },
+               { 
+                   name : "ID30A-1",
+                   sampleChangerType : 'RoboDiff'
+               },
+               { 
+                   name : "ID30A-2",
+                   sampleChangerType : 'SC3'
+               },
+               { 
+                   name : "ID30A-3",
+                   sampleChangerType : 'FlexHCD'
+               },
+               { 
+                   name : "ID30B",
+                   sampleChangerType : 'FlexHCD'
+               },
+               { 
+                   name : "BM14U",
+                   sampleChangerType : 'FlexHCD'
+               },
+               { 
+                   name : "BM30A",
+                   sampleChangerType : 'FlexHCD'
+               }                                             
             ]
          }
       },
@@ -87,10 +122,45 @@ var ExtISPyB ={
 		 exiUrl:'http://ispyvalid.esrf.fr:8080/ispyb/ispyb-ws/rest',
          beamlines:{
             SAXS:[
-               'BM29'
+               {name: 'BM29'}
             ],
-            MX:[
-               "ID23-1","ID23-2","ID29","ID30A-1","ID30A-2","ID30A-3","ID30B","BM14U","BM30A"
+           MX:[
+               { 
+                   name : "ID23-1",
+                   sampleChangerType : 'SC3'
+               },
+               { 
+                   name : "ID23-2",
+                   sampleChangerType : 'SC3'
+               },
+               { 
+                   name : "ID29",
+                   sampleChangerType : 'SC3'
+               },
+               { 
+                   name : "ID30A-1",
+                   sampleChangerType : 'RoboDiff'
+               },
+               { 
+                   name : "ID30A-2",
+                   sampleChangerType : 'SC3'
+               },
+               { 
+                   name : "ID30A-3",
+                   sampleChangerType : 'FlexHCD'
+               },
+               { 
+                   name : "ID30B",
+                   sampleChangerType : 'FlexHCD'
+               },
+               { 
+                   name : "BM14U",
+                   sampleChangerType : 'FlexHCD'
+               },
+               { 
+                   name : "BM30A",
+                   sampleChangerType : 'FlexHCD'
+               }                                             
             ]
          }
       },
@@ -100,10 +170,45 @@ var ExtISPyB ={
          exiUrl:'http://localhost:8080/ispyb/ispyb-ws/rest',
          beamlines:{
             SAXS:[
-               'BM29'
+               {name: 'BM29'}
             ],
             MX:[
-               "ID23-1","ID23-2","ID29","ID30A-1","ID30A-2","ID30A-3","ID30B","BM14U","BM30A"
+               { 
+                   name : "ID23-1",
+                   sampleChangerType : 'SC3'
+               },
+               { 
+                   name : "ID23-2",
+                   sampleChangerType : 'SC3'
+               },
+               { 
+                   name : "ID29",
+                   sampleChangerType : 'SC3'
+               },
+               { 
+                   name : "ID30A-1",
+                   sampleChangerType : 'RoboDiff'
+               },
+               { 
+                   name : "ID30A-2",
+                   sampleChangerType : 'SC3'
+               },
+               { 
+                   name : "ID30A-3",
+                   sampleChangerType : 'FlexHCD'
+               },
+               { 
+                   name : "ID30B",
+                   sampleChangerType : 'FlexHCD'
+               },
+               { 
+                   name : "BM14U",
+                   sampleChangerType : 'FlexHCD'
+               },
+               { 
+                   name : "BM30A",
+                   sampleChangerType : 'FlexHCD'
+               }                                             
             ]
          }
       }

@@ -9,6 +9,7 @@ function ParcelPanel(args) {
 	this.id = BUI.id();
 	this.height = 500;
 	this.width = 500;
+	this.pucksPanelHeight = 200;
 
 	this.isSaveButtonHidden = false;
 	this.isHidden = false;
@@ -32,40 +33,91 @@ function ParcelPanel(args) {
 */
 ParcelPanel.prototype.addHeaderPanel = function() {
 	var html = "No information";
-	dust.render("parcelformsummary", this.dewar, function(err, out){
+	dust.render("parcel.header.shipping.template", this.dewar, function(err, out){
 		html = out;
     });
-	this.panel.insert(
+    
+	this.panel.add(0,
 				{
+					// cls : 'border-grid',
 					xtype 	: 'container',
-					width	: 200,
+					// width	: this.width - 50,
 					border : 1,
-					padding : 20,
-					items 	: [	{html : html}
-				
-					]
+					padding : 1,
+					items : {
+						xtype : 'container',
+						layout : 'hbox',
+						items : _.concat(this._getTopButtons(),
+											{html : html, margin : 12})
+					}
 				}
 	);
 };
 
 ParcelPanel.prototype.render = function() {
+    var _this = this;
+
 	var dewar = this.dewar;
 	this.panel.removeAll();
-
 	this.addHeaderPanel();
 	
 	if (dewar != null){
 		if (dewar.containerVOs != null){
+
+            var pucksPanel = Ext.create('Ext.panel.Panel', {
+                layout      : 'hbox',
+                cls 		: "border-grid",
+                margin: '0 0 0 6px',
+                width       : this.width - 15,
+                height       : this.pucksPanelHeight + 20,
+                autoScroll : true,
+                items       : []
+            });
+
+            this.panel.add(pucksPanel);
 			/** Sorting container by id **/
 			dewar.containerVOs.sort(function(a, b){return a.containerId - b.containerId;});
+            var puckPanelsMap = {};
+            var containerIds = [];
+            
 			for (var i = 0; i< dewar.containerVOs.length; i++){
 				var container = dewar.containerVOs[i];
-				/** Adding the puck layout **/
-				var puckPanel = new PuckPanel({height : 200});
-				this.panel.insert(puckPanel.getPanel());
-				puckPanel.load(container);
-				
+                var puckPanel = new PuckParcelPanel({height : this.pucksPanelHeight , containerId : container.containerId, capacity : container.capacity, code : container.code});
+                puckPanel.onPuckRemoved.attach(function (sender, containerId) {
+                    _.remove(_this.dewar.containerVOs, {containerId: containerId});
+                    _this.load(_this.dewar);
+                });
+                puckPanel.onPuckSaved.attach(function (sender, puck) {
+                    _.remove(_this.dewar.containerVOs, {containerId: puck.containerId});
+                    _this.dewar.containerVOs.push(puck);
+                    _this.load(_this.dewar);
+                });
+                puckPanelsMap[container.containerId] = puckPanel;
+                containerIds.push(container.containerId);
+                pucksPanel.insert(puckPanel.getPanel());
 			}
+            
+            if (!_.isEmpty(puckPanelsMap)) {
+                
+                var onSuccess = function (sender, samples) {
+                    if (samples) {
+                        var samplesMap = {};
+                        for (var i = 0 ; i < samples.length ; i++) {
+                            var sample = samples[i];
+                            if (samplesMap[sample.Container_containerId]){
+                                samplesMap[sample.Container_containerId].push(sample);
+                            } else {
+                                samplesMap[sample.Container_containerId] = [sample];
+                            }
+                        }
+                        _.each(samplesMap, function(samples, containerId) {
+                            puckPanelsMap[containerId].load(samples);
+                        });
+                    }
+                }
+
+                EXI.getDataAdapter({onSuccess : onSuccess}).mx.sample.getSamplesByContainerId(containerIds);
+            }
 		}
 	}
 };
@@ -124,6 +176,7 @@ ParcelPanel.prototype.showCaseForm = function() {
 						text : 'Save',
 						handler : function() {
 							_this.onSavedClick.notify(caseForm.getDewar());
+                            _this.render();
 							window.close();
 						}
 					}, {
@@ -141,22 +194,26 @@ ParcelPanel.prototype._getTopButtons = function() {
 	var actions = [];
 	
 	
-	actions.push(this.code);
-	actions.push(this.status);
-	actions.push(this.storageCondition);
+	// actions.push(this.code);
+	// actions.push(this.status);
+	// actions.push(this.storageCondition);
 	
-	actions.push(Ext.create('Ext.Action', {
+	actions.push(Ext.create('Ext.Button', {
 		icon : '../images/icon/edit.png',
 		text : 'Edit',
+		cls : 'x-btn x-unselectable x-box-item x-toolbar-item x-btn-default-toolbar-small x-icon-text-left x-btn-icon-text-left x-btn-default-toolbar-small-icon-text-left',
+		margin : 5,
 		disabled : false,
 		handler : function(widget, event) {
 					_this.showCaseForm();
 		}
 	}));
 	
-	actions.push(Ext.create('Ext.Action', {
+	actions.push(Ext.create('Ext.Button', {
 		icon : '../images/print.png',
 		text : 'Print Labels',
+		cls : 'x-btn x-unselectable x-box-item x-toolbar-item x-btn-default-toolbar-small x-icon-text-left x-btn-icon-text-left x-btn-default-toolbar-small-icon-text-left',
+		margin : 5,
 		disabled : false,
 		handler : function(widget, event) {
 			var dewarId = _this.dewar.dewarId;
@@ -166,9 +223,11 @@ ParcelPanel.prototype._getTopButtons = function() {
 		}
 	}));
 	
-	actions.push(Ext.create('Ext.Action', {
+	actions.push(Ext.create('Ext.Button', {
 		icon : '../images/icon/add.png',
 		text : 'Add puck',
+		cls : 'x-btn x-unselectable x-box-item x-toolbar-item x-btn-default-toolbar-small x-icon-text-left x-btn-icon-text-left x-btn-default-toolbar-small-icon-text-left',
+		margin : 5,
 		disabled : false,
 		handler : function(widget, event) {
 			_this.addPuckToDewar();
@@ -181,49 +240,23 @@ ParcelPanel.prototype._getTopButtons = function() {
 
 ParcelPanel.prototype.getPanel = function() {
 	var _this = this;
+
 	this.panel = Ext.create('Ext.panel.Panel', {
-		layout 		: 'hbox',
 		cls 		: "border-grid",
 		margin 		: 10,
 		height 		: this.height,
+		width 		: this.width,
 		autoScroll	: true,
 		items 		: [],
-		listeners : {
-			afterrender : function(component, eOpts) {
-						_this.render();
-			}
-	    }
-//	,
-//		toolbar : [ {
-//						text : 'Save',
-//						handler : function() {
-//								var adapter = new DataAdapter();
-//								_this.panel.setLoading();
-//								var dewar = caseForm.getDewar();
-//								var onSuccess = (function(sender, shipment) {
-//									_this.load(shipment);
-//									window.close();
-//									_this.panel.setLoading(false);
-//								});
-//								dewar["sessionId"] = dewar.firstExperimentId;
-//								dewar["shippingId"] = _this.shipment.shippingId;
-//								EXI.getDataAdapter({onSuccess : onSuccess}).proposal.dewar.saveDewar(_this.shipment.shippingId, dewar);
-//						}
-//					}, 
-//					{
-//							text : 'Cancel',
-//							handler : function() {
-//								window.close();
-//							}
-//					}]
 	});
-	
-	this.panel.addDocked({
-		id 		: _this.id + 'tbar',
-		height 	: 45,
-		xtype 	: 'toolbar',
-		items 	: _this._getTopButtons(),
-		cls 	: 'exi-top-bar'
-	});
+
+    // this.panel.addDocked({
+	// 	id 		: _this.id + 'tbar',
+	// 	height 	: 45,
+	// 	xtype 	: 'toolbar',
+	// 	items 	: _this._getTopButtons(),
+	// 	cls 	: 'exi-top-bar'
+	// });
+
 	return this.panel;
 };

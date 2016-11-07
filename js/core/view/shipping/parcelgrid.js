@@ -7,12 +7,16 @@
 */
 function ParcelGrid(args) {
 	this.height = 100;
+	this.width = 100;
 	this.btnEditVisible = true;
 	this.btnRemoveVisible = true;
 
 	if (args != null) {
 		if (args.height != null) {
 			this.height = args.height;
+		}
+		if (args.width != null) {
+			this.width = args.width;
 		}
 		if (args.btnEditVisible != null) {
 			this.btnEditVisible = args.btnEditVisible;
@@ -58,7 +62,7 @@ ParcelGrid.prototype.load = function(shipment) {
 			_this.panel.setLoading();
 			dewar["sessionId"] = dewar.firstExperimentId;
 			dewar["shippingId"] = _this.shipment.shippingId;
-			var adapter = new DataAdapter();
+			
 			var onSuccess = function(sender, shipment) {				
 				_this.panel.setLoading(false);
 			};			
@@ -67,9 +71,9 @@ ParcelGrid.prototype.load = function(shipment) {
    
 	for ( var i in this.dewars) {
 		var parcelForm = new ParcelPanel({
-			height : 340
+			height : 275,
+			width : this.width - 40
 		});
-		
 		this.panel.insert(parcelForm.getPanel());
 		parcelForm.load(this.dewars[i]);
 		parcelForm.onSavedClick.attach(onSaved);
@@ -125,12 +129,13 @@ ParcelGrid.prototype.edit = function(dewar) {
 
 ParcelGrid.prototype.getPanel = function() {
 	var _this = this;
-
+	
 	this.panel = Ext.create('Ext.panel.Panel', {
 		cls : 'border-grid',
-		height : 800,
-		autoScroll : true
-
+		width : this.width,
+		autoScroll:true,
+        autoHeight :true,
+        maxHeight: this.height
 	});
 
 	this.panel.addDocked({

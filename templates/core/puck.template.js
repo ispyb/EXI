@@ -1,5 +1,5 @@
 <div id="{.id}-div">
-	<svg  height="{@math key="{mainRadius}" method="multiply" operand="2.2" /}" width="{@math key="{mainRadius}" method="multiply" operand="2.2" /}">
+	<svg id="{.id}-svg"  height="{@math key="{mainRadius}" method="multiply" operand="2.2" /}" width="{@math key="{mainRadius}" method="multiply" operand="2.2" /}">
 		<defs>
 		
 			<radialGradient id="errorGradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
@@ -19,8 +19,7 @@
 			</clipPath>
 		
 	  </defs>
-	  
-		<circle id="{.id}" cx="{mainRadius}" cy="{mainRadius}" r="{mainRadius}" fill="#CCCCCC" class='puck' />
+		<circle  id="{.id}" cx="{mainRadius}" cy="{mainRadius}" r="{mainRadius}" fill="#CCCCCC" class='puck' />
 		{?isUnipuck}
 		<g>
 			<rect width="100%" height="100%" fill="#888888" stroke="black" stroke-width="1" clip-path="url(#unipuckShape)" pointer-events="none"/>
@@ -35,10 +34,10 @@
 		{#cells}
 				{?enableClick}{?.dataCollectionIds}<a id="{.id}-anchor" onclick="window.open('#/mx/datacollection/datacollectionid/{.dataCollectionIds}/main','_blank');window.close();return false" href='#/mx/datacollection/datacollectionid/{.dataCollectionIds}/main' target="_blank" style="target-new: tab;">{/.dataCollectionIds}{/enableClick}
 				<circle id="{.id}" cx="{.x}" cy="{.y}" r="{.radius}" {?enableClick}{?.dataCollectionIds}style="cursor:pointer"{/.dataCollectionIds}{/enableClick} {^enableMouseOver} pointer-events="none" {/enableMouseOver} class="cell_empty"></circle>
-					<circle id="{.id}-inner" visibility="hidden" fill="none" stroke="yellow" stroke-width="2" cx="{.x}" cy="{.y}" r="{@math key="{.radius}" method="multiply" operand="0.8" /}" pointer-events="none"></circle>
+					<circle id="{.id}-inner" visibility="hidden" fill="none" stroke="yellow" stroke-width="2" cx="{.x}" cy="{.y}" r="{@math key="{.radius}" method="multiply" operand="0.7" /}" pointer-events="none"></circle>
 				{?enableClick}{?.dataCollectionIds}</a>{/.dataCollectionIds}{/enableClick}						
 				{@gt key=radius value=10}
-					<text id="{.id}-label" x="{.x}" y="{.y}" fill="white" font-size="{@math key="{shapeRadiusX}" method="multiply" operand="1.1" /}" text-anchor="middle" pointer-events="none">
+					<text id="{.id}-label" x="{.x}" y="{.y}" fill="black" font-size="{@math key="{shapeRadiusX}" method="multiply" operand="1.1" /}" text-anchor="middle" pointer-events="none">
 						<tspan dx="0" dy="{@math key="{shapeRadiusX}" method="multiply" operand="0.4" /}" pointer-events="none">{@math key="{$idx}" method="add" operand="1" /}</tspan>
 						<tspan x="{.x}" dy="12"></tspan>
 					</text>
