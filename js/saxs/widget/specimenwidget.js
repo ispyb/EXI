@@ -27,7 +27,7 @@ function SpecimenWidget(args){
 											minHeight 			: 425,
 											selectionMode 		: "SINGLE",
 											editEnabled 		: false,
-											updateRowEnabled 	: true,
+											updateRowEnabled 	: false,
 											width 				: 900,
 											showTitle 			: false
 	});
@@ -35,7 +35,7 @@ function SpecimenWidget(args){
 	
 	this.specimenGrid.onSpecimenChanged.attach(function(sender, specimen) {
 		_this.experiment.setSpecimenById(specimen);
-		_this.refresh(_this.experiment);
+		_this.load(_this.experiment);
 	});
 
 	this.specimenGrid.onSelected.attach(function(sender, specimens) {
@@ -58,7 +58,7 @@ function SpecimenWidget(args){
 	
 	
 	this.samplePlateGroupWidget.onExperimentChanged.attach(function(sender, json) {
-		_this.refresh(new Experiment(json));
+		_this.load(new Experiment(json));
 	});
 
 	this.samplePlateGroupWidget.onClick.attach(function(sender, args) {
@@ -86,6 +86,11 @@ function SpecimenWidget(args){
 				/** If success * */
 				var onSuccess = (function(sender, experiment) {
 					_this.samplePlateGroupWidget.panel.setLoading(false);
+					_this.samplePlateGroupWidget.refresh(_this.experiment);
+					_this.specimenGrid.refresh(_this.experiment);
+					//_this.refresh(_this.experiment);
+					_this.specimenSelected = null;
+					_this.specimenGrid.deselectAll();
 				});
 
 //				adapter.onError.attach(function(sender, error) {
@@ -94,12 +99,6 @@ function SpecimenWidget(args){
 //				});
 
 				EXI.getDataAdapter({onSuccess : onSuccess}).saxs.specimen.saveSpecimen(specimen);
-
-				_this.samplePlateGroupWidget.refresh(_this.experiment);
-				_this.specimenGrid.refresh(_this.experiment);
-				//_this.refresh(_this.experiment);
-				_this.specimenSelected = null;
-				_this.specimenGrid.deselectAll();
 				
 			} else {
 				/**
@@ -108,23 +107,28 @@ function SpecimenWidget(args){
 				 */
 				var target = _this.experiment.getSampleByPosition(args.samplePlate.samplePlateId, args.row, args.column)[0];
 				var specimen = _this.experiment.getSampleById(_this.specimenSelected.specimenId);
-
-				if ((specimen.bufferId == target.bufferId) && (specimen.concentration == target.concentration)) {
-					if (((specimen.macromolecule3VO != null) && (target.macromolecule3VO != null) && (specimen.macromolecule3VO.macromoleculeId == target.macromolecule3VO.macromoleculeId)) || 
-							((specimen.macromolecule3VO == null) && (target.macromolecule3VO == null))) {
-						var onSuccess = (function(sender, data) {
-							_this.refresh(new Experiment(data));
-							_this.samplePlateGroupWidget.panel.setLoading(false);
-							
-							_this.onExperimentChanged.notify(experiment);
-						});
-						_this.samplePlateGroupWidget.panel.setLoading("ISPyB: Merging specimens");
-						EXI.getDataAdapter({onSuccess : onSuccess}).saxs.specimen.mergeSpecimens(specimen.specimenId, target.specimenId);
-						_this.specimenSelected = null;
-						_this.specimenGrid.deselectAll();
-					}
+				if (target == specimen) {
+					_this.samplePlateGroupWidget.refresh(_this.experiment);
+					_this.specimenSelected = null;
+					_this.specimenGrid.deselectAll();
 				} else {
-					alert("Well is not empty. Select another well!");
+					if ((specimen.bufferId == target.bufferId) && (specimen.concentration == target.concentration)) {
+						if (((specimen.macromolecule3VO != null) && (target.macromolecule3VO != null) && (specimen.macromolecule3VO.macromoleculeId == target.macromolecule3VO.macromoleculeId)) || 
+								((specimen.macromolecule3VO == null) && (target.macromolecule3VO == null))) {
+							var onSuccess = (function(sender, data) {
+								_this.load(new Experiment(data));
+								_this.samplePlateGroupWidget.panel.setLoading(false);
+								
+								_this.onExperimentChanged.notify(experiment);
+							});
+							_this.samplePlateGroupWidget.panel.setLoading("ISPyB: Merging specimens");
+							EXI.getDataAdapter({onSuccess : onSuccess}).saxs.specimen.mergeSpecimens(specimen.specimenId, target.specimenId);
+							_this.specimenSelected = null;
+							_this.specimenGrid.deselectAll();
+						}
+					} else {
+						$.notify("Well is not empty. Select another well!", "error");
+					}
 				}
 			}
 		} else {
@@ -141,8 +145,8 @@ function SpecimenWidget(args){
 /**
  * Return vbox or hbox depending on the slot positions of the plates
  */
-SpecimenWidget.prototype.getContainerLayoutConfiguration = function(experiment){
-	var dimensions = this.samplePlateGroupWidget.getDimensions(experiment.getSamplePlates());
+SpecimenWidget.prototype.getContainerLayoutConfiguration = function(dataCollections){
+	// var dimensions = this.samplePlateGroupWidget.getDimensions(experiment.getSamplePlates());
 //	if (dimensions.maxSlotPositionRow < dimensions.maxSlotPositionColumn){
 //		return {
 //					layout 					: "vbox",
@@ -163,13 +167,13 @@ SpecimenWidget.prototype.getContainerLayoutConfiguration = function(experiment){
 };
 
 
-SpecimenWidget.prototype.refresh = function(experiment){
-	this.experiment = experiment;
+SpecimenWidget.prototype.load = function(dataCollections){
+	this.dataCollections = _.uniqBy(dataCollections,"Specimen_specimenId");
 	
 	/** Removing all components **/
 	this.panel.removeAll();
-	
-	var layoutConfiguration = this.getContainerLayoutConfiguration(experiment);
+
+	var layoutConfiguration = this.getContainerLayoutConfiguration(dataCollections);
 
 	/** Setting new width and height for layout vbox and hbox **/
 	this.specimenGrid.width = layoutConfiguration.specimenGridWidth;
@@ -203,8 +207,8 @@ SpecimenWidget.prototype.refresh = function(experiment){
    	this.panel.insert(container);
    	
 	/** Load data **/
-	this.specimenGrid.refresh(experiment);
-	this.samplePlateGroupWidget.refresh(experiment);
+	this.specimenGrid.refresh(this.dataCollections);
+	this.samplePlateGroupWidget.refresh(this.dataCollections);
 	
 	
 };
@@ -225,24 +229,24 @@ SpecimenWidget.prototype.getPanel = function(){
 };
 
 
-SpecimenWidget.prototype.input = function() {
-	return {
-		experiment : DATADOC.getExperiment_10(),
-		proposal : DATADOC.getProposal_10()
-	};
-};
+// SpecimenWidget.prototype.input = function() {
+// 	return {
+// 		experiment : DATADOC.getExperiment_10(),
+// 		proposal : DATADOC.getProposal_10()
+// 	};
+// };
 
-SpecimenWidget.prototype.test = function(targetId) {
-	var specimenWidget = new SpecimenWidget({
-		height : 500,
-		width : 1000
-	});
-	BIOSAXS.proposal = new Proposal(specimenWidget.input().proposal);
-	var experiment = new Experiment(specimenWidget.input().experiment);
-	var panel = specimenWidget.getPanel();
-	panel.render(targetId);
-	specimenWidget.refresh(experiment);
+// SpecimenWidget.prototype.test = function(targetId) {
+// 	var specimenWidget = new SpecimenWidget({
+// 		height : 500,
+// 		width : 1000
+// 	});
+// 	BIOSAXS.proposal = new Proposal(specimenWidget.input().proposal);
+// 	var experiment = new Experiment(specimenWidget.input().experiment);
+// 	var panel = specimenWidget.getPanel();
+// 	panel.render(targetId);
+// 	specimenWidget.refresh(experiment);
 
-};
+// };
 
 

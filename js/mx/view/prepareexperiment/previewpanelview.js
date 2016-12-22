@@ -25,7 +25,7 @@ function PreviewPanelView (args) {
                 enableMouseOver : true
             };
 
-    this.onEmptyButtonClicked = new Event(this);
+    this.onUnloadButtonClicked = new Event(this);
 };
 
 /**
@@ -55,14 +55,16 @@ PreviewPanelView.prototype.getPanel = function () {
         },
         listeners: {
             click: function(button) {
-                if (button.text == "EMPTY") {
-                    _this.onEmptyButtonClicked.notify();
+                if (button.text != null){
+                    if (button.text.split(" ")[0] == "Unload") {
+                        _this.onUnloadButtonClicked.notify();
+                    }
                 }
             }
         }
     });
 
-    var infoContainer = Ext.create('Ext.panel.Panel', {
+    this.infoContainer = Ext.create('Ext.panel.Panel', {
         layout : 'vbox',
         width : this.width/2,
         height : this.height,
@@ -81,7 +83,7 @@ PreviewPanelView.prototype.getPanel = function () {
         layout : 'hbox',
         width : this.width,
         height : this.height,
-        items : [infoContainer, this.previewPanel ]
+        items : [this.infoContainer, this.previewPanel ]
     });
 
     return this.panel;
@@ -108,7 +110,6 @@ PreviewPanelView.prototype.load = function (containerId, capacity, data, instruc
                             html    : html,
                             margin  : 6
                     });
-
     this.instructionsButton.setText(instructionsButtonText);
     this.puckData.containerId = containerId;
     if (capacity == 10){
@@ -139,7 +140,9 @@ PreviewPanelView.prototype.load = function (containerId, capacity, data, instruc
 * @return
 */
 PreviewPanelView.prototype.clean = function () {
-    this.previewPanel.removeAll();
-    this.infoPanel.removeAll();
-    this.instructionsButton.setText("");
+    if (this.previewPanel){
+        this.previewPanel.removeAll();
+        this.infoPanel.removeAll();
+        this.instructionsButton.setText("");
+    }
 };

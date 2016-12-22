@@ -12,11 +12,12 @@ function PuckWidget(args){
 	this.containerId = 0;
 	this.containerCode = "";
 	this.enableMouseOver = false;
-	this.enableClick = false;
+	this.enableClick = false; //click on cells
+	this.enableMainClick = false; //click on the puck
+	this.enableMainMouseOver = false; //mouse over on the puck
 	this.initSelected = {};
 	this.isLoading = true;
 	this.capacity = 10;
-	
 	this.isUnipuck = false;
 	this.isEmpty = true;
 	
@@ -42,6 +43,12 @@ function PuckWidget(args){
 		if (args.enableClick != null){
 			this.enableClick = args.enableClick;
 		}
+		if (args.enableMainClick != null){
+			this.enableMainClick = args.enableMainClick;
+		}
+		if (args.enableMainMouseOver != null){
+			this.enableMainMouseOver = args.enableMainMouseOver;
+		}
 		if (args.initSelected){
 			this.initSelected = args.initSelected;
 		}
@@ -63,6 +70,7 @@ function PuckWidget(args){
 				containerId : this.containerId,
 				containerCode : this.containerCode,
 				enableClick : this.enableClick,
+				enableMainClick : this.enableMainClick,
 				enableMouseOver : this.enableMouseOver,
 				dataCollectionIds : this.dataCollectionIds,
 				isLoading : this.isLoading
@@ -110,7 +118,11 @@ PuckWidget.prototype.getPanel = function () {
 		html = out;
 	});
 	
-	return html;
+	return {
+				html : html,
+				width : 2*this.data.mainRadius + 1,
+				height : 2*this.data.mainRadius + 1
+			};
 };
 
 /**
@@ -139,14 +151,18 @@ PuckWidget.prototype.loadSamples = function (samples, selectedLocation) {
 	var cells = [];
 	for (var i = 0; i < samples.length; i++) {
 		var sample = samples[i];
+		
 		var dataCollectionIds = this.dataCollectionIds[sample.BLSample_location];
 		var state = "FILLED";
-		if (dataCollectionIds != null && dataCollectionIds.length > 0){
+		if ((dataCollectionIds != null && dataCollectionIds.length > 0 || sample.DataCollectionGroup_dataCollectionGroupId != null)){
 			state = "COLLECTED";
 		}
 		var selected = false;
 		if (selectedLocation != null){
 			selected = sample.BLSample_location == selectedLocation;
+		}
+		if (sample.BLSample_location == "") {
+			sample.hasError = true;
 		}
 		
 		// Parse data
@@ -159,7 +175,8 @@ PuckWidget.prototype.loadSamples = function (samples, selectedLocation) {
 			protein_name : sample.Protein_name,
 			dataCollectionIds : dataCollectionIds,
 			containerId : sample.Container_containerId,
-			containerCode : sample.Container_code
+			containerCode : sample.Container_code,
+			hasError : sample.hasError
 		});
 	}
 	this.load(cells);
@@ -177,16 +194,24 @@ PuckWidget.prototype.load = function (data) {
 
 	for (sampleIndex in data){
 		var sample = data[sampleIndex];
-		var id = this.id + "-" + sample.location;
-		var cellIndex = this.findCellIndexById(id);
-		this.data.cells[cellIndex].state = sample.state;
-		this.data.cells[cellIndex].selected = sample.selected;
-		this.data.cells[cellIndex].sample_name = sample.sample_name;
-		this.data.cells[cellIndex].protein_acronym = sample.protein_acronym;
-		this.data.cells[cellIndex].protein_name = sample.protein_name;
-		this.data.cells[cellIndex].containerId = sample.containerId;
-		this.data.cells[cellIndex].containerCode = sample.containerCode;
-		if (sample.state != "EMPTY"){
+		if (!sample.hasError){
+			var id = this.id + "-" + sample.location;
+			var cellIndex = this.findCellIndexById(id);
+			this.data.cells[cellIndex].state = sample.state;
+			this.data.cells[cellIndex].selected = sample.selected;
+			this.data.cells[cellIndex].sample_name = sample.sample_name;
+			this.data.cells[cellIndex].protein_acronym = sample.protein_acronym;
+			this.data.cells[cellIndex].protein_name = sample.protein_name;
+			this.data.cells[cellIndex].containerId = sample.containerId;
+			this.data.cells[cellIndex].containerCode = sample.containerCode;
+			if (sample.state != "EMPTY"){
+				this.containerId = sample.containerId;
+				this.containerCode = sample.containerCode;
+				this.data.containerId = this.containerId;
+				this.data.containerCode = this.containerCode;
+				this.isEmpty = false;
+			}
+		} else {
 			this.containerId = sample.containerId;
 			this.containerCode = sample.containerCode;
 			this.data.containerId = this.containerId;
@@ -203,13 +228,13 @@ PuckWidget.prototype.load = function (data) {
 				var cellIndex = _this.findCellIndexById(sender.target.id);
 				
 				_this.onMouseOver.notify(sender.target.id.split("-")[1]);
-				_this.focus(sender.target.id.split("-")[1],true);
+				_this.focusWell(sender.target.id.split("-")[1],true);
 				
 				// TOOLTIP
 				if (_this.data.cells[cellIndex].sample_name){
 	
 					var tooltipHtml = "";
-					dust.render("plates.tooltip.mxdatacollectiongrid.template", _this.data.cells[cellIndex], function(err, out) {
+					dust.render("containers.tooltip.mxdatacollectiongrid.template", _this.data.cells[cellIndex], function(err, out) {
 						tooltipHtml = out;
 					});
 					$('body').append(tooltipHtml);
@@ -229,7 +254,7 @@ PuckWidget.prototype.load = function (data) {
 			
 			$("#" + currentId).unbind('mouseout').mouseout(function(sender){
 				_this.onMouseOut.notify();
-				_this.focus(sender.target.id.split("-")[1],false);
+				_this.focusWell(sender.target.id.split("-")[1],false);
 
 				// TOOLTIP
 				$('#hoveringTooltipDiv').remove();
@@ -252,13 +277,27 @@ PuckWidget.prototype.load = function (data) {
 };
 
 /**
-* Focus or unfocus one cell according to a boolean and its location 
+* focus or unfocus the puck
 *
 * @method focus
+* @param {Boolean} bool Whether or not to focus the cell
+*/
+PuckWidget.prototype.focus = function (bool) {
+	if (bool){
+		$("#" + this.id).addClass("puck-selected");		
+	} else {
+		$("#" + this.id).removeClass("puck-selected");	
+	}
+};
+
+/**
+* focus or unfocus one cell according to a boolean and its location 
+*
+* @method focusWell
 * @param {Integer} location The location of the cell on the puck
 * @param {Boolean} bool Whether or not to focus the cell
 */
-PuckWidget.prototype.focus = function (location, bool) {
+PuckWidget.prototype.focusWell = function (location, bool) {
 	if (bool){
 		$("#" + this.id + "-" + location).attr("class", "cell_focus");
 		$("#" + this.id + "-" + location + "-inner").attr("class", "cell_inner_hidden");		
@@ -348,3 +387,12 @@ PuckWidget.prototype.allowAllCells = function () {
 		$("#" + cell.id).removeClass("cell-disabled");
 	}
 };
+
+/**
+* It blinks the sample changer by fading IN and OUT
+*
+* @method blink` 
+*/
+PuckWidget.prototype.blink = function () {
+    $('#' + this.id + "-div").fadeIn().fadeOut().fadeIn();
+}

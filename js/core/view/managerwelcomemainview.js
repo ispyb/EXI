@@ -96,6 +96,28 @@ ManagerWelcomeMainView.prototype.displayProposals = function(proposals) {
     this.proposalGrid.load(proposals);
 };
 
+
+/**
+* It receives a local contact name and will load in the sessionGrid
+*
+* @param {String} beamlineOperator name or surname of the beamline operator
+* @method displaySessionsByBeamlineOperator
+*/
+ManagerWelcomeMainView.prototype.displaySessionsByBeamlineOperator = function(beamlineOperator) {
+    var _this = this;
+    _this.panel.setLoading(true);
+    var onSuccess = function(sender, sessions){
+       _this.displaySessions(sessions,sessions.length + " sessions are scheduled for local contact: " + beamlineOperator);
+       _this.panel.setLoading(false);
+    }
+    
+    var onError = function(sender, sessions){  
+        _this.sessionGrid.panel.setTitle("No sessions are scheduled for local contact: " + beamlineOperator);             
+       _this.panel.setLoading(false);
+    }
+    EXI.getDataAdapter({onSuccess : onSuccess, onError:onError}).proposal.session.getSessionsByBeamlineOperator(beamlineOperator);
+};
+
 /**
 * Retrieves a list of sessions based on a start date and end date and loads them on the session grid
 *
@@ -185,7 +207,25 @@ ManagerWelcomeMainView.prototype.getToolbar = function() {
     					}
     				} 
     			} 
-            }
+            },
+            '->',
+            {             
+               icon     : '../images/icon/person.png',
+               border : 0
+            },
+             {
+                xtype    : 'textfield',
+                name     : 'field1',
+                width    : 300,               
+                emptyText: 'search by local contact',
+    			listeners : {
+    				specialkey : function(field, e) {
+    					if (e.getKey() == e.ENTER) {    						
+    						_this.displaySessionsByBeamlineOperator(field.getValue());
+    					}
+    				} 
+    			} 
+            },
         ]
     });
 };

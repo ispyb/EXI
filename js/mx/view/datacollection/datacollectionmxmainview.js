@@ -17,12 +17,13 @@ function DataCollectionMxMainView() {
 DataCollectionMxMainView.prototype.getPanel = MainView.prototype.getPanel;
 
 DataCollectionMxMainView.prototype.getContainer = function() {
-		this.container = Ext.create('Ext.tab.Panel', {       
+		this.container = Ext.create('Ext.tab.Panel', {   
+        minHeight : 900,    
         padding : "5 40 0 5",
         items: [ {
                         title: 'Data Collections',
                         cls : 'border-grid',
-                        id : this.id + "_dataCollectionTab",
+                        id : this.id + "_dataCollectionTab",                        
                         items:[
                             this.genericDataCollectionPanel.getPanel()
                         ]

@@ -2,7 +2,7 @@
 /**
 * This main class deals with the creation and edition of shipments
 *
-* @class ShippingMainView
+* @class ShippingMainViewTest
 * @constructor
 */
 function ShippingMainView() {
@@ -13,7 +13,7 @@ function ShippingMainView() {
 	* 
 	* @property shipmentForm
 	*/
-    this.shipmentForm = new ShipmentForm({width : Ext.getBody().getWidth() - 200});
+    this.shipmentForm = new ShipmentForm({width : Ext.getBody().getWidth() - 100});
 	this.shipmentForm.onSaved.attach(function(sender, shipment){
 		location.hash = "#/proposal/shipping/nav?nomain";
 	});
@@ -22,7 +22,7 @@ function ShippingMainView() {
 	* 
 	* @property parcelGrid
 	*/
-	this.parcelGrid = new ParcelGrid({height : 580, width : Ext.getBody().getWidth() - 200});
+	this.parcelGrid = new ParcelGrid({height : 580, width : Ext.getBody().getWidth() - 100});
 	
 }
 
@@ -33,6 +33,7 @@ ShippingMainView.prototype.getPanel = function() {
             type: 'vbox',
             align: 'center'
         },
+		padding : 10,
         cls : 'border-grid',
         items : [
                     this.shipmentForm.getPanel(),

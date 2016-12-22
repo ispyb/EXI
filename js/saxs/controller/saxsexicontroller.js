@@ -101,17 +101,29 @@ SAXSExiController.prototype.notFound = function() {
 SAXSExiController.prototype.routeExperiment = function() {
 	Path.map("#/experiment/experimentId/:experimentId/main").to(function() {
 		var mainView = new ExperimentMainView();
-		EXI.addMainPanel(mainView);
-		mainView.load(this.params['experimentId']);
-		/** Selecting data collections from experiment * */
-		mainView.onSelect.attach(function(sender, element) {
-			EXI.localExtorage.selectedSubtractionsManager.append(element);
-		});
-		mainView.onDeselect.attach(function(sender, element) {
-			EXI.localExtorage.selectedSubtractionsManager.remove(element);
-		});
+		EXI.addMainPanel(mainView);	
+		mainView.panel.setLoading();		
+		var onSuccess = function(sender, dataCollections){			
+			mainView.load(dataCollections);
+			mainView.panel.setLoading(false);				
+		};
+		EXI.getDataAdapter({onSuccess : onSuccess}).saxs.dataCollection.getDataCollectionsByExperiment(this.params['experimentId']);
+		// EXI.getDataAdapter({onSuccess : onSuccess}).saxs.experiment.getExperimentById(this.params['experimentId']);
 
 	}).enter(this.setPageBackground);
+    
+    Path.map("#/experiment/session/:sessionId/main").to(function() {
+		var mainView = new ExperimentMainView();
+		EXI.addMainPanel(mainView);	
+		mainView.panel.setLoading();		
+		var onSuccess = function(sender, dataCollections){			
+			mainView.load(dataCollections);
+			mainView.panel.setLoading(false);				
+		};
+		EXI.getDataAdapter({onSuccess : onSuccess}).saxs.dataCollection.getDataCollectionsBySessionId(this.params['sessionId']);
+
+	}).enter(this.setPageBackground);
+    
 	
 	Path.map("#/experiment/hplc/:experimentId/main").to(function() {
 		var mainView = new HPLCMainView();
@@ -178,40 +190,24 @@ SAXSExiController.prototype.routeExperiment = function() {
 SAXSExiController.prototype.routeDataCollection = function() {
 	Path.map("#/datacollection/macromoleculeAcronym/:value/main").to(function() {
 		/** Loading navidation menu **/
-		EXI.setLoadingMainPanel("Searching " + this.params['value']+  "...");
-		var onSuccess = function(sender, dataCollections) {
-			if (dataCollections != null){
-				if (dataCollections.length > 0){
-					var mainView = new DataCollectionMainView();
-					EXI.addMainPanel(mainView);
-					mainView.load(dataCollections);
-					/** Selecting data collections from experiment * */
-					mainView.onSelect.attach(function(sender, element) {
-						EXI.localExtorage.selectedSubtractionsManager.append(element);
-					});
-					mainView.onDeselect.attach(function(sender, element) {
-						EXI.localExtorage.selectedSubtractionsManager.remove(element);
-					});
-					
-					var listView = new DataCollectionListView();
-					listView.onSelect.attach(function(sender, selected) {
-						mainView.filter( selected[0].macromoleculeId, selected[0].bufferAcronym);
-					});
-					EXI.addNavigationPanel(listView);
-					listView.load(dataCollections);
-					EXI.setLoadingNavigationPanel(false);
-				}
-				else{
-					BUI.showWarning("No macromolecule has been found");
-				}
-			}
-			else{
-				BUI.showWarning("No data to display");
-			}
-//			EXI.setLoadingNavigationPanel(false);
-			EXI.setLoadingMainPanel(false);
-		};
-		EXI.getDataAdapter({onSuccess : onSuccess}).saxs.dataCollection.getDataCollectionsByKey(this.params['key'], this.params['value']);
+		    EXI.setLoadingMainPanel("Searching " + this.params['value']+  "...");
+
+			var mainView = new ExperimentMainView();
+            EXI.addMainPanel(mainView);	
+           		
+            var onSuccess = function(sender, dataCollections){			                
+                mainView.load(dataCollections);
+               
+                EXI.setLoadingMainPanel(false);				
+            };            
+            if (EXI.proposalManager.getMacromoleculeByAcronym(this.params['value']) != null){
+                EXI.getDataAdapter({onSuccess : onSuccess}).saxs.dataCollection.getDataCollectionsByMacromoleculeId(EXI.proposalManager.getMacromoleculeByAcronym(this.params['value']).macromoleculeId);
+            }
+            else{
+                BUI.showError("No Macromolecule Found");
+                 EXI.setLoadingMainPanel(false);	
+            }
+
 
 	}).enter(this.setPageBackground);
 	
@@ -234,14 +230,11 @@ SAXSExiController.prototype.routeDataCollection = function() {
 		EXI.getDataAdapter({onSuccess : onSuccess}).saxs.dataCollection.getDataCollectionsByKey(this.params['key'], this.params['value']);
 	}).enter(this.setPageBackground);
 
-	Path.map("#/saxs/datacollection/:key/:value/primaryviewer").to(function() {
-		var onSuccess = function(sender, data) {
-			var primaryMainView = new PrimaryDataMainView();
-			EXI.addMainPanel(primaryMainView);
-			primaryMainView.load(data);
-
-		};
-		EXI.getDataAdapter({onSuccess : onSuccess}).saxs.dataCollection.getDataCollectionsByKey(this.params['key'], this.params['value']);
+	Path.map("#/saxs/datacollection/dataCollectionId/:dataCollectionId/primaryviewer").to(function() {		
+			var primaryMainView = new PrimaryDataMainView();    
+            EXI.addMainPanel(primaryMainView);        		            
+			primaryMainView.load(this.params['dataCollectionId']);		
+		
 	}).enter(this.setPageBackground);
 	
 	Path.map("#/saxs/datacollection/:key/:value/merge").to(function() {
@@ -254,8 +247,6 @@ SAXSExiController.prototype.routeDataCollection = function() {
 		EXI.getDataAdapter({onSuccess : onSuccess}).saxs.dataCollection.getDataCollectionsByKey(this.params['key'], this.params['value']);
 	}).enter(this.setPageBackground);
 };
-
-
 
 SAXSExiController.prototype.routePrepare = function() {
 	Path.map("#/buffer/:bufferId/main").to(function() {

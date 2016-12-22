@@ -43,4 +43,28 @@ WorkflowController.prototype.init = function() {
 
 		EXI.getDataAdapter({onSuccess : onSuccess}).mx.workflowstep.getWorkflowstepByIdList(this.params['workflowStepIdList']);
 	}).enter(this.setPageBackground);
+    
+    	Path.map("#/mx/workflow/steps/:workflowStepIdList/step/:workflowStepId/main").to(function() {
+            
+            var workflowStepId = this.params['workflowStepId'];
+		EXI.clearNavigationPanel();
+		EXI.setLoadingNavigationPanel(true);
+		listView = new WorkflowStepListView();
+		listView.onSelect.attach(function(sender, selected) {
+			if (selected != null){
+				mainView.load(selected[0]);
+			}
+		});
+		EXI.addNavigationPanel(listView);    
+
+		var mainView = new WorkflowStepMainView();
+		EXI.addMainPanel(mainView);
+		var onSuccess = function(sender, data){
+			listView.load(JSON.parse(data));
+			EXI.setLoadingNavigationPanel(false);                        
+            mainView.load(_.find(JSON.parse(data), {'workflowStepId' :Number(workflowStepId) }));
+		};
+
+		EXI.getDataAdapter({onSuccess : onSuccess}).mx.workflowstep.getWorkflowstepByIdList(this.params['workflowStepIdList']);
+	}).enter(this.setPageBackground);
 };

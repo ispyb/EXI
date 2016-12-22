@@ -6,14 +6,14 @@
             <thead>
                <tr>
                   {#.}
-                        <th> <a href="#/mx/workflow/step/{.workflowStepIds}/main" >{.name}</a></th>                 
+                        <th> <a href="#/mx/workflow/steps/{.workflowStepIds}/step/{.workflowStepId}/main" target='_blank'>{.name}</a></th>                 
                    {/.}
                   
                </tr>
             </thead>
-            <tr>
+            <tr> 
                 {#.}
-               <td  ><a href="#/mx/workflow/step/{.workflowStepIds}/main" ><img style='height:150px;width:150px;' src='{.img}' /></a></td>
+               <td  ><a href="#/mx/workflow/steps/{.workflowStepIds}/step/{.workflowStepId}/main" target='_blank' ><img style='height:150px;width:150px;' src='{.img}' /></a></td>
              
               
                 {/.}
