@@ -31,16 +31,19 @@
     
      
     {@eq key=type value="logFile"}
-      
-        
-	    <div  style='border:1px solid gray;background-color:#FAFAFA;margin:10px;'>
+        <div class="container">
+            <button id={.id} style='margin:10px;'  type="button" class="btn btn-default">
+                    <span class="glyphicon glyphicon-download-alt"></span> {.title}
+            </button>
+        </div>	
+	    {!<div  style='border:1px solid gray;background-color:#FAFAFA;margin:10px;'>
             <span  style='color: #157fcc;font-size: 17px;   font-weight: 300;'>{.title}</span>
             <textarea style='margin:10px;' rows="10" cols="150">
                 {.logText} 
             </textarea>
-        </div>			
+        </div>!}			
 	{/eq}
-    
+     
     
     
     {@eq key=type value="title"}
@@ -50,28 +53,36 @@
 	{/eq}
     
     {@eq key=type value="info"}
-	    <span style="display: inline; padding: .2em .6em .3em .6em;border-radius: .25em;color: #5bc0de; background-color: white;">
-           {.value}
-        </span>			
+        <div class="container">
+            <div class="alert alert-info">
+                    {.value}
+            </div>
+        </div>
+	   		
 	{/eq}
-    
+     
     {@eq key=type value="table"}
-        <table style='border:1px solid gray;'>
-            	
-	        <tr>
-                {#columns}
-                    <th style='border: 1px solid black;'>{.}</th>
-                {/columns}
-            </tr>	
+        <div class="container">
            
-                {#data}
-                    <tr>
-                        {#.}
-                            <td style='border: 1px solid black;'>{.}</td>
-                        {/.}
-                    </tr> 
-                {/data}
-         </table>                                   		
+            <table class="table table-hover table-striped table-bordered"> 
+                <tr>                    
+                        <th style='background-color:#3892d3;color:white;font-size:14px;' colspan={.columns.length}>{.title}</th>                   
+                </tr>                    
+                <tr>
+                    {#columns}
+                        <th>{.}</th>
+                    {/columns}
+                </tr>	
+            
+                    {#data}
+                        <tr>
+                            {#.}
+                                <td>{.}</td>
+                            {/.}
+                        </tr> 
+                    {/data}
+            </table> 
+         </div>                                  		
 	{/eq}  
      
     

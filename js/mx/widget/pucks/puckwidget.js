@@ -148,6 +148,9 @@ PuckWidget.prototype.loadSamples = function (samples, selectedLocation) {
 		if (selectedLocation != null){
 			selected = sample.BLSample_location == selectedLocation;
 		}
+		if (sample.BLSample_location == "") {
+			sample.hasError = true;
+		}
 		
 		// Parse data
 		cells.push({
@@ -159,7 +162,8 @@ PuckWidget.prototype.loadSamples = function (samples, selectedLocation) {
 			protein_name : sample.Protein_name,
 			dataCollectionIds : dataCollectionIds,
 			containerId : sample.Container_containerId,
-			containerCode : sample.Container_code
+			containerCode : sample.Container_code,
+			hasError : sample.hasError
 		});
 	}
 	this.load(cells);
@@ -177,16 +181,24 @@ PuckWidget.prototype.load = function (data) {
 
 	for (sampleIndex in data){
 		var sample = data[sampleIndex];
-		var id = this.id + "-" + sample.location;
-		var cellIndex = this.findCellIndexById(id);
-		this.data.cells[cellIndex].state = sample.state;
-		this.data.cells[cellIndex].selected = sample.selected;
-		this.data.cells[cellIndex].sample_name = sample.sample_name;
-		this.data.cells[cellIndex].protein_acronym = sample.protein_acronym;
-		this.data.cells[cellIndex].protein_name = sample.protein_name;
-		this.data.cells[cellIndex].containerId = sample.containerId;
-		this.data.cells[cellIndex].containerCode = sample.containerCode;
-		if (sample.state != "EMPTY"){
+		if (!sample.hasError){
+			var id = this.id + "-" + sample.location;
+			var cellIndex = this.findCellIndexById(id);
+			this.data.cells[cellIndex].state = sample.state;
+			this.data.cells[cellIndex].selected = sample.selected;
+			this.data.cells[cellIndex].sample_name = sample.sample_name;
+			this.data.cells[cellIndex].protein_acronym = sample.protein_acronym;
+			this.data.cells[cellIndex].protein_name = sample.protein_name;
+			this.data.cells[cellIndex].containerId = sample.containerId;
+			this.data.cells[cellIndex].containerCode = sample.containerCode;
+			if (sample.state != "EMPTY"){
+				this.containerId = sample.containerId;
+				this.containerCode = sample.containerCode;
+				this.data.containerId = this.containerId;
+				this.data.containerCode = this.containerCode;
+				this.isEmpty = false;
+			}
+		} else {
 			this.containerId = sample.containerId;
 			this.containerCode = sample.containerCode;
 			this.data.containerId = this.containerId;

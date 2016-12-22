@@ -22,6 +22,7 @@ MXDataCollectionGrid.prototype.getPanel = function(dataCollectionGroup) {
 
     this.panel = Ext.create('Ext.panel.Panel', {  
         id: this.id,
+        minHeight : 900,
         tbar: this.getToolBar(),        
         items: [_this.activePanel.getPanel(dataCollectionGroup)]
      });

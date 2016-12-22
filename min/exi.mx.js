@@ -603,6 +603,30 @@ WorkflowController.prototype.init = function() {
 
 		EXI.getDataAdapter({onSuccess : onSuccess}).mx.workflowstep.getWorkflowstepByIdList(this.params['workflowStepIdList']);
 	}).enter(this.setPageBackground);
+    
+    	Path.map("#/mx/workflow/steps/:workflowStepIdList/step/:workflowStepId/main").to(function() {
+            
+            var workflowStepId = this.params['workflowStepId'];
+		EXI.clearNavigationPanel();
+		EXI.setLoadingNavigationPanel(true);
+		listView = new WorkflowStepListView();
+		listView.onSelect.attach(function(sender, selected) {
+			if (selected != null){
+				mainView.load(selected[0]);
+			}
+		});
+		EXI.addNavigationPanel(listView);    
+
+		var mainView = new WorkflowStepMainView();
+		EXI.addMainPanel(mainView);
+		var onSuccess = function(sender, data){
+			listView.load(JSON.parse(data));
+			EXI.setLoadingNavigationPanel(false);                        
+            mainView.load(_.find(JSON.parse(data), {'workflowStepId' :Number(workflowStepId) }));
+		};
+
+		EXI.getDataAdapter({onSuccess : onSuccess}).mx.workflowstep.getWorkflowstepByIdList(this.params['workflowStepIdList']);
+	}).enter(this.setPageBackground);
 };
 
 /**
@@ -1336,37 +1360,68 @@ function AutoprocessingRanker(){
  * Filter by space group and lower rMerge
  * 
  */
-AutoprocessingRanker.prototype.rank = function(array, spacegroudFieldName, rmergeFieldName){
-    array = array.sort(function(a1, a2){        
-         var spaceGroudTrimmed1 = a1[spacegroudFieldName].replace(/\s+/g, '');
-         var spaceGroudTrimmed2 = a2[spacegroudFieldName].replace(/\s+/g, '');
+AutoprocessingRanker.prototype.rank = function(array, spacegroudFieldName){
+    
+   /** First sorting autoprocessing with rMerge < 10 */
+   var minus10Rmerge  = _.filter(array, function(o) {       
+            if (o.innerShell){
+                if (o.innerShell.rMerge){                    
+                    if ((Number(o.innerShell.rMerge) <= 10) && (Number(o.innerShell.rMerge) > 0)){
+                        return true;
+                    }
+                }
+            }
+            return false        
+     }); 
+     /** Second we get rMerge > 10 */
+    var plus10Rmerge  = _.filter(array, function(o) {
         
-         var space1 = _.indexOf(ExtISPyB.spaceGroups, spaceGroudTrimmed1);
-         var space2 = _.indexOf(ExtISPyB.spaceGroups, spaceGroudTrimmed2);
+            if (o.innerShell){
+                if (o.innerShell.rMerge){                    
+                    if (Number(o.innerShell.rMerge) > 10 || Number(o.innerShell.rMerge) <= 0){
+                        return true;
+                    }
+                }
+            }
+            return false        
+     }); 
+   
+    
+     function sortByHighestSymmetry(a, b) {         
+        var spaceGroupA = a[spacegroudFieldName].replace(/\s/g, "");        
+        var spaceGroupB = b[spacegroudFieldName].replace(/\s/g, "");
         
-         /** Sort by rmerge */
-         if (space2 -  space1 == 0){
-             var rmerge1 = a1["overall"]["rMerge"];
-             var rmerge2 = a2["overall"]["rMerge"];
-             
-             if (rmerge1){
-                 if (rmerge2){
-                     return rmerge1 - rmerge2;
-                 }
-                 else{
-                     return 1;
-                 }
-             }
-             return -1;
-             
-         }
-         return space2 -  space1;
-      
-    });
-    for(var i =0; i < array.length; i++){            
-            array[i].rank = i + 1;
+        if ( _.indexOf(ExtISPyB.spaceGroups, spaceGroupA) ==  _.indexOf(ExtISPyB.spaceGroups, spaceGroupB)){                          
+            return ( parseFloat(a.innerShell.rMerge) -  parseFloat(b.innerShell.rMerge));
+        }
+        return _.indexOf(ExtISPyB.spaceGroups, spaceGroupB) - _.indexOf(ExtISPyB.spaceGroups, spaceGroupA);                           
+       
     }
-    return array;
+    
+    function sortByrMerge(a, b) {                                    
+         return ( parseFloat(a.innerShell.rMerge) -  parseFloat(b.innerShell.rMerge));                                       
+    }
+
+    /** Sort rmerge < 10 by highest symmetry 
+    for (var i = 0; i < minus10Rmerge.length; i++){
+        console.log(minus10Rmerge[i][spacegroudFieldName]);
+    }*/
+   
+    minus10Rmerge.sort(sortByHighestSymmetry); 
+    plus10Rmerge.sort(sortByrMerge); 
+    
+    if (minus10Rmerge[0]){
+        minus10Rmerge[0].label = "BEST";
+    }
+    
+    /** Setting lables */
+    if (plus10Rmerge){
+        for(var i = 0; i < plus10Rmerge.length; i++){
+            plus10Rmerge[i].label = "rMerge > 10";
+        }
+    }
+       
+    return _.concat(minus10Rmerge, plus10Rmerge);    
 };
 
 AutoprocessingRanker.prototype.sortBySpaceGroup = function(array, spacegroudFieldName){
@@ -1497,15 +1552,16 @@ AutoProcIntegrationGrid.prototype.parseData = function(data) {
          }
          catch(e){
              
+             console.log(e);
          }  
     }
     
     var anomalous = _.filter(data, function(o) { return o.v_datacollection_summary_phasing_anomalous; });
     var nonanomalous = _.filter(data, function(o) { return o.v_datacollection_summary_phasing_anomalous == false; });
     /**Set non anomalous first */
-    data = new AutoprocessingRanker().rank(anomalous, "v_datacollection_summary_phasing_autoproc_space_group");    
-    data = _.concat(new AutoprocessingRanker().rank(nonanomalous, "v_datacollection_summary_phasing_autoproc_space_group"),data);    
-    return data;
+    anomalousdata = new AutoprocessingRanker().rank(anomalous, "v_datacollection_summary_phasing_autoproc_space_group");    
+    nonanomalousdata = new AutoprocessingRanker().rank(nonanomalous, "v_datacollection_summary_phasing_autoproc_space_group");    
+    return _.concat(nonanomalousdata, anomalousdata);
 };
 
 AutoProcIntegrationGrid.prototype.load = function(data) {      
@@ -2814,6 +2870,7 @@ DataCollectionGrid.prototype.getPanel = function (dataCollectionGroup) {
         border: 1,        
         store: this.store,       
         disableSelection: true,
+       
         columns: this.getColumns(),
         viewConfig: {
             enableTextSelection: true,
@@ -2868,7 +2925,7 @@ DataCollectionGrid.prototype._getAutoprocessingStatistics = function(data) {
                 spaceGroup: autoProc_spaceGroups[i]
             };
         }
-
+        
         data[autoProcIds[i]][scalingStatisticsTypes[i]] = ({
             autoProcId: autoProcIds[i],
             scalingStatisticsType: scalingStatisticsTypes[i],
@@ -2887,27 +2944,15 @@ DataCollectionGrid.prototype._getAutoprocessingStatistics = function(data) {
         });
 
     }
-
+    
     /** Convert from map to array */
     var ids = _.map(data, 'autoProcId');
     var result = [];
     for ( i = 0; i < ids.length; i++) {
         result.push(data[ids[i]]);
     }
-
-    function sortByBest(a, b) {
-        var spaceGroupA = a.spaceGroup.replace(/\s/g, "");
-        var spaceGroupB = b.spaceGroup.replace(/\s/g, "");              
-        return (_.indexOf(ExtISPyB.spaceGroups, spaceGroupA) > _.indexOf(ExtISPyB.spaceGroups, spaceGroupB));
-    }
-
-    var sorted = result.sort(sortByBest).reverse();    
-    /** Add new attribute for ranking order */
-    for ( i = 0; i < sorted.length; i++) {
-        sorted[i]["rank"] = i + 1;
-    }
-
-    return sorted;
+    
+    return new AutoprocessingRanker().rank(result, "spaceGroup");  
 };
 
 
@@ -2958,7 +3003,7 @@ DataCollectionGrid.prototype.getColumns = function() {
                 data.xtal4 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 4);
 
                 /** Image quality indicator **/
-                data.indicator = EXI.getDataAdapter().mx.dataCollection.getQualityIndicatorPlot(record.data.DataCollection_dataCollectionId);              
+                data.indicator = EXI.getDataAdapter().mx.dataCollection.getQualityIndicatorPlot(record.data.DataCollection_dataCollectionId);                              
                 data.onlineresults = _this._getAutoprocessingStatistics(record.data);
                 
                 /** We dont show screen if there are results of autoprocessing */
@@ -3023,12 +3068,13 @@ function DataCollectionMxMainView() {
 DataCollectionMxMainView.prototype.getPanel = MainView.prototype.getPanel;
 
 DataCollectionMxMainView.prototype.getContainer = function() {
-		this.container = Ext.create('Ext.tab.Panel', {       
+		this.container = Ext.create('Ext.tab.Panel', {   
+        minHeight : 900,    
         padding : "5 40 0 5",
         items: [ {
                         title: 'Data Collections',
                         cls : 'border-grid',
-                        id : this.id + "_dataCollectionTab",
+                        id : this.id + "_dataCollectionTab",                        
                         items:[
                             this.genericDataCollectionPanel.getPanel()
                         ]
@@ -3257,6 +3303,7 @@ MXDataCollectionGrid.prototype.getPanel = function(dataCollectionGroup) {
 
     this.panel = Ext.create('Ext.panel.Panel', {  
         id: this.id,
+        minHeight : 900,
         tbar: this.getToolBar(),        
         items: [_this.activePanel.getPanel(dataCollectionGroup)]
      });
@@ -3895,6 +3942,7 @@ UncollapsedDataCollectionGrid.prototype.getPanel = function(){
         border: 1,        
         store: this.store,  
         id: this.id,     
+         minHeight : 900,
         disableSelection: true,
         columns: this.getColumns(),
         viewConfig: {
@@ -3938,7 +3986,8 @@ UncollapsedDataCollectionGrid.prototype.displayDataCollectionTab = function(targ
 * @method displayDataCollectionTab
 */
 UncollapsedDataCollectionGrid.prototype.displayResultAutoprocessingTab = function(target, dataCollectionId) {
-    var onSuccess = function(sender, data){                       
+    var onSuccess = function(sender, data){    
+          
         /** Parsing data */
         var html = "";     
         dust.render("collapsed.autoprocintegrationgrid.template",  new AutoProcIntegrationGrid().parseData(data[0]), function(err, out) {
@@ -3996,19 +4045,20 @@ UncollapsedDataCollectionGrid.prototype.displayPhasingTab = function(target, dat
                    var keys = _.keys(_.keyBy(stepsBySpaceGroup, "csv"));
                    return _.filter(keys, function(e){return e!= "null";});
                }
+           
                var node = {};
                node = ({
-                   spaceGroup      : spaceGroup,
-                   prepare         : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "PREPARE"}) != null,
-                   sub             : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "SUBSTRUCTUREDETERMINATION"}) != null,
-                   phasing         : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "PHASING"}) != null,
-                   model           : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "MODELBUILDING"}) != null,
-                   downloadCSV     : EXI.getDataAdapter().mx.phasing.getCSVPhasingFilesByPhasingAttachmentIdURL(getCSV(stepsBySpaceGroup)),
+                   spaceGroup       : spaceGroup,
+                   prepare          : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "PREPARE"}) != null,
+                   sub              : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "SUBSTRUCTUREDETERMINATION"}) != null,
+                   phasing          : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "PHASING"}) != null,
+                   model            : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "MODELBUILDING"}) != null,
+                   downloadCSV      : EXI.getDataAdapter().mx.phasing.getCSVPhasingFilesByPhasingAttachmentIdURL(getCSV(stepsBySpaceGroup)),
                    downloadFilesUrl : EXI.getDataAdapter().mx.phasing.getDownloadFilesByPhasingStepIdURL(getStepId(stepsBySpaceGroup))
                    
                });
                
-               function getMetrics(phasingStep){                   
+               function getMetrics(phasingStep){                                      
                     if (phasingStep.metric){                        
                             var singleMetric = phasingStep.metric.split(",");
                             var values = phasingStep.statisticsValue.split(",");                            
@@ -4017,10 +4067,17 @@ UncollapsedDataCollectionGrid.prototype.displayPhasingTab = function(target, dat
                                     phasingStep[singleMetric[j].replace(/ /g, '_')] = values[j];                           
                             }
                     } 
+                    if (phasingStep.png){
+                        phasingStep.pngURL = EXI.getDataAdapter().mx.phasing.getPhasingFilesByPhasingProgramAttachmentIdAsImage(phasingStep.png);
+                    }
+                    
+                    
+                    phasingStep.spaceGroup = phasingStep.SpaceGroup_spaceGroupShortName; 
                     return (phasingStep);                     
                }
                
                function getNodeByPhasingStep(node, stepsBySpaceGroup, step){
+                   
                    var modelBuildingSteps = _.filter(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : step});
                    node["metrics"] = [];
                    if (modelBuildingSteps){
@@ -4031,6 +4088,21 @@ UncollapsedDataCollectionGrid.prototype.displayPhasingTab = function(target, dat
                             if (modelBuildingSteps[z].metric){                                                        
                                 toBePushed = getMetrics(modelBuildingSteps[z]);
                             }  
+                            
+                            /* Opening uglymol with:
+                                    1) pdb file
+                                    2) map1 as first map file
+                                    3) map2 as second map file
+                                    */           
+                            var pdbUrl = EXI.getDataAdapter().mx.phasing.downloadPhasingFilesByPhasingAttachmentId( modelBuildingSteps[z].pdb);
+                            if ( modelBuildingSteps[0].map != null){
+                                var mapsArr = modelBuildingSteps[z].map.split(",");
+                                if (mapsArr.length == 2){
+                                    var mapUrl1 = EXI.getDataAdapter().mx.phasing.downloadPhasingFilesByPhasingAttachmentId( mapsArr[0]);
+                                    var mapUrl2 = EXI.getDataAdapter().mx.phasing.downloadPhasingFilesByPhasingAttachmentId( mapsArr[1]);                                
+                                    toBePushed["uglymol"] = '../viewer/uglymol/index.html?pdb=' + pdbUrl + '&map1=' + mapUrl1 + '&map2=' + mapUrl2;
+                                }
+                            }                                                                            
                             node["metrics"].push(toBePushed);                         
                        }                                            
                    }     
@@ -4072,14 +4144,28 @@ UncollapsedDataCollectionGrid.prototype.displayPhasingTab = function(target, dat
                    count = count + 1;
                }
                
-               node["count"] = count;
-               
+               node["count"] = count;               
                parsed.push(node);
            }
        }
        
         parsed.sort(function(a,b){return a.count < b.count;});
-      
+        /** Parsing the metrics */
+        for(var i =0; i< parsed.length; i++){
+            if (parsed[i]){
+                if (parsed[i].metrics){
+                    parsed[i].metrics.sort(function(a,b){   
+                        try{                                             
+                            return parseFloat(a._CC_of_partial_model) < parseFloat(b._CC_of_partial_model);
+                        }
+                        catch(e){
+                            return false;
+                        }
+                    });
+                }
+            }
+        }
+        
         var html = "";     
         dust.render("phasing.mxdatacollectiongrid.template",  parsed, function(err, out) {
                     html = html + out;
@@ -5256,7 +5342,7 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function() {
         ],
         viewConfig: {
             getRowClass: function(record, index, rowParams, store) {
-                if (record.get('sampleChangerLocation') == "" || record.get('sampleChangerLocation') == " ") {
+                if (record.get('sampleChangerLocation') == "" || record.get('sampleChangerLocation') == " " || record.get('sampleChangerLocation') == null ) {
                     return "warning-row";
                 }
                 for (var i = 0 ; i < _this.dewars.length ; i++){
@@ -5355,35 +5441,35 @@ ContainerPrepareSpreadSheet.prototype.load = function(dewars, sampleChangerWidge
     if (typeof(Storage) != "undefined"){
         var preSelectedBeamline = sessionStorage.getItem("selectedBeamline");
     }
-    var emptyDewars = false;
+    // var emptyDewars = false;
     //Parse data
     for (dewar in dewars) {
-        if (dewars[dewar].sampleCount > 0){
-            var beamlineName = dewars[dewar].beamlineName;
-            if (preSelectedBeamline) {
-                beamlineName = preSelectedBeamline;
-            }
-            var containerType = "Unipuck";
-            if (dewars[dewar].capacity){
-                if (dewars[dewar].capacity == 10) {
-                    containerType = "Spinepuck";
-                }
-            }
-            data.push({
-                shippingName : dewars[dewar].shippingName,
-                barCode : dewars[dewar].barCode,
-                containerCode : dewars[dewar].containerCode,
-                containerType : containerType,
-                sampleCount : dewars[dewar].sampleCount,
-                beamlineName : beamlineName,
-                sampleChangerLocation : dewars[dewar].sampleChangerLocation,
-                dewarId : dewars[dewar].dewarId,
-                containerId : dewars[dewar].containerId,
-                capacity : dewars[dewar].capacity
-            });
-        } else {
-            emptyDewars = true;
+        // if (dewars[dewar].sampleCount > 0){
+        var beamlineName = dewars[dewar].beamlineName;
+        if (preSelectedBeamline) {
+            beamlineName = preSelectedBeamline;
         }
+        var containerType = "Unipuck";
+        if (dewars[dewar].capacity){
+            if (dewars[dewar].capacity == 10) {
+                containerType = "Spinepuck";
+            }
+        }
+        data.push({
+            shippingName : dewars[dewar].shippingName,
+            barCode : dewars[dewar].barCode,
+            containerCode : dewars[dewar].containerCode,
+            containerType : containerType,
+            sampleCount : dewars[dewar].sampleCount,
+            beamlineName : beamlineName,
+            sampleChangerLocation : dewars[dewar].sampleChangerLocation,
+            dewarId : dewars[dewar].dewarId,
+            containerId : dewars[dewar].containerId,
+            capacity : dewars[dewar].capacity
+        });
+        // } else {
+        //     emptyDewars = true;
+        // }
     }
 
     // if (emptyDewars){
@@ -5676,6 +5762,8 @@ function LoadSampleChangerView (args) {
         }
     };
 
+    this.sampleChangerWidget = new FlexHCDWidget({});
+    
     this.warningRows = [];
     this.selectedContainerId = null;
     this.selectedContainerCapacity = null;
@@ -5699,6 +5787,11 @@ function LoadSampleChangerView (args) {
         if (row) {
             if (_this.selectedPuck){
                 _this.deselectPuck();
+            }
+            else{
+                $.notify("Click on a sample changer location to place the dewar", "info");
+                _this.sampleChangerWidget.blink();
+                
             }
             if (_this.selectedContainerId) {
                 if (_this.selectedContainerId == row.get('containerId')){
@@ -5758,8 +5851,10 @@ LoadSampleChangerView.prototype.setSelectedRow = function (row) {
                                     value : row.get('sampleChangerLocation')
                                 }]
         }, "EMPTY");
-    this.sampleChangerWidget.enablePuck(this.selectedPuck);
-        
+    
+    if (this.selectedPuck) {
+        this.sampleChangerWidget.enablePuck(this.selectedPuck);
+    }
 };
 
 /**
@@ -5772,12 +5867,15 @@ LoadSampleChangerView.prototype.setSelectedPuck = function (puck) {
     this.selectedPuck = puck;
     $("#" + puck.id).addClass("puck-selected");
     if (puck.isEmpty){
+        if (!this.selectedContainerId) {
+            this.selectedContainerId = puck.containerId;
+        }
         this.previewPuck(puck.containerId, puck.capacity, {
-        info : [{
-            text : 'SC Location',
-            value : this.sampleChangerWidget.convertIdToSampleChangerLocation(puck.id)
-        }]
-    }, "EMPTY");
+                info : [{
+                    text : 'SC Location',
+                    value : this.sampleChangerWidget.convertIdToSampleChangerLocation(puck.id)
+                }]
+            }, "EMPTY");
     } else if (!this.selectedContainerId) {
         var rowsByContainerId = this.containerListEditor.getRowsByContainerId(puck.containerId);
         this.setSelectedRow(rowsByContainerId[0]);
@@ -5853,14 +5951,14 @@ LoadSampleChangerView.prototype.getSampleChangerWidget = function (sampleChanger
         radius : this.widgetRadius,
         isLoading : false
     };
-    var sampleChangerWidget = new FlexHCDWidget(data);
+    this.sampleChangerWidget = new FlexHCDWidget(data);
     if (sampleChangerName == "SC3") {
-        sampleChangerWidget = new SC3Widget(data);
+        this.sampleChangerWidget = new SC3Widget(data);
     } else if (sampleChangerName == "RoboDiff") {
-        sampleChangerWidget = new RoboDiffWidget(data);
+        this.sampleChangerWidget = new RoboDiffWidget(data);
     }
 
-    return sampleChangerWidget;
+    return this.sampleChangerWidget;
 };
 
 /**
@@ -5879,34 +5977,37 @@ LoadSampleChangerView.prototype.load = function (containers) {
     if (containers) {
         for (var i = 0 ; i < containers.length ; i++){
             var container = containers[i];
-            if (container.sampleCount > 0){
-                var sampleChangerLocation = container.sampleChangerLocation;
-                if (sampleChangerLocation != ""){
-                    var puckId = this.sampleChangerWidget.convertSampleChangerLocationToId(Number(sampleChangerLocation));
-                    if (puckId) {
-                        filledContainers[container.containerId] = puckId;
-                        var puck = this.sampleChangerWidget.findPuckById(puckId);
-                        if (puck.capacity != container.capacity){
-                            this.warningRows.push(container.containerId);
-                        }
-                    } else {
+
+            var sampleChangerLocation = container.sampleChangerLocation;
+            if (sampleChangerLocation != "" && sampleChangerLocation != null){
+                var puckId = this.sampleChangerWidget.convertSampleChangerLocationToId(Number(sampleChangerLocation));
+                if (puckId) {
+                    var puck = this.sampleChangerWidget.findPuckById(puckId);
+                    if (puck.capacity != container.capacity){
                         this.warningRows.push(container.containerId);
+                    }
+                    if (container.sampleCount == 0) {
+                        puck.containerId = container.containerId;
+                        puck.isEmpty = false;
+                    } else {
+                        filledContainers[container.containerId] = puckId;
                     }
                 } else {
                     this.warningRows.push(container.containerId);
                 }
+
+            } else {
+                this.warningRows.push(container.containerId);
             }
+
         }
         
         
         if (!_.isEmpty(filledContainers)){
             var onSuccess = function (sender, samples) {
                 var errorPucks = _this.sampleChangerWidget.loadSamples(samples,filledContainers);
-                if (errorPucks.length > 0){
-                    for (index in errorPucks) {
-                        var puck = errorPucks[index];
-                        $("#" + puck.id).addClass("puck-error");
-                    }
+                if (errorPucks.length == 0){
+                    _this.sampleChangerWidget.removeClassToAllPucks("puck-error");
                 }
             }
 
@@ -5999,7 +6100,9 @@ LoadSampleChangerView.prototype.getPanel = function () {
 */
 LoadSampleChangerView.prototype.cleanPreviewPanel = function () {
     this.previewPanelView.clean();
-    this.verticalPanel.remove(this.previewPanelView.panel);
+    if(this.previewPanelView.panel.body){
+        this.verticalPanel.remove(this.previewPanelView.panel);
+    }
 };
 
 /**
@@ -6015,6 +6118,7 @@ LoadSampleChangerView.prototype.previewPuck = function (containerId, capacity, d
     this.verticalPanel.add(this.previewPanelView.getPanel());
     this.previewPanelView.load(containerId, capacity, data, instructionsButtonText);
 };
+
 /**
 * This class renders the steps and panels of every class used in the prepare experiment tab
 *
@@ -6532,8 +6636,7 @@ PreviewPanelView.prototype.clean = function () {
 };
 function WorkflowStepMainView() {
 	this.icon = 'images/icon/ic_satellite_black_18dp.png';
-	MainView.call(this);
-	
+	MainView.call(this);	
 	var _this = this;
 	
 }
@@ -6555,6 +6658,9 @@ WorkflowStepMainView.prototype.getContainer = function() {
 	return this.mainPanel;
 };
 
+WorkflowStepMainView.prototype.onBoxReady = function() {
+	
+};
 
 WorkflowStepMainView.prototype.getGrid = function(title, columns, data) {
 	var store = Ext.create('Ext.data.Store', {
@@ -6565,7 +6671,7 @@ WorkflowStepMainView.prototype.getGrid = function(title, columns, data) {
     for (var i = 0; i < columns.length; i++) {
          gridColumns.push({ text: columns[i],  dataIndex: columns[i], flex: 1 });
     }
-    return Ext.create('Ext.grid.Panel', {
+    var panel = Ext.create('Ext.grid.Panel', {
         title: title,
         flex : 1,
         margin : '10 180 10 10',
@@ -6573,6 +6679,12 @@ WorkflowStepMainView.prototype.getGrid = function(title, columns, data) {
         store: store,
         columns: gridColumns
     });
+    
+    panel.on('boxready', function() {
+        
+    });
+    
+    return panel;
 };
 
 WorkflowStepMainView.prototype.getImageResolution = function(imageItem) {  
@@ -6585,8 +6697,7 @@ WorkflowStepMainView.prototype.getImageResolution = function(imageItem) {
 };
 
 WorkflowStepMainView.prototype.getImagesResolution = function(imageItems) {  
-    var resolution = 1024;
-   
+    var resolution = 1024;   
     resolution = resolution/imageItems.length;
     for (var i = 0; i < imageItems.length; i++) {
         var imageItem = imageItems[i];        
@@ -6608,35 +6719,63 @@ WorkflowStepMainView.prototype.load = function(workflowStep) {
     function onSuccess(sender, data){    
    
         var items = JSON.parse(data).items;
+        _this.items = items;
         _this.panel.setTitle(JSON.parse(data).title);
         
-        var insertContainer = function(err, out){    
-                
-                    _this.mainPanel.insert({
-                            padding : 2,
-                           
-                            html : out
-                    });
+        var insertContainer = function(err, out){                    
+                _this.mainPanel.insert({
+                        padding : 2,
+                        html : out
+                });
         };
         
         for (var i = 0; i < items.length; i++) {
             console.log(items[i]);
-            if (items[i].type == "table"){
-                  _this.mainPanel.insert(_this.getGrid(items[i].title,items[i].columns, items[i].data));
-            }
-            else{
-                if (items[i].type == "image"){
-                    
+            var events = [];
+            switch(items[i].type) {
+                case "table":
+                    //_this.mainPanel.insert(_this.getGrid(items[i].title,items[i].columns, items[i].data));
+                    //continue;                    
+                case "image":
                     items[i] = _this.getImageResolution(items[i]);
-                }
-                
-                 if (items[i].type == "images"){
-                     
-                    items[i].items = _this.getImagesResolution(items[i].items);
+                    break;
+                case "images":
+                    items[i].items = _this.getImagesResolution(items[i].items);  
+                    break;
+                 case "logFile":
+                    items[i].id = BUI.id(); 
+                    events.push(function(){
+                        $( "#" + items[i].id ).click(function() {
+                            var item = _.find(_this.items, {id:this.id});
+                            var filename = item.title.replace(/\s/g, ""); + ".log";
+                            var text = item.logText;
+                            var pom = document.createElement('a');
+                            pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                            pom.setAttribute('download', filename);
+
+                            if (document.createEvent) {
+                                var event = document.createEvent('MouseEvents');
+                                event.initEvent('click', true, true);
+                                pom.dispatchEvent(event);
+                            }
+                            else {
+                                pom.click();
+                            }
+                            
+                            
+                            
+                            
+                        });       
+                    }); 
+                    break;
+                default:
                    
-                }
-               
-                dust.render("workflowmainview.template", items[i], insertContainer);
+            }
+            
+            dust.render("workflowmainview.template", items[i], insertContainer);
+            
+            for(var j =0; j< events.length; j++){
+                events[j]();
             }
         }
       
@@ -7775,6 +7914,7 @@ function SampleChangerWidget (args) {
 	this.onPuckSelected = new Event(this);
 	this.sampleChangerCapacity = 0; //This is set in each sample changer type
 
+    this.data = {};
 	if (args) {
 		if (args.radius){
 			this.radius = args.radius;
@@ -7784,6 +7924,15 @@ function SampleChangerWidget (args) {
 		}
 	}
 };
+
+/**
+* It blinks the sample changer by fading IN and OUT
+*
+* @method blink` 
+*/
+SampleChangerWidget.prototype.blink = function () {
+    $('#' + this.id).fadeIn().fadeOut().fadeIn().fadeOut().fadeIn();
+}
 
 /**
 * Create certain types of pucks following a circular path
@@ -7849,7 +7998,7 @@ SampleChangerWidget.prototype.getPanel = function () {
 		    layout:'absolute',
             items : [
 						{
-							html : this.getStructure(),
+							html : this.getStructure(this.data),
 							frame: false,
 							border: false,
 							bodyStyle: 'background:transparent;'
@@ -7892,25 +8041,32 @@ SampleChangerWidget.prototype.loadSamples = function (samples, containerIdsMap) 
 	for (puckIndex in _.keys(pucksToBeLoaded)) {
 		var puck = this.findPuckById(_.keys(pucksToBeLoaded)[puckIndex]);
 		if (pucksToBeLoaded[puck.id].length <= puck.capacity){
-			var errorSamples = [];
 			var currentDewar = pucksToBeLoaded[puck.id][0].Dewar_dewarId;
 			for (var i = 0 ; i < pucksToBeLoaded[puck.id].length ; i++) {
 				var sample = pucksToBeLoaded[puck.id][i];
 				if (Number(sample.BLSample_location) > puck.capacity) {
-					errorSamples.push(sample);
+					sample.hasError = true;
 					errorPucks = _.union(errorPucks,[puck]);
+					$("#" + puck.id).addClass("puck-error");
 				}
 				if (sample.Dewar_dewarId != currentDewar) {
 					errorPucks = _.union(errorPucks,[puck]);
+					$("#" + puck.id).addClass("puck-error");
+				}
+				if (sample.BLSample_location == ""){
+					sample.hasError = true;
+					errorPucks = _.union(errorPucks,[puck]);
+					$("#" + puck.id).addClass("puck-error");
 				}
 			}
-			_.remove(pucksToBeLoaded[puck.id], function (o) {return errorSamples.indexOf(o) >= 0});
-			puck.loadSamples(pucksToBeLoaded[puck.id]);
+			// _.remove(pucksToBeLoaded[puck.id], function (o) {return errorSamples.indexOf(o) >= 0});
 		} else {
 			// $.notify("Capacity Error: Couldn't load correctly the puck at location " + this.convertIdToSampleChangerLocation(puck.id) + ".", "error");
 			puck.containerId = pucksToBeLoaded[puck.id][0].Container_containerId;
 			errorPucks.push(puck);
+			$("#" + puck.id).addClass("puck-error");
 		}
+		puck.loadSamples(pucksToBeLoaded[puck.id]);
 	}
 	return errorPucks;
 };
@@ -7934,9 +8090,10 @@ SampleChangerWidget.prototype.load = function (data) {
 *
 * @method getStructure
 */
-SampleChangerWidget.prototype.getStructure = function () {
+SampleChangerWidget.prototype.getStructure = function (data) {
 	var html = "";
-	dust.render("structure.sampleChanger.template", this.data, function(err, out){
+    
+	dust.render("structure.sampleChanger.template", data, function(err, out){
 		html = out;
 	});
 	
@@ -8067,6 +8224,20 @@ SampleChangerWidget.prototype.enablePuck = function (puck) {
 };
 
 /**
+* Removes the class style class to all pucks
+*
+* @method removeClassToAllPucks
+*/
+SampleChangerWidget.prototype.removeClassToAllPucks = function (className) {
+	var allPucks = this.getAllPucks();
+	for (puckIndex in allPucks) {
+		var puck = allPucks[puckIndex];
+		$("#" + puck.puckWidget.id).removeClass(className);
+		puck.puckWidget.allowAllCells();
+	}
+};
+
+/**
 * Returns an object containing the puckData of the filled pucks indexed by the idLocation
 *
 * @method getPuckData
@@ -8112,6 +8283,7 @@ function FlexHCDWidget (args) {
 	this.sampleChangerCapacity = 24;
 	this.initAlpha = -7*2*Math.PI/16;
 	this.data = {
+        id : this.id,
 		radius : this.radius,
 		cells : 8,
 		lines : [],
@@ -8123,6 +8295,8 @@ function FlexHCDWidget (args) {
 	this.createPucks("Spinepuck", this.data.cells/2, -5*Math.PI/8, this.data.radius/2, 0.5, {dAlpha : Math.PI/16, dist : 3*this.data.radius/4});
 };
 
+
+FlexHCDWidget.prototype.blink = SampleChangerWidget.prototype.blink;
 FlexHCDWidget.prototype.getPuckIndexFromAngle = SampleChangerWidget.prototype.getPuckIndexFromAngle;
 FlexHCDWidget.prototype.createPucks = SampleChangerWidget.prototype.createPucks;
 FlexHCDWidget.prototype.getPanel = SampleChangerWidget.prototype.getPanel;
@@ -8141,6 +8315,7 @@ FlexHCDWidget.prototype.emptyAllPucks = SampleChangerWidget.prototype.emptyAllPu
 FlexHCDWidget.prototype.enableAllPucks = SampleChangerWidget.prototype.enableAllPucks;
 FlexHCDWidget.prototype.disablePuck = SampleChangerWidget.prototype.disablePuck;
 FlexHCDWidget.prototype.enablePuck = SampleChangerWidget.prototype.enablePuck;
+FlexHCDWidget.prototype.removeClassToAllPucks = SampleChangerWidget.prototype.removeClassToAllPucks;
 
 /**
 * Creates the particular structure of the FlexHCD
@@ -8371,6 +8546,9 @@ PuckWidget.prototype.loadSamples = function (samples, selectedLocation) {
 		if (selectedLocation != null){
 			selected = sample.BLSample_location == selectedLocation;
 		}
+		if (sample.BLSample_location == "") {
+			sample.hasError = true;
+		}
 		
 		// Parse data
 		cells.push({
@@ -8382,7 +8560,8 @@ PuckWidget.prototype.loadSamples = function (samples, selectedLocation) {
 			protein_name : sample.Protein_name,
 			dataCollectionIds : dataCollectionIds,
 			containerId : sample.Container_containerId,
-			containerCode : sample.Container_code
+			containerCode : sample.Container_code,
+			hasError : sample.hasError
 		});
 	}
 	this.load(cells);
@@ -8400,16 +8579,24 @@ PuckWidget.prototype.load = function (data) {
 
 	for (sampleIndex in data){
 		var sample = data[sampleIndex];
-		var id = this.id + "-" + sample.location;
-		var cellIndex = this.findCellIndexById(id);
-		this.data.cells[cellIndex].state = sample.state;
-		this.data.cells[cellIndex].selected = sample.selected;
-		this.data.cells[cellIndex].sample_name = sample.sample_name;
-		this.data.cells[cellIndex].protein_acronym = sample.protein_acronym;
-		this.data.cells[cellIndex].protein_name = sample.protein_name;
-		this.data.cells[cellIndex].containerId = sample.containerId;
-		this.data.cells[cellIndex].containerCode = sample.containerCode;
-		if (sample.state != "EMPTY"){
+		if (!sample.hasError){
+			var id = this.id + "-" + sample.location;
+			var cellIndex = this.findCellIndexById(id);
+			this.data.cells[cellIndex].state = sample.state;
+			this.data.cells[cellIndex].selected = sample.selected;
+			this.data.cells[cellIndex].sample_name = sample.sample_name;
+			this.data.cells[cellIndex].protein_acronym = sample.protein_acronym;
+			this.data.cells[cellIndex].protein_name = sample.protein_name;
+			this.data.cells[cellIndex].containerId = sample.containerId;
+			this.data.cells[cellIndex].containerCode = sample.containerCode;
+			if (sample.state != "EMPTY"){
+				this.containerId = sample.containerId;
+				this.containerCode = sample.containerCode;
+				this.data.containerId = this.containerId;
+				this.data.containerCode = this.containerCode;
+				this.isEmpty = false;
+			}
+		} else {
 			this.containerId = sample.containerId;
 			this.containerCode = sample.containerCode;
 			this.data.containerId = this.containerId;
@@ -8681,6 +8868,7 @@ function RoboDiffWidget (args) {
 	this.sampleChangerCapacity = 24;
 	this.initAlpha = -7*2*Math.PI/16;
 	this.data = {
+        id : this.id,
 		radius : this.radius,
 		cells : 8,
 		lines : [],
@@ -8691,6 +8879,7 @@ function RoboDiffWidget (args) {
 	this.createPucks("Spinepuck", this.data.cells, -7*Math.PI/8, this.data.radius/2, 0.5, {dAlpha : Math.PI/16, dist : 3*this.data.radius/4});
 };
 
+RoboDiffWidget.prototype.blink = SampleChangerWidget.prototype.blink;
 RoboDiffWidget.prototype.getPuckIndexFromAngle = SampleChangerWidget.prototype.getPuckIndexFromAngle;
 RoboDiffWidget.prototype.createPucks = SampleChangerWidget.prototype.createPucks;
 RoboDiffWidget.prototype.getPanel = SampleChangerWidget.prototype.getPanel;
@@ -8709,6 +8898,7 @@ RoboDiffWidget.prototype.emptyAllPucks = SampleChangerWidget.prototype.emptyAllP
 RoboDiffWidget.prototype.enableAllPucks = SampleChangerWidget.prototype.enableAllPucks;
 RoboDiffWidget.prototype.disablePuck = SampleChangerWidget.prototype.disablePuck;
 RoboDiffWidget.prototype.enablePuck = SampleChangerWidget.prototype.enablePuck;
+RoboDiffWidget.prototype.removeClassToAllPucks = SampleChangerWidget.prototype.removeClassToAllPucks;
 
 /**
 * Creates the particular structure of the FlexHCD
@@ -8815,7 +9005,7 @@ function SampleChangerSelector (args) {
     };
 
     this.beamlines = EXI.credentialManager.getBeamlinesByTechnique("MX");
-    
+
     var beamlinesGridData = [];
     for (var i = 0 ; i < this.beamlines.length ; i++) {
         var beamline = this.beamlines[i];
@@ -8960,6 +9150,7 @@ function SC3Widget (args) {
 	this.clockwise = -1;
 
 	this.data = {
+        id : this.id,
 		radius : this.radius,
 		cells : 5,
 		text : []
@@ -8969,6 +9160,7 @@ function SC3Widget (args) {
 	this.createPucks("Spinepuck", this.data.cells, 0, this.data.radius/2, 0.8);
 };
 
+SC3Widget.prototype.blink = SampleChangerWidget.prototype.blink;
 SC3Widget.prototype.getPuckIndexFromAngle = SampleChangerWidget.prototype.getPuckIndexFromAngle;
 SC3Widget.prototype.createPucks = SampleChangerWidget.prototype.createPucks;
 SC3Widget.prototype.getPanel = SampleChangerWidget.prototype.getPanel;
@@ -8987,6 +9179,7 @@ SC3Widget.prototype.emptyAllPucks = SampleChangerWidget.prototype.emptyAllPucks;
 SC3Widget.prototype.enableAllPucks = SampleChangerWidget.prototype.enableAllPucks;
 SC3Widget.prototype.disablePuck = SampleChangerWidget.prototype.disablePuck;
 SC3Widget.prototype.enablePuck = SampleChangerWidget.prototype.enablePuck;
+SC3Widget.prototype.removeClassToAllPucks = SampleChangerWidget.prototype.removeClassToAllPucks;
 
 /**
 * Creates the particular structure of the SC3

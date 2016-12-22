@@ -4,9 +4,10 @@ function DataCollectionMainView() {
 
 	MainView.call(this);
 
-	this.grid = new QueueGrid({
+	this.grid = new OverviewQueueGrid({
 		positionColumnsHidden : true,
 		maxHeight : Ext.getCmp("main_panel").getHeight() - 50,
+		padding : 40,
 		sorters : [ {
 			property : 'macromoleculeAcronym',
 			direction : 'ASC' } ] });
@@ -21,7 +22,7 @@ DataCollectionMainView.prototype.getContainer = MainView.prototype.getContainer;
 
 DataCollectionMainView.prototype.filter = function(macromoleculeAcronym, bufferAcronym) {
 	this.grid.key = {};
-	this.grid.store.filter( [{property : "bufferAcronym", value : bufferAcronym, anyMacth : true}]);
+	this.grid.filter("bufferAcronym",bufferAcronym);
 };
 
 DataCollectionMainView.prototype.load = function(selected) {
@@ -41,7 +42,7 @@ DataCollectionMainView.prototype.load = function(selected) {
 
 	this.container.insert(0, this.grid.getPanel());
 
-	this.grid.panel.setLoading();
-	this.grid.store.loadData(selected);
-	this.grid.panel.setLoading(false);
+	//this.grid.panel.setLoading();
+	this.grid.load(selected);
+	//this.grid.panel.setLoading(false);
 };

@@ -15,6 +15,7 @@ function SampleChangerWidget (args) {
 	this.onPuckSelected = new Event(this);
 	this.sampleChangerCapacity = 0; //This is set in each sample changer type
 
+    this.data = {};
 	if (args) {
 		if (args.radius){
 			this.radius = args.radius;
@@ -24,6 +25,15 @@ function SampleChangerWidget (args) {
 		}
 	}
 };
+
+/**
+* It blinks the sample changer by fading IN and OUT
+*
+* @method blink` 
+*/
+SampleChangerWidget.prototype.blink = function () {
+    $('#' + this.id).fadeIn().fadeOut().fadeIn().fadeOut().fadeIn();
+}
 
 /**
 * Create certain types of pucks following a circular path
@@ -89,7 +99,7 @@ SampleChangerWidget.prototype.getPanel = function () {
 		    layout:'absolute',
             items : [
 						{
-							html : this.getStructure(),
+							html : this.getStructure(this.data),
 							frame: false,
 							border: false,
 							bodyStyle: 'background:transparent;'
@@ -132,25 +142,32 @@ SampleChangerWidget.prototype.loadSamples = function (samples, containerIdsMap) 
 	for (puckIndex in _.keys(pucksToBeLoaded)) {
 		var puck = this.findPuckById(_.keys(pucksToBeLoaded)[puckIndex]);
 		if (pucksToBeLoaded[puck.id].length <= puck.capacity){
-			var errorSamples = [];
 			var currentDewar = pucksToBeLoaded[puck.id][0].Dewar_dewarId;
 			for (var i = 0 ; i < pucksToBeLoaded[puck.id].length ; i++) {
 				var sample = pucksToBeLoaded[puck.id][i];
 				if (Number(sample.BLSample_location) > puck.capacity) {
-					errorSamples.push(sample);
+					sample.hasError = true;
 					errorPucks = _.union(errorPucks,[puck]);
+					$("#" + puck.id).addClass("puck-error");
 				}
 				if (sample.Dewar_dewarId != currentDewar) {
 					errorPucks = _.union(errorPucks,[puck]);
+					$("#" + puck.id).addClass("puck-error");
+				}
+				if (sample.BLSample_location == ""){
+					sample.hasError = true;
+					errorPucks = _.union(errorPucks,[puck]);
+					$("#" + puck.id).addClass("puck-error");
 				}
 			}
-			_.remove(pucksToBeLoaded[puck.id], function (o) {return errorSamples.indexOf(o) >= 0});
-			puck.loadSamples(pucksToBeLoaded[puck.id]);
+			// _.remove(pucksToBeLoaded[puck.id], function (o) {return errorSamples.indexOf(o) >= 0});
 		} else {
 			// $.notify("Capacity Error: Couldn't load correctly the puck at location " + this.convertIdToSampleChangerLocation(puck.id) + ".", "error");
 			puck.containerId = pucksToBeLoaded[puck.id][0].Container_containerId;
 			errorPucks.push(puck);
+			$("#" + puck.id).addClass("puck-error");
 		}
+		puck.loadSamples(pucksToBeLoaded[puck.id]);
 	}
 	return errorPucks;
 };
@@ -174,9 +191,10 @@ SampleChangerWidget.prototype.load = function (data) {
 *
 * @method getStructure
 */
-SampleChangerWidget.prototype.getStructure = function () {
+SampleChangerWidget.prototype.getStructure = function (data) {
 	var html = "";
-	dust.render("structure.sampleChanger.template", this.data, function(err, out){
+    
+	dust.render("structure.sampleChanger.template", data, function(err, out){
 		html = out;
 	});
 	
@@ -304,6 +322,20 @@ SampleChangerWidget.prototype.enableAllPucks = function () {
 SampleChangerWidget.prototype.enablePuck = function (puck) {
 	$("#" + puck.id).removeClass("puck-disabled");
 	puck.allowAllCells();
+};
+
+/**
+* Removes the class style class to all pucks
+*
+* @method removeClassToAllPucks
+*/
+SampleChangerWidget.prototype.removeClassToAllPucks = function (className) {
+	var allPucks = this.getAllPucks();
+	for (puckIndex in allPucks) {
+		var puck = allPucks[puckIndex];
+		$("#" + puck.puckWidget.id).removeClass(className);
+		puck.puckWidget.allowAllCells();
+	}
 };
 
 /**

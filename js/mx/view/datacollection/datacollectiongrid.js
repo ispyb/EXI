@@ -40,6 +40,7 @@ DataCollectionGrid.prototype.getPanel = function (dataCollectionGroup) {
         border: 1,        
         store: this.store,       
         disableSelection: true,
+       
         columns: this.getColumns(),
         viewConfig: {
             enableTextSelection: true,
@@ -94,7 +95,7 @@ DataCollectionGrid.prototype._getAutoprocessingStatistics = function(data) {
                 spaceGroup: autoProc_spaceGroups[i]
             };
         }
-
+        
         data[autoProcIds[i]][scalingStatisticsTypes[i]] = ({
             autoProcId: autoProcIds[i],
             scalingStatisticsType: scalingStatisticsTypes[i],
@@ -120,58 +121,8 @@ DataCollectionGrid.prototype._getAutoprocessingStatistics = function(data) {
     for ( i = 0; i < ids.length; i++) {
         result.push(data[ids[i]]);
     }
-
-    /** filter by rMerge < 10 */    
-    var sorted = _.filter(result, function(o) {
-            if (o.overall){
-                if (o.overall.rMerge){                    
-                    if (Number(o.overall.rMerge) < 5.2){
-                        return true;
-                    }
-                }
-            }
-            return false        
-     });
     
-    if (sorted.length == 0){
-        sorted = results;
-    }
-    
-    function sortByHighestSymmetry(a, b) {
-        var spaceGroupA = a.spaceGroup.replace(/\s/g, "");
-        var spaceGroupB = b.spaceGroup.replace(/\s/g, "");         
-        if (spaceGroupA == spaceGroupB){
-            if (a.overall){
-                if (b.overall){
-                    if (a.overall.rMerge){
-                        if (b.overall.rMerge){
-                            if (!isNaN(Number(a.overall.rMerge))){
-                                if (!isNaN(Number(b.overall.rMerge))){
-                                    return Number(a.overall.rMerge) > Number(b.overall.rMerge);
-                                }           
-                                else{
-                                    return false;
-                                }                     
-                            }
-                            else{
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }             
-        return (_.indexOf(ExtISPyB.spaceGroups, spaceGroupA) > _.indexOf(ExtISPyB.spaceGroups, spaceGroupB));
-    }
-
-    
-    sorted = sorted.sort(sortByHighestSymmetry).reverse();    
-    /** Add new attribute for ranking order */
-    for ( i = 0; i < sorted.length; i++) {
-        sorted[i]["rank"] = i + 1;
-    }
-    
-    return sorted;
+    return new AutoprocessingRanker().rank(result, "spaceGroup");  
 };
 
 
@@ -222,7 +173,7 @@ DataCollectionGrid.prototype.getColumns = function() {
                 data.xtal4 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 4);
 
                 /** Image quality indicator **/
-                data.indicator = EXI.getDataAdapter().mx.dataCollection.getQualityIndicatorPlot(record.data.DataCollection_dataCollectionId);              
+                data.indicator = EXI.getDataAdapter().mx.dataCollection.getQualityIndicatorPlot(record.data.DataCollection_dataCollectionId);                              
                 data.onlineresults = _this._getAutoprocessingStatistics(record.data);
                 
                 /** We dont show screen if there are results of autoprocessing */

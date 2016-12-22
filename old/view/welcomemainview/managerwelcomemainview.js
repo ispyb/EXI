@@ -55,6 +55,7 @@ ManagerWelcomeMainView.prototype.activeProposal = function(proposal) {
 
 
 ManagerWelcomeMainView.prototype.getContainer = function() {
+    
 	this.container = Ext.create('Ext.panel.Panel', {
 		autoScroll : true,
         margin : 20,
