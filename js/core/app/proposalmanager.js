@@ -12,7 +12,7 @@ function ProposalManager() {
 /**
 * It gets the information of the proposals that are found on the local Storage in the field called proposal. If it does not exist it will load form the server and store them on the local storage
 * @method get
-* @param {Boolean} forceUpdate if true the proposals information will be reloaded from the server syncrhonously
+* @param {Boolean} forceUpdate if true the proposals information will be reloaded from the server asyncrhonously
 */
 ProposalManager.prototype.get = function(forceUpdate) {
     var _this = this;
@@ -22,7 +22,7 @@ ProposalManager.prototype.get = function(forceUpdate) {
 			localStorage.setItem("proposals", JSON.stringify(proposals));
             _this.onActiveProposalChanged.notify();
 		};
-		EXI.getDataAdapter({async : true, onSuccess : onSuccess}).proposal.proposal.getProposalsInfo();
+		EXI.getDataAdapter({async : false, onSuccess : onSuccess}).proposal.proposal.getProposalsInfo();
 	}	
   
 	return JSON.parse(localStorage.getItem("proposals"));

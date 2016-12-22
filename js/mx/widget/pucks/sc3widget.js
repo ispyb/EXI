@@ -13,6 +13,7 @@ function SC3Widget (args) {
 	this.clockwise = -1;
 
 	this.data = {
+        id : this.id,
 		radius : this.radius,
 		cells : 5,
 		text : []
@@ -22,6 +23,7 @@ function SC3Widget (args) {
 	this.createPucks("Spinepuck", this.data.cells, 0, this.data.radius/2, 0.8);
 };
 
+SC3Widget.prototype.blink = SampleChangerWidget.prototype.blink;
 SC3Widget.prototype.getPuckIndexFromAngle = SampleChangerWidget.prototype.getPuckIndexFromAngle;
 SC3Widget.prototype.createPucks = SampleChangerWidget.prototype.createPucks;
 SC3Widget.prototype.getPanel = SampleChangerWidget.prototype.getPanel;
@@ -40,6 +42,7 @@ SC3Widget.prototype.emptyAllPucks = SampleChangerWidget.prototype.emptyAllPucks;
 SC3Widget.prototype.enableAllPucks = SampleChangerWidget.prototype.enableAllPucks;
 SC3Widget.prototype.disablePuck = SampleChangerWidget.prototype.disablePuck;
 SC3Widget.prototype.enablePuck = SampleChangerWidget.prototype.enablePuck;
+SC3Widget.prototype.removeClassToAllPucks = SampleChangerWidget.prototype.removeClassToAllPucks;
 
 /**
 * Creates the particular structure of the SC3

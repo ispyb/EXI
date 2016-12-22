@@ -221,7 +221,8 @@ GLmol.prototype.parseXYZ = function(str) {
       if (tokens.length == 5){
     	  /** ISPyB forcing color **/
 //    	  try{
-    		  atoms[i]["forceColor"] = JSON.parse(tokens[4]).color;
+    
+    		  atoms[i]["forceColor"] = '#FFCCFF';
         	  atoms[i]["forceOpacity"] = JSON.parse(tokens[4]).opacity;
         	  atoms[i]["forceRadius"] = JSON.parse(tokens[4]).radius;
 //        	  }

@@ -100,7 +100,22 @@ DewarListSelectorGrid.prototype.getSelectedData = function() {
 
 DewarListSelectorGrid.prototype.getStore = function(){
     this.store = Ext.create('Ext.data.Store', {
-        fields:['beamlineLocation', 'storageLocation','containerStatus','containerType','sessionStartDate','creationDate','beamLineOperator','shippingStatus','shippingName', 'barCode', 'beamlineName', 'dewarCode', 'dewarStatus', 'sampleChangerLocation', 'sampleCount', 'sessionStartDate', 'type']
+        fields:['beamlineLocation', 'storageLocation','containerStatus','containerType','sessionStartDate','creationDate','beamLineOperator','shippingStatus','shippingName', 'barCode', 'beamlineName', 'dewarCode', 'dewarStatus', 'sampleChangerLocation', 'sampleCount', 'sessionStartDate', 'type'],
+        sortInfo: { field: "sessionStartDate", direction: "DESC" },
+        sorters:
+                {
+                    field: 'sessionStartDate',
+                    direction: 'ASC',
+                    sorterFn: function(o1, o2) {
+                        var d1 = new Date(o1.data.sessionStartDate)
+                        var d2 = new Date(o2.data.sessionStartDate)
+                        if (d1 === d2) {
+                            return 0;
+                        } else {
+                            return (d1 < d2) ? 1 : -1;
+                        }
+                    }
+                }
     });
     return this.store;
 };
