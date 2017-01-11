@@ -19,12 +19,14 @@ SpinePuckWidget.prototype.getPanel = PuckWidget.prototype.getPanel;
 SpinePuckWidget.prototype.load = PuckWidget.prototype.load;
 SpinePuckWidget.prototype.addCirclePathCells = PuckWidget.prototype.addCirclePathCells;
 SpinePuckWidget.prototype.focus = PuckWidget.prototype.focus;
+SpinePuckWidget.prototype.focusWell = PuckWidget.prototype.focusWell;
 SpinePuckWidget.prototype.render = PuckWidget.prototype.render;
 SpinePuckWidget.prototype.findCellIndexById = PuckWidget.prototype.findCellIndexById;
 SpinePuckWidget.prototype.loadSamples = PuckWidget.prototype.loadSamples;
 SpinePuckWidget.prototype.emptyAll = PuckWidget.prototype.emptyAll;
 SpinePuckWidget.prototype.disableAllCells = PuckWidget.prototype.disableAllCells;
 SpinePuckWidget.prototype.allowAllCells = PuckWidget.prototype.allowAllCells;
+SpinePuckWidget.prototype.blink = PuckWidget.prototype.blink;
 
 /**
 * Parses the data

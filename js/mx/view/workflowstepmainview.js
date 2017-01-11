@@ -1,7 +1,6 @@
 function WorkflowStepMainView() {
 	this.icon = 'images/icon/ic_satellite_black_18dp.png';
-	MainView.call(this);
-	
+	MainView.call(this);	
 	var _this = this;
 	
 }
@@ -23,6 +22,9 @@ WorkflowStepMainView.prototype.getContainer = function() {
 	return this.mainPanel;
 };
 
+WorkflowStepMainView.prototype.onBoxReady = function() {
+	
+};
 
 WorkflowStepMainView.prototype.getGrid = function(title, columns, data) {
 	var store = Ext.create('Ext.data.Store', {
@@ -33,7 +35,7 @@ WorkflowStepMainView.prototype.getGrid = function(title, columns, data) {
     for (var i = 0; i < columns.length; i++) {
          gridColumns.push({ text: columns[i],  dataIndex: columns[i], flex: 1 });
     }
-    return Ext.create('Ext.grid.Panel', {
+    var panel = Ext.create('Ext.grid.Panel', {
         title: title,
         flex : 1,
         margin : '10 180 10 10',
@@ -41,6 +43,12 @@ WorkflowStepMainView.prototype.getGrid = function(title, columns, data) {
         store: store,
         columns: gridColumns
     });
+    
+    panel.on('boxready', function() {
+        
+    });
+    
+    return panel;
 };
 
 WorkflowStepMainView.prototype.getImageResolution = function(imageItem) {  
@@ -53,8 +61,7 @@ WorkflowStepMainView.prototype.getImageResolution = function(imageItem) {
 };
 
 WorkflowStepMainView.prototype.getImagesResolution = function(imageItems) {  
-    var resolution = 1024;
-   
+    var resolution = 1024;   
     resolution = resolution/imageItems.length;
     for (var i = 0; i < imageItems.length; i++) {
         var imageItem = imageItems[i];        
@@ -76,35 +83,63 @@ WorkflowStepMainView.prototype.load = function(workflowStep) {
     function onSuccess(sender, data){    
    
         var items = JSON.parse(data).items;
+        _this.items = items;
         _this.panel.setTitle(JSON.parse(data).title);
         
-        var insertContainer = function(err, out){    
-                
-                    _this.mainPanel.insert({
-                            padding : 2,
-                           
-                            html : out
-                    });
+        var insertContainer = function(err, out){                    
+                _this.mainPanel.insert({
+                        padding : 2,
+                        html : out
+                });
         };
         
         for (var i = 0; i < items.length; i++) {
             console.log(items[i]);
-            if (items[i].type == "table"){
-                  _this.mainPanel.insert(_this.getGrid(items[i].title,items[i].columns, items[i].data));
-            }
-            else{
-                if (items[i].type == "image"){
-                    
+            var events = [];
+            switch(items[i].type) {
+                case "table":
+                    //_this.mainPanel.insert(_this.getGrid(items[i].title,items[i].columns, items[i].data));
+                    //continue;                    
+                case "image":
                     items[i] = _this.getImageResolution(items[i]);
-                }
-                
-                 if (items[i].type == "images"){
-                     
-                    items[i].items = _this.getImagesResolution(items[i].items);
+                    break;
+                case "images":
+                    items[i].items = _this.getImagesResolution(items[i].items);  
+                    break;
+                 case "logFile":
+                    items[i].id = BUI.id(); 
+                    events.push(function(){
+                        $( "#" + items[i].id ).click(function() {
+                            var item = _.find(_this.items, {id:this.id});
+                            var filename = item.title.replace(/\s/g, ""); + ".log";
+                            var text = item.logText;
+                            var pom = document.createElement('a');
+                            pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                            pom.setAttribute('download', filename);
+
+                            if (document.createEvent) {
+                                var event = document.createEvent('MouseEvents');
+                                event.initEvent('click', true, true);
+                                pom.dispatchEvent(event);
+                            }
+                            else {
+                                pom.click();
+                            }
+                            
+                            
+                            
+                            
+                        });       
+                    }); 
+                    break;
+                default:
                    
-                }
-               
-                dust.render("workflowmainview.template", items[i], insertContainer);
+            }
+            
+            dust.render("workflowmainview.template", items[i], insertContainer);
+            
+            for(var j =0; j< events.length; j++){
+                events[j]();
             }
         }
       

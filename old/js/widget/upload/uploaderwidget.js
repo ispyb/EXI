@@ -1,8 +1,13 @@
-function UploaderWidget(url){
+function UploaderWidget(args){
 	this.id = BUI.id();
 
 	this.url = url;
-	if (url == null){
+	if (args) {
+		if (args.url) {
+			this.url = args.url;
+		}
+	}
+	if (this.url == null){
 		 Ext.Msg.alert('Error', 'Please, set an url');
 	}
 	
@@ -22,25 +27,33 @@ UploaderWidget.prototype.getForm = function(){
 	    bodyPadding: 20,
 	    border : 0,
 	    frame: true,
-	    items: [{
-	        xtype: 'filefield',
-	        name: 'file',
-	        id : this.id,
-	        fieldLabel: 'File',
-	        labelWidth: 50,
-	        msgTarget: 'side',
-	        allowBlank: false,
-	        anchor: '100%',
-	        buttonText: 'Browse...'
-	    },
-	    {
-			xtype : 'hiddenfield',
-			id : _this.id + 'fileName',
-			name : 'fileName',
-			value : '' }
+	    items: [
+			{
+				xtype: 'filefield',
+				name: 'file',
+				id : this.id,
+				fieldLabel: 'File',
+				labelWidth: 50,
+				msgTarget: 'side',
+				allowBlank: false,
+				anchor: '100%',
+				buttonText: 'Browse...'
+			},
+			{
+				xtype : 'hiddenfield',
+				id : _this.id + 'fileName',
+				name : 'fileName',
+				value : '' 
+			},
+			this.getUploadButton()
 	    ],
+	});
+	
+	
+};
 
-	    buttons: [{
+UploaderWidget.prototype.getUploadButton = function () {
+	return {
 	        text: 'Upload',
 	        handler: function() {
 	            var form = this.up('form').getForm();
@@ -62,11 +75,8 @@ UploaderWidget.prototype.getForm = function(){
 	                    } });
 	            }
 	        }
-	    }]
-	});
-	
-	
-};
+	    };
+}
 
 
 

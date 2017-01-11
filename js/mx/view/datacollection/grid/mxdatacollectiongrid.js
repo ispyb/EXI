@@ -12,7 +12,7 @@ function MXDataCollectionGrid(args) {
 
     this.uncollapsedDataCollectionGrid = new UncollapsedDataCollectionGrid();
     this.collapsedDataCollectionGrid = new CollapsedDataCollectionGrid();
-    this.platesDataCollectionGrid = new PlatesDataCollectionGrid();  
+    this.containersDataCollectionGrid = new ContainersDataCollectionGrid();  
                                                                     
     this.activePanel = this.uncollapsedDataCollectionGrid;
 }
@@ -22,6 +22,7 @@ MXDataCollectionGrid.prototype.getPanel = function(dataCollectionGroup) {
 
     this.panel = Ext.create('Ext.panel.Panel', {  
         id: this.id,
+        minHeight : 900,
         tbar: this.getToolBar(),        
         items: [_this.activePanel.getPanel(dataCollectionGroup)]
      });
@@ -56,15 +57,15 @@ MXDataCollectionGrid.prototype.getToolBar = function() {
                 onMenuClicked(_this.collapsedDataCollectionGrid);
             }
         },{
-            text: 'Plates',            
+            text: 'Containers',            
             handler: function(){
-                _this.renderingType = "PLATES";
+                _this.renderingType = "CONTAINERS";
                 
-                if (_this.activePanel != _this.platesDataCollectionGrid){
-                    _this.activePanel = _this.platesDataCollectionGrid;
+                if (_this.activePanel != _this.containersDataCollectionGrid){
+                    _this.activePanel = _this.containersDataCollectionGrid;
                     _this.reloadData(_this.dataCollectionGroup);                 
                     if (Ext.getCmp(_this.id + "_search").getValue() != "") {
-                       _this.platesDataCollectionGrid.select(_this.filterBy(Ext.getCmp(_this.id + "_search").getValue()));
+                       _this.containersDataCollectionGrid.select(_this.filterBy(Ext.getCmp(_this.id + "_search").getValue()));
                     }
                 }
             }
@@ -90,9 +91,9 @@ MXDataCollectionGrid.prototype.getToolBar = function() {
                         if (e.getKey() == e.ENTER) {
                             _this.filter = field.getValue();
 
-                            if (_this.renderingType == "PLATES"){     
+                            if (_this.renderingType == "CONTAINERS"){     
                                 if (Ext.getCmp(_this.id + "_search").getValue() != "") {                        
-                                    _this.platesDataCollectionGrid.select(_this.filterBy(Ext.getCmp(_this.id + "_search").getValue()));
+                                    _this.containersDataCollectionGrid.select(_this.filterBy(Ext.getCmp(_this.id + "_search").getValue()));
                                 } else {
                                     Ext.getCmp(_this.id + "_found").setText("");
                                     _this.reloadData(_this.dataCollectionGroup);

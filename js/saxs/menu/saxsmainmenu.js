@@ -52,7 +52,7 @@ SAXSMainMenu.prototype.getMenuItems = function() {
 			hidden : this.isHidden,
 			listeners : {
 				specialkey : function(field, e) {
-					if (e.getKey() == e.ENTER) {
+					if (e.getKey() == e.ENTER) {                        
 						location.hash = "/datacollection/macromoleculeAcronym/" + field.getValue() + "/main";
 					}
 				} 

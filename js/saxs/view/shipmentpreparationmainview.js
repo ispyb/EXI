@@ -1,6 +1,6 @@
 
 
-function ShippingMainView() {
+function ShipmentPreparationMainView() {
 	
 	MainView.call(this);
 	
@@ -25,10 +25,10 @@ function ShippingMainView() {
 	});
 }
 
-ShippingMainView.prototype.getPanel = MainView.prototype.getPanel;
+ShipmentPreparationMainView.prototype.getPanel = MainView.prototype.getPanel;
 
 
-ShippingMainView.prototype.getContainer = function() {
+ShipmentPreparationMainView.prototype.getContainer = function() {
 	this.tabPanel =  Ext.createWidget('tabpanel',
 			{
 				margin : 10,
@@ -62,7 +62,7 @@ ShippingMainView.prototype.getContainer = function() {
 };
 
 
-ShippingMainView.prototype.load = function(shippingId) {
+ShipmentPreparationMainView.prototype.load = function(shippingId) {
 	this.shippingId = shippingId;
 	
 	if (shippingId == null){

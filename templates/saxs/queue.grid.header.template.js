@@ -1,14 +1,14 @@
 <div class="container-fluid">
     <div class="row text-center">
-        <div class="col-sm-1 border-columns">
+        <div class="col-sm-1 border-columns" style="width: 4.166666666%">
             Run
             <div>&nbsp;</div>
         </div> 
-        <div class="col-sm-1 border-columns">
+        <div class="col-sm-1 border-columns" style="width: 12.5%">
             Frames <span style='font-size:10px;'>(Average/Total)</span>
             <div>&nbsp;</div>
         </div> 
-        <div class="col-sm-1 border-columns">
+        <div class="col-sm-1 border-columns" style="width: 4.166666666%;font-size:8px;">
             Exp. Temp.
             <div>&nbsp;</div>
         </div>
@@ -40,7 +40,7 @@
                 </div>
             </div>
         </div> 
-        <div class="col-sm-1 border-columns">
+        <div class="col-sm-1 border-columns" style="width: 12.5%">
             Porod
             <div class="row text-center">
                 <div class="col-sm-6 border-right-columns">

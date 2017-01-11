@@ -1,6 +1,7 @@
 var ExtISPyB ={
-   version : '0.9.6',
-   release_date : '2016/11/15',   
+ version : '0.9.7.1',
+   release_date : '2016/12/06',
+
 
    detectors : {
 
