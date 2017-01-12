@@ -7,37 +7,68 @@ function AutoprocessingRanker(){
  * Filter by space group and lower rMerge
  * 
  */
-AutoprocessingRanker.prototype.rank = function(array, spacegroudFieldName, rmergeFieldName){
-    array = array.sort(function(a1, a2){        
-         var spaceGroudTrimmed1 = a1[spacegroudFieldName].replace(/\s+/g, '');
-         var spaceGroudTrimmed2 = a2[spacegroudFieldName].replace(/\s+/g, '');
+AutoprocessingRanker.prototype.rank = function(array, spacegroudFieldName){
+    
+   /** First sorting autoprocessing with rMerge < 10 */
+   var minus10Rmerge  = _.filter(array, function(o) {       
+            if (o.innerShell){
+                if (o.innerShell.rMerge){                    
+                    if ((Number(o.innerShell.rMerge) <= 10) && (Number(o.innerShell.rMerge) > 0)){
+                        return true;
+                    }
+                }
+            }
+            return false        
+     }); 
+     /** Second we get rMerge > 10 */
+    var plus10Rmerge  = _.filter(array, function(o) {
         
-         var space1 = _.indexOf(ExtISPyB.spaceGroups, spaceGroudTrimmed1);
-         var space2 = _.indexOf(ExtISPyB.spaceGroups, spaceGroudTrimmed2);
+            if (o.innerShell){
+                if (o.innerShell.rMerge){                    
+                    if (Number(o.innerShell.rMerge) > 10 || Number(o.innerShell.rMerge) <= 0){
+                        return true;
+                    }
+                }
+            }
+            return false        
+     }); 
+   
+    
+     function sortByHighestSymmetry(a, b) {         
+        var spaceGroupA = a[spacegroudFieldName].replace(/\s/g, "");        
+        var spaceGroupB = b[spacegroudFieldName].replace(/\s/g, "");
         
-         /** Sort by rmerge */
-         if (space2 -  space1 == 0){
-             var rmerge1 = a1["overall"]["rMerge"];
-             var rmerge2 = a2["overall"]["rMerge"];
-             
-             if (rmerge1){
-                 if (rmerge2){
-                     return rmerge1 - rmerge2;
-                 }
-                 else{
-                     return -1;
-                 }
-             }
-             return 1;
-             
-         }
-         return space2 -  space1;
-      
-    });
-    for(var i =0; i < array.length; i++){            
-            array[i].rank = i + 1;
+        if ( _.indexOf(ExtISPyB.spaceGroups, spaceGroupA) ==  _.indexOf(ExtISPyB.spaceGroups, spaceGroupB)){                          
+            return ( parseFloat(a.innerShell.rMerge) -  parseFloat(b.innerShell.rMerge));
+        }
+        return _.indexOf(ExtISPyB.spaceGroups, spaceGroupB) - _.indexOf(ExtISPyB.spaceGroups, spaceGroupA);                           
+       
     }
-    return array;
+    
+    function sortByrMerge(a, b) {                                    
+         return ( parseFloat(a.innerShell.rMerge) -  parseFloat(b.innerShell.rMerge));                                       
+    }
+
+    /** Sort rmerge < 10 by highest symmetry 
+    for (var i = 0; i < minus10Rmerge.length; i++){
+        console.log(minus10Rmerge[i][spacegroudFieldName]);
+    }*/
+   
+    minus10Rmerge.sort(sortByHighestSymmetry); 
+    plus10Rmerge.sort(sortByrMerge); 
+    
+    if (minus10Rmerge[0]){
+        minus10Rmerge[0].label = "BEST";
+    }
+    
+    /** Setting lables */
+    if (plus10Rmerge){
+        for(var i = 0; i < plus10Rmerge.length; i++){
+            plus10Rmerge[i].label = "rMerge > 10";
+        }
+    }
+       
+    return _.concat(minus10Rmerge, plus10Rmerge);    
 };
 
 AutoprocessingRanker.prototype.sortBySpaceGroup = function(array, spacegroudFieldName){

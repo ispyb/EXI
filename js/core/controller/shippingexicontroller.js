@@ -77,20 +77,32 @@ ShippingExiController.prototype.init = function() {
 		});
 		
 		Path.map("#/shipping/:shippingId/main").to(function() {
-			var mainView = new ShippingMainViewTest();
+			var mainView = new ShippingMainView();
 			EXI.addMainPanel(mainView);
 			mainView.load(this.params['shippingId']);
 		}).enter(this.setPageBackground);
 
 		Path.map("#/shipping/main").to(function() {
-			var mainView = new ShippingMainViewTest();
+			var mainView = new ShippingMainView();
 			EXI.addMainPanel(mainView);
 			mainView.load();
 		}).enter(this.setPageBackground);
 
-		
-		Path.map("#/shipping/edv").to(function() {
-			var mainView = new ElectronDensityViewer();
+		Path.map("#/shipping/:shippingId/:shippingStatus/containerId/:containerId/edit").to(function() {
+			var mainView = new PuckFormView();
 			EXI.addMainPanel(mainView);
+			mainView.load(this.params['containerId'],this.params['shippingId'],this.params['shippingStatus']);
 		}).enter(this.setPageBackground);
+
+		Path.map("#/shipping/:shippingId/containerId/:containerId/sampleId/:sampleId/editCrystalForm").to(function() {
+			var mainView = new CrystalFormView();
+			EXI.addMainPanel(mainView);
+			mainView.load(this.params['containerId'],this.params['sampleId'],this.params['shippingId']);
+		}).enter(this.setPageBackground);
+
+		// Path.map("#/shipping/edv").to(function() {
+		// 	var mainView = new ElectronDensityViewer();
+		// 	EXI.addMainPanel(mainView);
+		// }).enter(this.setPageBackground);
+
 };

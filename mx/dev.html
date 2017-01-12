@@ -14,6 +14,8 @@
         <link rel="stylesheet" type="text/css" href="../bower_components/bootstrap-year-calendar/css/bootstrap-year-calendar.min.css">         
         <link rel="stylesheet" type="text/css" href="../min/exi.min.css">
     
+    
+        
         <!-- LODASH -->    
         <script src="../bower_components/lodash/dist/lodash.min.js"></script>
                                       
@@ -42,8 +44,6 @@
         <script src="../bower_components/dustjs-helpers/dist/dust-helpers.min.js"></script>
         <script src="../bower_components/bootstrap/dist/js/bootstrap.js"></script>
         <script src="../bower_components/notifyjs/dist/notify.js"></script>
-        <script src="../bower_components/three.js/build/three.js"></script>
-        <script src="../bower_components/leapjs/leap-0.6.4.js"></script>
         <!-- endbower -->
 
 
@@ -103,27 +103,6 @@
 		  
         <!-- DUST -->  
 		<script src="../js/dust/helpers.js"></script>
-		<script src="../js/dust/xtal/content.js"></script>
-		<script src="../js/dust/xtal/dependencies/DAT.GUI.min.js"></script>
-		<script src="../js/dust/xtal/dependencies/Detector.js"></script>
-		<script src="../js/dust/xtal/dependencies/dropzone.js"></script>
-		<script src="../js/dust/xtal/dependencies/hoverIntent.min.js"></script>
-		<script src="../js/dust/xtal/dependencies/sprintf.js"></script>
-		<script src="../js/dust/xtal/dependencies/three.TrackballControls.js"></script>
-		<script src="../js/dust/xtal/dependencies/three.min.js"></script>
-		<script src="../js/dust/xtal/input.js"></script>
-		<script src="../js/dust/xtal/restraints_grid.js"></script>
-		<script src="../js/dust/xtal/xtal.cif.js"></script>
-		<script src="../js/dust/xtal/xtal.cifexplorer.js"></script>
-		<script src="../js/dust/xtal/xtal.display.js"></script>
-		<script src="../js/dust/xtal/xtal.example.js"></script>
-		<script src="../js/dust/xtal/xtal.js"></script>
-		<script src="../js/dust/xtal/xtal.loggraph.js"></script>
-		<script src="../js/dust/xtal/xtal.marchingcubes.js"></script>
-		<script src="../js/dust/xtal/xtal.model.js"></script>
-		<script src="../js/dust/xtal/xtal.space_groups.js"></script>
-		<script src="../js/dust/xtal/xtal.viewer.js"></script>
-		<script src="../js/dust/xtal/xtal.viewer_gui.js"></script>
 	   
         <!-- SECURITY -->
 	    <script src="../js/core/security/credential.js"></script>
@@ -139,17 +118,23 @@
         
         <!-- WIDGET -->
         <script src="../js/core/widget/authenticationform.js"></script>
+        <script src="../js/core/widget/containerparcelpanel.js"></script>
+        <script src="../js/core/widget/containertypecombobox.js"></script>
+        <script src="../js/core/widget/containerwidget.js"></script>
         <script src="../js/core/widget/curveplotter.js"></script>
         <script src="../js/core/widget/parcelpanel.js"></script>
         <script src="../js/core/widget/proposalgrid.js"></script>
-        <script src="../js/core/widget/puckparcelpanel.js"></script>
         <script src="../js/core/widget/sessiongrid.js"></script>
+        <script src="../js/core/widget/stocksolutioncontainer.js"></script>
+        <script src="../js/core/widget/stocksolutionsgrid.js"></script>
+        <script src="../js/core/widget/uploaderwidget.js"></script>
         <script src="../js/mx/widget/autoprocintegrationgridfileexplorer.js"></script>
         <script src="../js/mx/widget/curveplotter.js"></script>
         <script src="../js/mx/widget/electrondensityviewer.js"></script>
         <script src="../js/mx/widget/energyscangrid.js"></script>
         <script src="../js/mx/widget/pucks/a_samplechangerwidget.js"></script>
         <script src="../js/mx/widget/pucks/flexhcdwidget.js"></script>
+        <script src="../js/mx/widget/pucks/pucklegend.js"></script>
         <script src="../js/mx/widget/pucks/puckwidget.js"></script>
         <script src="../js/mx/widget/pucks/puckwidgetcontainer.js"></script>
         <script src="../js/mx/widget/pucks/robodiffwidget.js"></script>
@@ -158,6 +143,7 @@
         <script src="../js/mx/widget/pucks/spinepuckwidget.js"></script>
         <script src="../js/mx/widget/pucks/unipuckwidget.js"></script>
         <script src="../js/mx/widget/xfescangrid.js"></script>
+        <script src="../js/saxs/widget/a_queuegrid.js"></script>
         <script src="../js/saxs/widget/abinitioform.js"></script>
         <script src="../js/saxs/widget/abinitiogrid.js"></script>
         <script src="../js/saxs/widget/addressform.js"></script>
@@ -170,6 +156,7 @@
         <script src="../js/saxs/widget/experimentgrid.js"></script>
         <script src="../js/saxs/widget/experimentheaderform.js"></script>
         <script src="../js/saxs/widget/frameselectorgrid.js"></script>
+        <script src="../js/saxs/widget/framesgrid.js"></script>
         <script src="../js/saxs/widget/genericstepwizardform.js"></script>
         <script src="../js/saxs/widget/hplcgraph.js"></script>
         <script src="../js/saxs/widget/macromoleculeform.js"></script>
@@ -190,8 +177,10 @@
         <script src="../js/saxs/widget/network/svg.js"></script>
         <script src="../js/saxs/widget/network/vertex.js"></script>
         <script src="../js/saxs/widget/network/vertexgraphformatter.js"></script>
+        <script src="../js/saxs/widget/overviewqueuegrid.js"></script>
         <script src="../js/saxs/widget/pdbviewer.js"></script>
         <script src="../js/saxs/widget/queuegrid.js"></script>
+        <script src="../js/saxs/widget/queuegridtest.js"></script>
         <script src="../js/saxs/widget/rigidbodygrid.js"></script>
         <script src="../js/saxs/widget/rigidbodymodelingform.js"></script>
         <script src="../js/saxs/widget/rigidmodelgrid.js"></script>
@@ -276,13 +265,21 @@
         <script src="../js/core/view/run/runmainview.js"></script>
         <script src="../js/core/view/run/x_dimplerunmainview.js"></script>
         <script src="../js/core/view/sessionmainview.js"></script>
+        <script src="../js/core/view/shipping/a_spreadsheet.js"></script>
+        <script src="../js/core/view/shipping/addcontainerform.js"></script>
         <script src="../js/core/view/shipping/caseform.js"></script>
         <script src="../js/core/view/shipping/containerspreadsheet.js"></script>
+        <script src="../js/core/view/shipping/crystalformview.js"></script>
+        <script src="../js/core/view/shipping/editcrystalformview.js"></script>
+        <script src="../js/core/view/shipping/genericcontainerspreadsheet.js"></script>
+        <script src="../js/core/view/shipping/othercontainerform.js"></script>
         <script src="../js/core/view/shipping/parcelgrid.js"></script>
         <script src="../js/core/view/shipping/puckform.js"></script>
+        <script src="../js/core/view/shipping/puckformview.js"></script>
+        <script src="../js/core/view/shipping/shipmenteditform.js"></script>
         <script src="../js/core/view/shipping/shipmentform.js"></script>
         <script src="../js/core/view/shipping/shippingmainview.js"></script>
-        <script src="../js/core/view/shipping/shippingmainviewtest.js"></script>
+        <script src="../js/core/view/shipping/shippingmainview_a.js"></script>
         <script src="../js/core/view/welcomemainview.js"></script>
         <script src="../js/mx/view/autoprocintegration/autoprocintegrationattachmentsgrid.js"></script>
         <script src="../js/mx/view/autoprocintegration/autoprocintegrationcurveplotter.js"></script>
@@ -297,11 +294,11 @@
         <script src="../js/mx/view/datacollection/datacollectiongrid.js"></script>
         <script src="../js/mx/view/datacollection/datacollectionmxmainview.js"></script>
         <script src="../js/mx/view/datacollection/grid/collapseddatacollectiongrid.js"></script>
+        <script src="../js/mx/view/datacollection/grid/containersdatacollectiongrid.js"></script>
         <script src="../js/mx/view/datacollection/grid/customsectiondatacollection.js"></script>
         <script src="../js/mx/view/datacollection/grid/genericdatacollectionpanel.js"></script>
         <script src="../js/mx/view/datacollection/grid/mxdatacollectiongrid.js"></script>
         <script src="../js/mx/view/datacollection/grid/onlineresultsectiondatacollection.js"></script>
-        <script src="../js/mx/view/datacollection/grid/platesdatacollectiongrid.js"></script>
         <script src="../js/mx/view/datacollection/grid/thumbnailsectiondatacollection.js"></script>
         <script src="../js/mx/view/datacollection/grid/uncollapseddatacollectiongrid.js"></script>
         <script src="../js/mx/view/datacollection/grid/workflowsectiondatacollection.js"></script>
@@ -335,6 +332,7 @@
         <script src="../js/saxs/view/stocksolutionmainview.js"></script>
         <script src="../js/saxs/view/stocksolutionwelcomemainview.js"></script>
         <script src="../js/saxs/view/templatemainview.js"></script>
+        <script src="../js/test/view/electrondensityviewer.js"></script>
         <script src="../js/test/view/puckwidgetview.js"></script>
         <script src="../js/test/view/testmainview.js"></script>
         
@@ -392,5 +390,6 @@
   <body>    
   </body>
   
-<script type="text/javascript" src="../bower_components/lightbox2/dist/js/lightbox.js"></script>                                          
+<script type="text/javascript" src="../bower_components/lightbox2/dist/js/lightbox.js"></script> 
+                                          
 </html>

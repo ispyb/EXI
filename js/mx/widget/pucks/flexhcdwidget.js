@@ -12,6 +12,7 @@ function FlexHCDWidget (args) {
 	this.sampleChangerCapacity = 24;
 	this.initAlpha = -7*2*Math.PI/16;
 	this.data = {
+        id : this.id,
 		radius : this.radius,
 		cells : 8,
 		lines : [],
@@ -19,10 +20,12 @@ function FlexHCDWidget (args) {
 	};
 	
 	this.createStructure();
-	this.createPucks("Unipuck", this.data.cells/2, -7*Math.PI/8, this.data.radius/2, 0.5, {dAlpha : Math.PI/16, dist : 3*this.data.radius/4});
-	this.createPucks("Spinepuck", this.data.cells/2, -5*Math.PI/8, this.data.radius/2, 0.5, {dAlpha : Math.PI/16, dist : 3*this.data.radius/4});
+	this.createPucks("Spinepuck", this.data.cells/2, -7*Math.PI/8, this.data.radius/2, 0.5, {dAlpha : Math.PI/16, dist : 3*this.data.radius/4});
+	this.createPucks("Unipuck", this.data.cells/2, -5*Math.PI/8, this.data.radius/2, 0.5, {dAlpha : Math.PI/16, dist : 3*this.data.radius/4});
 };
 
+
+FlexHCDWidget.prototype.blink = SampleChangerWidget.prototype.blink;
 FlexHCDWidget.prototype.getPuckIndexFromAngle = SampleChangerWidget.prototype.getPuckIndexFromAngle;
 FlexHCDWidget.prototype.createPucks = SampleChangerWidget.prototype.createPucks;
 FlexHCDWidget.prototype.getPanel = SampleChangerWidget.prototype.getPanel;
@@ -41,6 +44,7 @@ FlexHCDWidget.prototype.emptyAllPucks = SampleChangerWidget.prototype.emptyAllPu
 FlexHCDWidget.prototype.enableAllPucks = SampleChangerWidget.prototype.enableAllPucks;
 FlexHCDWidget.prototype.disablePuck = SampleChangerWidget.prototype.disablePuck;
 FlexHCDWidget.prototype.enablePuck = SampleChangerWidget.prototype.enablePuck;
+FlexHCDWidget.prototype.removeClassToAllPucks = SampleChangerWidget.prototype.removeClassToAllPucks;
 
 /**
 * Creates the particular structure of the FlexHCD

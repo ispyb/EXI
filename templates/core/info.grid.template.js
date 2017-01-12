@@ -1,10 +1,12 @@
-<table class='table-sm table-condensed '>
-    <tbody>
-        {#info}
-        <tr>
-            <td  style='padding:0 15px 0 15px;'><b>{.text}</b></td>
-            <td  style='padding:0 15px 0 15px;'>{.value}</td>
-        </tr>
-        {/info}
-    </tbody> 
-</table>
+<div class="container-fluid" style="padding:0;">
+    {#info}
+        <div class="row" style='font-size:{.textSize}px;'>
+            <div class="col-md-6" style="padding-right:2px;">
+                <b>{.text}</b>
+            </div>
+            <div class="col-md-6" style="padding-left:2px;">
+                {.value}
+            </div>
+        </div>
+    {/info}
+</div>

@@ -9,13 +9,15 @@ function FrameSelectorGrid(args) {
  */
 FrameSelectorGrid.prototype.loadData = function(measurements, dataCollections) {
 	var _this = this;
+    
 	/**
 	 * Given a data collection return the run numbers, sample and buffer
 	 * acronym *
 	 */
 	function getSubtractionTitleByDataCollection(dataCollection) {
-		var title = "";
-		/** Sorts datacollection by data collection order * */
+        
+		return  "DataCollection";
+		/** Sorts datacollection by data collection order 
 		dataCollection.measurementtodatacollection3VOs.sort(function(a, b) {
 			return a.dataCollectionOrder - b.dataCollectionOrder;
 		});
@@ -32,7 +34,7 @@ FrameSelectorGrid.prototype.loadData = function(measurements, dataCollections) {
 			};
 			title = title + " " + getMeasurementTitle(dataCollection.measurementtodatacollection3VOs[i].measurementId);
 		}
-		return title;
+		return title;**/
 	}
 
 	/** Gets the sample and buffer frames * */
@@ -142,7 +144,7 @@ FrameSelectorGrid.prototype.load = function(data) {
 		}
 
 	});
-	EXI.getDataAdapter({onSuccess : onSuccess}).saxs.dataCollection.getDataCollectionsByIdList(dataCollectionIdList);
+	EXI.getDataAdapter({onSuccess : onSuccess}).saxs.dataCollection.getDataCollectionsByDataCollectionId(dataCollectionIdList);
 
 };
 

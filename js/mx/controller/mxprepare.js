@@ -30,16 +30,16 @@ MxPrepare.prototype.init = function() {
 	    mainView.load();
 	}).enter(this.setPageBackground);
 
-	Path.map("#/mx/prepare/main/selectSampleChanger").to(function() {
-		EXI.clearNavigationPanel();
-	    var mainView = new PrepareMainView({currentStep : 2});
-		EXI.addMainPanel(mainView);
-	    mainView.load();
-	}).enter(this.setPageBackground);
+	// Path.map("#/mx/prepare/main/selectSampleChanger").to(function() {
+	// 	EXI.clearNavigationPanel();
+	//     var mainView = new PrepareMainView({currentStep : 2});
+	// 	EXI.addMainPanel(mainView);
+	//     mainView.load();
+	// }).enter(this.setPageBackground);
 
 	Path.map("#/mx/prepare/main/loadSampleChanger").to(function() {
 		EXI.clearNavigationPanel();
-	    var mainView = new PrepareMainView({currentStep : 3});
+	    var mainView = new PrepareMainView({currentStep : 2});
 		EXI.addMainPanel(mainView);
 	    mainView.load();
 	}).enter(this.setPageBackground);

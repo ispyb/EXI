@@ -19,13 +19,12 @@ function PrepareMainView(args) {
         }
     }
 
-    this.steps = ["","/selectSampleChanger","/loadSampleChanger"];
+    this.steps = ["","/loadSampleChanger"];
 
     this.height = 550;
     this.width = 1300;
     
     this.dewarListSelector = new DewarListSelectorGrid({height : this.height - 12, width : this.width - 60});
-    this.sampleChangerSelector = new SampleChangerSelector({height : this.height - 12, width : this.width - 0});
     this.loadSampleChangerView = new LoadSampleChangerView({height : this.height - 12, width : this.width - 0});
     this.confirmShipmentView = new ConfirmShipmentView();
 
@@ -48,25 +47,6 @@ function PrepareMainView(args) {
     this.selectedContainerCapacity = null;
     this.selectedPuck = null;
     this.sampleChangerName = null;
-
-    this.sampleChangerSelector.onRowSelected.attach(function(sender,beamline){
-        if (beamline) {
-            _this.save("selectedBeamline", beamline);
-        } else {
-            _this.removeFromStorage("selectedBeamline");
-        }
-    });
-
-    this.sampleChangerSelector.onSampleChangerSelected.attach(function(sender,changerName){
-        Ext.getCmp("next-button").enable();
-        $('#step-3').attr("disabled", false);
-        _this.sampleChangerName = changerName;
-        _this.save('sampleChangerName', changerName);
-        if (typeof(Storage) != "undefined") {
-            sessionStorage.removeItem('puckData');
-        }
-        _this.loadSampleChangerView.sampleChangerName = changerName;
-    });
 
 };
 
@@ -105,18 +85,9 @@ PrepareMainView.prototype.manageButtons = function () {
         Ext.getCmp("next-button").enable(); 
     } else {
         Ext.getCmp("previous-button").show();
-    }
-    if (this.currentStep == 2) {
-        Ext.getCmp("next-button").disable();
-    }
-    if (this.currentStep < 3) {
-        Ext.getCmp("next-button").show();  
-        $('#done-button').hide();
-    }
-    if (this.currentStep == 3) {
         Ext.getCmp("next-button").hide();
     }
-    for (var i = 1 ; i <= 3 ; i++){
+    for (var i = 1 ; i <= 2 ; i++){
         if (i == this.currentStep) {
             $('#step-' + i).addClass('active-step');
         } else {
@@ -136,25 +107,6 @@ PrepareMainView.prototype.changeStep = function (direction) {
     this.currentStep += direction;
     location.href = "#/mx/prepare/main" + this.steps[this.currentStep-1];
 };
-
-/**
-* Manages the disable state of the step buttons
-*
-* @method manageStepButtons
-* @return 
-*/
-// PrepareMainView.prototype.manageStepButtons = function () {
-//     if (this.loadSampleChangerView.sampleChangerName == "") {
-//         $('#step-3').attr("disabled", true);
-//     } else {
-//         $('#step-3').attr("disabled", false);
-//     }
-//     for (var i = 1 ; i <= 4 ; i++){
-//         if (i == this.currentStep){
-//             $('#step-' + i).addClass('active-step');
-//         }
-//     }
-// };
 
 /**
 * Loads a Ext.panel.panel constaining a Ext.panel.Panel that will render the steps inside and sets the click events for the buttons
@@ -178,6 +130,7 @@ PrepareMainView.prototype.getPanel = function() {
     );
 
 	this.panel = Ext.create('Ext.panel.Panel', {
+        autoScroll : true,
         buttons : this.getButtons(),
         layout: {
             type: 'vbox',
@@ -187,22 +140,11 @@ PrepareMainView.prototype.getPanel = function() {
         height : this.height + 200,
         // cls : 'border-grid',
         items : [
-                    this.getToolBar(), this.container,
-                    //   this.getButtons()
+                    this.getToolBar(), this.container
         ]
 	});
 
     this.panel.on('boxready', function() {
-        // $('#next-button').unbind('click').click(function (sender){
-        //     if (_this.currentStep < 4) {
-        //         _this.changeStep(1);
-        //     }
-        // });
-        // $('#previous-button').unbind('click').click(function (sender){
-        //     if (_this.currentStep > 0) {
-        //         _this.changeStep(-1);             
-        //     }
-        // });
         _this.manageButtons();
     });
         
@@ -297,36 +239,30 @@ PrepareMainView.prototype.load = function() {
         };
         
         EXI.getDataAdapter({onSuccess : onSuccessProposal, onError:onError}).proposal.dewar.getDewarsByProposal();
-    } else if (this.currentStep == 2){
-        this.container.add(this.sampleChangerSelector.getPanel());
-        this.sampleChangerSelector.panel.setLoading();
-
-        var onSuccessProposal = function(sender, containers) { 
+    } else if (this.currentStep == 2) {
+        var onSuccessProposal = function(sender, containers) {     
             _this.containers = containers;
-            var beamlinesSelected = _.uniq(_.map(_.filter(_this.containers, function(e){return e.shippingStatus == "processing";}),'beamlineName'));
-
-            if (beamlinesSelected.length > 1) {
-                $.notify("Warning: Multiple beamlines selected", "warn");
-            } else if (beamlinesSelected.length == 1) {
-                if (EXI.credentialManager.getBeamlineNames().indexOf(beamlinesSelected[0]) >= 0){
-                    _this.sampleChangerSelector.selectRowByBeamlineName(beamlinesSelected[0]);
+            var beamlinesSelected = _.uniq(_.map(_.filter(_this.containers, function(e){return e.shippingStatus == "processing";}),'beamlineLocation'));
+            if (beamlinesSelected.length > 0) {
+                var beamline = _.filter(EXI.credentialManager.getBeamlinesByTechnique("MX"),{"name":beamlinesSelected[0]});
+                if (beamline.length > 0) {
+                    _this.loadSampleChangerView.createSampleChangerWidget(beamline[0].sampleChangerType,beamline[0].name);
                 } else {
-                    $.notify("Warning: Unknown beamline", "warn");
+                    $.notify("Warning: Unknown beamline " + beamlinesSelected[0], "warn");
+                    _this.loadSampleChangerView.createSampleChangerWidget("FlexHCD",beamlinesSelected[0]);
+                }
+                for (var i = 1 ; i < beamlinesSelected.length ; i++){
+                    var beamline = _.filter(EXI.credentialManager.getBeamlinesByTechnique("MX"),{"name":beamlinesSelected[i]});
+                    if (beamline.length == 0) {
+                        $.notify("Warning: Unknown beamline " + beamlinesSelected[i], "warn");
+                    }
                 }
             }
-
-            _this.sampleChangerSelector.panel.setLoading(false);
-        };
-
-        var onError = function(sender, error) {        
-            EXI.setError("Ops, there was an error");
-            _this.sampleChangerSelector.panel.setLoading(false);
+            _this.container.add(_this.loadSampleChangerView.getPanel());
+            _this.loadSampleChangerView.load();
         };
         
-        EXI.getDataAdapter({onSuccess : onSuccessProposal, onError:onError}).proposal.dewar.getDewarsByProposal();
-    } else if (this.currentStep == 3) {
-        this.container.add(this.loadSampleChangerView.getPanel());
-        this.loadSampleChangerView.load();
+        EXI.getDataAdapter({onSuccess : onSuccessProposal}).proposal.dewar.getDewarsByProposal();
     }
 };
 

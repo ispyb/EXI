@@ -86,7 +86,7 @@ CredentialManager.prototype.getBeamlines = function(){
 * @param technique [MX, SAXS]
 * @return 
 */
-CredentialManager.prototype.getBeamlinesByTechnique = function(technique){   
+CredentialManager.prototype.getBeamlinesByTechnique = function(technique){
 	var connections = this.getConnections();
     var beamlines = [];
 	for (var i = 0; i < connections.length; i++) {        

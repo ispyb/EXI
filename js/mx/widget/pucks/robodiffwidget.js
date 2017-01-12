@@ -12,6 +12,7 @@ function RoboDiffWidget (args) {
 	this.sampleChangerCapacity = 24;
 	this.initAlpha = -7*2*Math.PI/16;
 	this.data = {
+        id : this.id,
 		radius : this.radius,
 		cells : 8,
 		lines : [],
@@ -22,6 +23,7 @@ function RoboDiffWidget (args) {
 	this.createPucks("Spinepuck", this.data.cells, -7*Math.PI/8, this.data.radius/2, 0.5, {dAlpha : Math.PI/16, dist : 3*this.data.radius/4});
 };
 
+RoboDiffWidget.prototype.blink = SampleChangerWidget.prototype.blink;
 RoboDiffWidget.prototype.getPuckIndexFromAngle = SampleChangerWidget.prototype.getPuckIndexFromAngle;
 RoboDiffWidget.prototype.createPucks = SampleChangerWidget.prototype.createPucks;
 RoboDiffWidget.prototype.getPanel = SampleChangerWidget.prototype.getPanel;
@@ -40,6 +42,7 @@ RoboDiffWidget.prototype.emptyAllPucks = SampleChangerWidget.prototype.emptyAllP
 RoboDiffWidget.prototype.enableAllPucks = SampleChangerWidget.prototype.enableAllPucks;
 RoboDiffWidget.prototype.disablePuck = SampleChangerWidget.prototype.disablePuck;
 RoboDiffWidget.prototype.enablePuck = SampleChangerWidget.prototype.enablePuck;
+RoboDiffWidget.prototype.removeClassToAllPucks = SampleChangerWidget.prototype.removeClassToAllPucks;
 
 /**
 * Creates the particular structure of the FlexHCD

@@ -19,12 +19,14 @@ UniPuckWidget.prototype.getPanel = PuckWidget.prototype.getPanel;
 UniPuckWidget.prototype.load = PuckWidget.prototype.load;
 UniPuckWidget.prototype.addCirclePathCells = PuckWidget.prototype.addCirclePathCells;
 UniPuckWidget.prototype.focus = PuckWidget.prototype.focus;
+UniPuckWidget.prototype.focusWell = PuckWidget.prototype.focusWell;
 UniPuckWidget.prototype.render = PuckWidget.prototype.render;
 UniPuckWidget.prototype.findCellIndexById = PuckWidget.prototype.findCellIndexById;
 UniPuckWidget.prototype.loadSamples = PuckWidget.prototype.loadSamples;
 UniPuckWidget.prototype.emptyAll = PuckWidget.prototype.emptyAll;
 UniPuckWidget.prototype.disableAllCells = PuckWidget.prototype.disableAllCells;
 UniPuckWidget.prototype.allowAllCells = PuckWidget.prototype.allowAllCells;
+UniPuckWidget.prototype.blink = PuckWidget.prototype.blink;
 
 /**
 * Parses the data
