@@ -1,6 +1,7 @@
 function ExiSAXS() {
 	 Exi.call(this, {
 		 					menu: new SAXSMainMenu(),
+                            managerMenu : new SAXSManagerMenu(),
 		 					anonymousMenu: new MainMenu(),
 		 					controllers : [new SAXSExiController(),  new OfflineExiController(), new ProposalExiController(), new SessionController(), new LabContactExiController()]
 	 });
@@ -19,6 +20,8 @@ ExiSAXS.prototype.setLoadingMainPanel = Exi.prototype.setLoadingMainPanel;
 ExiSAXS.prototype.show = Exi.prototype.show;
 ExiSAXS.prototype.setAnonymousMenu = Exi.prototype.setAnonymousMenu;
 ExiSAXS.prototype.setUserMenu = Exi.prototype.setUserMenu;
+ExiSAXS.prototype.setManagerMenu = Exi.prototype.setManagerMenu;
+ExiSAXS.prototype.manageMenu = Exi.prototype.manageMenu;
 ExiSAXS.prototype.appendDataAdapterParameters = Exi.prototype.appendDataAdapterParameters;
 ExiSAXS.prototype.hideNavigationPanel = Exi.prototype.hideNavigationPanel;
 ExiSAXS.prototype.showNavigationPanel = Exi.prototype.showNavigationPanel;

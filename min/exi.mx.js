@@ -664,6 +664,7 @@ XfeController.prototype.init = function() {
 function ExiMX() {
 	 Exi.call(this, {
 		 					menu: new MXMainMenu(),
+							managerMenu : new MXManagerMenu(),
 		 					anonymousMenu: new MainMenu(),
 		 					controllers : [									
 									new SessionController(), 									
@@ -701,6 +702,8 @@ ExiMX.prototype.setLoading = Exi.prototype.setLoading;
 ExiMX.prototype.show = Exi.prototype.show;
 ExiMX.prototype.setAnonymousMenu = Exi.prototype.setAnonymousMenu;
 ExiMX.prototype.setUserMenu = Exi.prototype.setUserMenu;
+ExiMX.prototype.setManagerMenu = Exi.prototype.setManagerMenu;
+ExiMX.prototype.manageMenu = Exi.prototype.manageMenu;
 ExiMX.prototype.appendDataAdapterParameters = Exi.prototype.appendDataAdapterParameters;
 ExiMX.prototype.hideNavigationPanel = Exi.prototype.hideNavigationPanel;
 ExiMX.prototype.showNavigationPanel = Exi.prototype.showNavigationPanel;
@@ -906,6 +909,128 @@ MXMainMenu.prototype.getDataExplorerMenu = function() {
 };
 
 
+function MXManagerMenu() {
+	this.id = BUI.id();
+	MainMenu.call(this, {isHidden : false, cssClass : 'mainMenu'});
+}
+
+MXManagerMenu.prototype.populateCredentialsMenu = MainMenu.prototype.populateCredentialsMenu;
+MXManagerMenu.prototype.init = MainMenu.prototype.init;
+MXManagerMenu.prototype.getPanel = MainMenu.prototype.getPanel;
+MXManagerMenu.prototype._convertToHTMLWhiteSpan = MainMenu.prototype._convertToHTMLWhiteSpan;
+MXManagerMenu.prototype.getAddCredentialMenu = MainMenu.prototype.getAddCredentialMenu;
+MXManagerMenu.prototype.getLoginButton = MainMenu.prototype.getLoginButton;
+MXManagerMenu.prototype.setText = MainMenu.prototype.setText;
+MXManagerMenu.prototype.getHelpMenu = MainMenu.prototype.getHelpMenu;
+MXManagerMenu.prototype.getManagerMenu = MainMenu.prototype.getManagerMenu;
+MXManagerMenu.prototype.getHomeItem = MainMenu.prototype.getHomeItem;
+MXManagerMenu.prototype.getShipmentItem = MainMenu.prototype.getShipmentItem;
+
+MXManagerMenu.prototype.getMenuItems = function() {	
+    		
+	return [	
+    	this.getHomeItem(),
+    	this.getShipmentItem(),
+    	{
+				text : this._convertToHTMLWhiteSpan("Prepare Experiment"),
+				cls : 'ExiSAXSMenuToolBar',
+				hidden : this.isHidden,
+                 disabled : true,
+				menu : this.getPreparationMenu() 
+		}, {
+				text : this._convertToHTMLWhiteSpan("Data Explorer"),
+				cls : 'ExiSAXSMenuToolBar',
+				hidden : this.isHidden,
+				menu : this.getDataExplorerMenu() 
+		},
+//		{
+//			text : '<span style="color:white">Offline Data Analysis</span>',
+//			cls : 'ExiSAXSMenuToolBar',
+//			hidden : this.isHidden,
+//			menu : this.getOnlineDataAnalisysMenu() 
+//		}, 
+        {
+			text : this._convertToHTMLWhiteSpan("Manager"),
+			cls : 'ExiSAXSMenuToolBar',
+			menu : this.getManagerMenu() 
+		},
+		{
+			text : this._convertToHTMLWhiteSpan("Help"),
+			cls : 'ExiSAXSMenuToolBar',
+			menu : this.getHelpMenu() 
+		}, 
+		'->', 
+		{
+			xtype : 'textfield',
+			name : 'field1',
+			emptyText : 'search macromolecule',
+			hidden : this.isHidden,
+			listeners : {
+				specialkey : function(field, e) {
+					if (e.getKey() == e.ENTER) {                        
+						location.hash = "/datacollection/macromoleculeAcronym/" + field.getValue() + "/main";
+					}
+				} 
+			} 
+	}
+	];
+};
+
+MXManagerMenu.prototype.getManagerMenu = function() {
+	var _this = this;
+	function onItemCheck(item, checked) {
+		if (item.text == "AutoprocIntegrator") {
+			var scatteringForm = new ScatteringForm({width : 650, height : 560});
+
+			var window = Ext.create('Ext.window.Window', {
+				title : 'Scattering',
+				height : 560,
+				width : 650,
+				modal : true,
+				layout : 'fit',
+				items : [ scatteringForm.getPanel() ],
+				buttons : [ {
+						text : 'Plot',
+						handler : function() {
+							scatteringForm.plot();
+						}
+					}, {
+						text : 'Cancel',
+						handler : function() {
+							window.close();
+						}
+					} ]
+			}).show();
+
+			var keys = ["rPimWithinIPlusIMinus","anomalousMultiplicity","multiplicity","resolutionLimitLow","ccHalf",
+			"strategySubWedgeOrigId","completeness","rMerge","anomalous","meanIOverSigI","ccAno","autoProcScalingId",
+			"nTotalObservations","sigAno","rMeasWithinIPlusIMinus","anomalousCompleteness","resolutionLimitHigh",
+			"fractionalPartialBias","rMeasAllIPlusIMinus","nTotalUniqueObservations","rPimAllIPlusIMinus"];
+
+			var scatteringData = {title : "AutoprocIntegrator", keys : keys};
+
+			scatteringForm.load(scatteringData);
+		}
+	}
+
+	return Ext.create('Ext.menu.Menu', {
+		items : [
+					{
+						text : 'Statistics',
+						icon : '../images/icon/ic_insert_chart_black_36dp.png',
+						menu : {       
+								items: [
+									{
+										text: 'AutoprocIntegrator',
+										icon : '../images/icon/ic_insert_chart_black_36dp.png',
+										handler: onItemCheck
+									}
+								]
+							}
+					}
+			] 
+	});
+};
 /**
 * AutoProcIntegrationListView displays the crystal as list on the navigation panels
 *
@@ -3068,48 +3193,48 @@ function DataCollectionMxMainView() {
 DataCollectionMxMainView.prototype.getPanel = MainView.prototype.getPanel;
 
 DataCollectionMxMainView.prototype.getContainer = function() {
-		this.container = Ext.create('Ext.tab.Panel', {   
-        minHeight : 900,    
-        padding : "5 40 0 5",
-        items: [ {
-                        title: 'Data Collections',
-                        cls : 'border-grid',
-                        id : this.id + "_dataCollectionTab",                        
-                        items:[
-                            this.genericDataCollectionPanel.getPanel()
-                        ]
-                }, 
+    this.container = Ext.create('Ext.tab.Panel', {   
+    minHeight : 900,    
+    padding : "5 40 0 5",
+    items: [ {
+                    title: 'Data Collections',
+                    cls : 'border-grid',
+                    id : this.id + "_dataCollectionTab",                        
+                    items:[
+                        this.genericDataCollectionPanel.getPanel()
+                    ]
+            }, 
+            {
+                    title: 'Energy Scans',
+                    cls : 'border-grid',
+                    id : this.id + "_energyTab",
+                    items:[
+                            this.energyScanGrid.getPanel()
+                    ]
+            },
                 {
-                        title: 'Energy Scans',
-                        cls : 'border-grid',
-                        id : this.id + "_energyTab",
-                        items:[
-                             this.energyScanGrid.getPanel()
-                        ]
-                },
-                 {
-                        title: 'Fluorescence Spectra',
-                        id : this.id + "_xfeTab",
-                        cls : 'border-grid',                         
-                        items:[
-                            this.xfeScanGrid.getPanel()
-                        ]
-                }
-               ]
-        });
-	    return this.container;
+                    title: 'Fluorescence Spectra',
+                    id : this.id + "_xfeTab",
+                    cls : 'border-grid',                         
+                    items:[
+                        this.xfeScanGrid.getPanel()
+                    ]
+            }
+            ]
+    });
+    return this.container;
 };
 
 DataCollectionMxMainView.prototype.loadEnergyScans = function(data) {
-     if (data){
-         if (data.length > 0){
-            Ext.getCmp(this.id + "_energyTab").setTitle(data.length + " Energy Scans");  
-            this.energyScanGrid.load(data);
-            return;
-         }
-     }
-     
-     Ext.getCmp(this.id + "_energyTab").setDisabled(true);
+    if (data){
+        if (data.length > 0){
+        Ext.getCmp(this.id + "_energyTab").setTitle(data.length + " Energy Scans");  
+        this.energyScanGrid.load(data);
+        return;
+        }
+    }
+    
+    Ext.getCmp(this.id + "_energyTab").setDisabled(true);
 };
 
 DataCollectionMxMainView.prototype.loadFXEScans = function(data) {  
@@ -3118,10 +3243,10 @@ DataCollectionMxMainView.prototype.loadFXEScans = function(data) {
             Ext.getCmp(this.id + "_xfeTab").setTitle(data.length + " Fluorescence Spectra");  
             this.xfeScanGrid.load(data);
             return;
-         }
-     }
-     
-     Ext.getCmp(this.id + "_xfeTab").setDisabled(true);
+            }
+        }
+        
+    Ext.getCmp(this.id + "_xfeTab").setDisabled(true);
 };
 
 DataCollectionMxMainView.prototype.loadCollections = function(dataCollections) {

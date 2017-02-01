@@ -1,5 +1,4 @@
 function SAXSExiController() {
-    
 	this.init();
 }
 
@@ -406,6 +405,7 @@ SAXSExiController.prototype.init = function() {
 function ExiSAXS() {
 	 Exi.call(this, {
 		 					menu: new SAXSMainMenu(),
+                            managerMenu : new SAXSManagerMenu(),
 		 					anonymousMenu: new MainMenu(),
 		 					controllers : [new SAXSExiController(),  new OfflineExiController(), new ProposalExiController(), new SessionController(), new LabContactExiController()]
 	 });
@@ -424,6 +424,8 @@ ExiSAXS.prototype.setLoadingMainPanel = Exi.prototype.setLoadingMainPanel;
 ExiSAXS.prototype.show = Exi.prototype.show;
 ExiSAXS.prototype.setAnonymousMenu = Exi.prototype.setAnonymousMenu;
 ExiSAXS.prototype.setUserMenu = Exi.prototype.setUserMenu;
+ExiSAXS.prototype.setManagerMenu = Exi.prototype.setManagerMenu;
+ExiSAXS.prototype.manageMenu = Exi.prototype.manageMenu;
 ExiSAXS.prototype.appendDataAdapterParameters = Exi.prototype.appendDataAdapterParameters;
 ExiSAXS.prototype.hideNavigationPanel = Exi.prototype.hideNavigationPanel;
 ExiSAXS.prototype.showNavigationPanel = Exi.prototype.showNavigationPanel;
@@ -645,6 +647,97 @@ SAXSMainMenu.prototype.getOnlineDataAnalisysMenu = function() {
 };
 
 
+function SAXSManagerMenu() {
+	this.id = BUI.id();
+	MainMenu.call(this, {isHidden : false, cssClass : 'mainMenu'});
+}
+
+SAXSManagerMenu.prototype.populateCredentialsMenu = MainMenu.prototype.populateCredentialsMenu;
+SAXSManagerMenu.prototype.init = MainMenu.prototype.init;
+SAXSManagerMenu.prototype.getPanel = MainMenu.prototype.getPanel;
+SAXSManagerMenu.prototype._convertToHTMLWhiteSpan = MainMenu.prototype._convertToHTMLWhiteSpan;
+SAXSManagerMenu.prototype.getAddCredentialMenu = MainMenu.prototype.getAddCredentialMenu;
+SAXSManagerMenu.prototype.getLoginButton = MainMenu.prototype.getLoginButton;
+SAXSManagerMenu.prototype.setText = MainMenu.prototype.setText;
+SAXSManagerMenu.prototype.getHelpMenu = MainMenu.prototype.getHelpMenu;
+SAXSManagerMenu.prototype.getManagerMenu = MainMenu.prototype.getManagerMenu;
+SAXSManagerMenu.prototype.getHomeItem = MainMenu.prototype.getHomeItem;
+SAXSManagerMenu.prototype.getShipmentItem = MainMenu.prototype.getShipmentItem;
+
+SAXSManagerMenu.prototype.getMenuItems = function() {	
+    		
+	return [	
+    	this.getHomeItem(),
+    	this.getShipmentItem(),
+    	{
+				text : this._convertToHTMLWhiteSpan("Prepare Experiment"),
+				cls : 'ExiSAXSMenuToolBar',
+				hidden : this.isHidden,
+                 disabled : true,
+				menu : this.getPreparationMenu() 
+		}, {
+				text : this._convertToHTMLWhiteSpan("Data Explorer"),
+				cls : 'ExiSAXSMenuToolBar',
+				hidden : this.isHidden,
+				menu : this.getDataExplorerMenu() 
+		},
+//		{
+//			text : '<span style="color:white">Offline Data Analysis</span>',
+//			cls : 'ExiSAXSMenuToolBar',
+//			hidden : this.isHidden,
+//			menu : this.getOnlineDataAnalisysMenu() 
+//		}, 
+        {
+			text : this._convertToHTMLWhiteSpan("Manager"),
+			cls : 'ExiSAXSMenuToolBar',
+			menu : this.getManagerMenu() 
+		},
+		{
+			text : this._convertToHTMLWhiteSpan("Help"),
+			cls : 'ExiSAXSMenuToolBar',
+			menu : this.getHelpMenu() 
+		}, 
+		'->', 
+		{
+			xtype : 'textfield',
+			name : 'field1',
+			emptyText : 'search macromolecule',
+			hidden : this.isHidden,
+			listeners : {
+				specialkey : function(field, e) {
+					if (e.getKey() == e.ENTER) {                        
+						location.hash = "/datacollection/macromoleculeAcronym/" + field.getValue() + "/main";
+					}
+				} 
+			} 
+	}
+	];
+};
+
+SAXSManagerMenu.prototype.getManagerMenu = function() {
+	var _this = this;
+	function onItemCheck(item, checked) {
+
+	}
+
+	return Ext.create('Ext.menu.Menu', {
+		items : [
+					{
+						text : 'Statistics',
+						icon : '../images/icon/ic_insert_chart_black_36dp.png',
+						menu : {       
+								items: [
+									{
+										text: 'Substraction',
+										icon : '../images/icon/ic_insert_chart_black_36dp.png',
+										handler: onItemCheck
+									}
+								]
+							}
+					}
+			] 
+	});
+};
 function BufferListView(){
 	ListView.call(this);
 }
@@ -1327,8 +1420,6 @@ function ExperimentMainView() {
 		} ]
 	});
 
-	this.queueGridVersion2 = new QueueGridTest();
-
 	this.activePanel = this.queueGrid;
 	
 }
@@ -1349,14 +1440,7 @@ ExperimentMainView.prototype.getToolBar = function() {
             handler: function(){
                 onMenuClicked(_this.queueGrid);
             }
-        },
-		// {
-        //     text: 'Online Data Analysis (v2)',            
-        //     handler: function(){
-        //         onMenuClicked(_this.queueGridVersion2);
-        //     }
-        // }
-		,{
+        },{
             text: 'Measurements',            
             handler: function(){
                 onMenuClicked(_this.measurementGrid);
@@ -1382,14 +1466,15 @@ ExperimentMainView.prototype.getToolBar = function() {
 };
 
 ExperimentMainView.prototype.getPanel = function() {
-	this.panel = Ext.create('Ext.panel.Panel', {
-	    margin : 10,
-		layout : 'fit',
-		height : 600,	
-		tbar : this.getToolBar(),
-	    items: []
-	});
 
+	this.panel = Ext.create('Ext.panel.Panel', {   
+		margin : 10,
+		// minHeight : 900,
+		layout : 'fit',
+		minHeight : 600,
+		tbar : this.getToolBar(),
+		items: []
+	});
 	return this.panel;
 };
 
@@ -7845,7 +7930,7 @@ MeasurementGrid.prototype.getPanel = function(){
 
 	return {
 		html : '<div id="' + this.id + '"></div>',
-		autoScroll : true
+		autoScroll : false
 	}
 };
 
@@ -12347,12 +12432,10 @@ OverviewQueueGrid.prototype.render = function(data) {
 	});
 	
 	$('#' + this.id).html(html);
-
-	// $(".queue-img").lazyload();	
-
-	// var nodeWithScroll = document.getElementById(document.getElementById(this.id).parentNode.parentNode.parentNode.parentNode.parentNode.id)
 	
-	// this.attachCallBackAfterRender(nodeWithScroll);
+	var nodeWithScroll = document.getElementById(document.getElementById(this.id).parentNode.parentNode.parentNode.id);
+	
+	this.attachCallBackAfterRender(nodeWithScroll);
 };
 
 
@@ -12361,7 +12444,7 @@ OverviewQueueGrid.prototype.render = function(data) {
 *
 * @method getPanel
 */
-OverviewQueueGrid.prototype.getPanel = function(){    
+OverviewQueueGrid.prototype.getPanel = function(){ 
 	return {
 		html : '<div id="' + this.id + '"></div>',
 		autoScroll : true,
