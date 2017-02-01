@@ -542,6 +542,8 @@ function Exi(args) {
 	this.anonymousMenu = null;
 	/** When user is logged in **/
 	this.userMenu = null;
+	/** When user is manager **/
+	this.managerMenu = null;
 	
 	/** If false when opening a new tab it will close the already open ones **/
 	this.keepTabs = false;
@@ -556,6 +558,9 @@ function Exi(args) {
 		}
 		if (args.anonymousMenu != null){
 			this.anonymousMenu = args.anonymousMenu;
+		}
+		if (args.managerMenu != null){
+			this.managerMenu = args.managerMenu;
 		}
 		
 		if (args.headerCssClass != null){
@@ -585,9 +590,8 @@ function Exi(args) {
 	});
 	
 	
-	this.credentialManager.onLogin.attach(function(sender){
-		_this.mainMenu.populateCredentialsMenu();
-		_this.setUserMenu();
+	this.credentialManager.onLogin.attach(function(sender, credential){
+		_this.manageMenu(credential);
 	});
 	
 	this.credentialManager.onActiveProposalChanged.attach(function(sender){
@@ -605,7 +609,7 @@ function Exi(args) {
 			_this.credentialManager.addCredential(data.user, data.roles, data.token, args.site, args.exiUrl, args.properties);
 			_this.authenticationForm.window.close();			
 			var credential = EXI.credentialManager.getCredentialByUserName(data.user);
-          
+			
 			if (credential.isManager()||credential.isLocalContact()){
 				location.hash = "/welcome/manager/" + data.user + "/main";
 			}
@@ -671,12 +675,23 @@ Exi.prototype.setUserMenu = function() {
 	Ext.getCmp("mainMenu").add(EXI.mainMenu.getPanel());
 };
 
+Exi.prototype.setManagerMenu = function() {
+	this.mainMenu = this.managerMenu;
+	Ext.getCmp("mainMenu").removeAll();
+	Ext.getCmp("mainMenu").add(EXI.mainMenu.getPanel());
+};
+
+Exi.prototype.manageMenu = function (credential) {
+	if (credential.isManager()) {
+		this.setManagerMenu();
+	} else {
+		this.setUserMenu();
+	}
+	this.mainMenu.populateCredentialsMenu();
+}
 
 Exi.prototype.loadSelected = function(selected) {
 };
-
-
-
 
 /**
  * Adds a new Main panel to the center panel
@@ -831,8 +846,8 @@ Exi.prototype.show = function() {
 															_this.setAnonymousMenu();
 														}
 														else{
-															_this.setUserMenu();
-															_this.mainMenu.populateCredentialsMenu();
+															var credential = _this.credentialManager.getCredentials()[0];
+															_this.manageMenu(credential);
 														}
 											} } });
 				}
@@ -1998,17 +2013,6 @@ MainMenu.prototype.getHomeItem = function() {
 
 MainMenu.prototype.getShipmentItem = function() { 
 	var _this = this;
-	// function onItemCheck(item, checked) {
-	// 	if (item.text == "Shipments") {
-	// 		location.hash = "/proposal/shipping/nav";
-	// 	}
-	// 	if (item.text == "Manage shipping addresses") {
-	// 		location.hash = "/proposal/addresses/nav";
-	// 	}
-	// 	if (item.text == "Shipment List") {
-	// 		location.hash = "/proposal/shipping/nav";
-	// 	}
-	// }
 
 	function getBiosaxsMenu() {
 		var _this = this;
@@ -2016,7 +2020,6 @@ MainMenu.prototype.getShipmentItem = function() {
 			if (item.text == "Stock Solutions") {
 				location.hash = "/saxs/stocksolution/nav";
 			}
-			
 		}
 
 		return Ext.create('Ext.menu.Menu', {
@@ -2159,6 +2162,62 @@ MainMenu.prototype.getShipmentItem = function() {
 
 };
 
+MainMenu.prototype.getManagerMenu = function() {
+	var _this = this;
+	function onItemCheck(item, checked) {
+		if (item.text == "AutoprocIntegrator") {
+			var scatteringForm = new ScatteringForm();
+
+			var window = Ext.create('Ext.window.Window', {
+				title : 'Scattering',
+				height : 450,
+				width : 600,
+				modal : true,
+				layout : 'fit',
+				items : [ scatteringForm.getPanel() ],
+				buttons : [ {
+						text : 'Plot',
+						handler : function() {
+							
+						}
+					}, {
+						text : 'Cancel',
+						handler : function() {
+							window.close();
+						}
+					} ]
+			}).show();
+
+			var keys = ["rPimWithinIPlusIMinus","anomalousMultiplicity","blSubSampleId","recordTimeStamp","multiplicity",
+			"endTime","resolutionLimitLow","ccHalf","strategySubWedgeOrigId","startTime","completeness","rMerge","anomalous",
+			"dataCollectionNumber","meanIOverSigI","proposalId","ccAno","autoProcScalingId","beamLineName","scalingStatisticsType",
+			"nTotalObservations","sigAno","rMeasWithinIPlusIMinus","dataCollectionId","anomalousCompleteness","autoProcScalingStatisticsId",
+			"sessionId","resolutionLimitHigh","fractionalPartialBias","rMeasAllIPlusIMinus","detectorId","nTotalUniqueObservations","rPimAllIPlusIMinus"];
+
+			var scatteringData = {title : "AutoprocIntegrator", keys : keys};
+
+			scatteringForm.load(scatteringData);
+		}
+	}
+
+	return Ext.create('Ext.menu.Menu', {
+		items : [
+					{
+						text : 'Statistics',
+						icon : '../images/icon/ic_insert_chart_black_36dp.png',
+						menu : {       
+								items: [
+									{
+										text: 'AutoprocIntegrator',
+										icon : '../images/icon/ic_insert_chart_black_36dp.png',
+										handler: onItemCheck
+									}
+								]
+							}
+					}
+			] 
+	});
+};
 
 MainMenu.prototype.getHelpMenu = function() {
 	var _this = this;
@@ -2314,6 +2373,210 @@ MainMenu.prototype.getPanel = function() {
 	});
 	return this.tb;
 };
+
+function ManagerMenu() {
+	this.id = BUI.id();
+	MainMenu.call(this, {isHidden : false, cssClass : 'mainMenu'});
+}
+
+ManagerMenu.prototype.populateCredentialsMenu = MainMenu.prototype.populateCredentialsMenu;
+ManagerMenu.prototype.init = MainMenu.prototype.init;
+ManagerMenu.prototype.getPanel = MainMenu.prototype.getPanel;
+ManagerMenu.prototype._convertToHTMLWhiteSpan = MainMenu.prototype._convertToHTMLWhiteSpan;
+ManagerMenu.prototype.getAddCredentialMenu = MainMenu.prototype.getAddCredentialMenu;
+ManagerMenu.prototype.getLoginButton = MainMenu.prototype.getLoginButton;
+ManagerMenu.prototype.setText = MainMenu.prototype.setText;
+ManagerMenu.prototype.getHelpMenu = MainMenu.prototype.getHelpMenu;
+ManagerMenu.prototype.getManagerMenu = MainMenu.prototype.getManagerMenu;
+ManagerMenu.prototype.getHomeItem = MainMenu.prototype.getHomeItem;
+ManagerMenu.prototype.getShipmentItem = MainMenu.prototype.getShipmentItem;
+
+
+ManagerMenu.prototype.getMenuItems = function() {	
+    		
+	return [	
+    	this.getHomeItem(),
+    	this.getShipmentItem(),
+    	{
+				text : this._convertToHTMLWhiteSpan("Prepare Experiment"),
+				cls : 'ExiSAXSMenuToolBar',
+				hidden : this.isHidden,
+                 disabled : true,
+				menu : this.getPreparationMenu() 
+		}, {
+				text : this._convertToHTMLWhiteSpan("Data Explorer"),
+				cls : 'ExiSAXSMenuToolBar',
+				hidden : this.isHidden,
+				menu : this.getDataExplorerMenu() 
+		},
+//		{
+//			text : '<span style="color:white">Offline Data Analysis</span>',
+//			cls : 'ExiSAXSMenuToolBar',
+//			hidden : this.isHidden,
+//			menu : this.getOnlineDataAnalisysMenu() 
+//		}, 
+        {
+			text : this._convertToHTMLWhiteSpan("Manager"),
+			cls : 'ExiSAXSMenuToolBar',
+			menu : this.getManagerMenu() 
+		},
+		{
+			text : this._convertToHTMLWhiteSpan("Help"),
+			cls : 'ExiSAXSMenuToolBar',
+			menu : this.getHelpMenu() 
+		}, 
+		'->', 
+		{
+			xtype : 'textfield',
+			name : 'field1',
+			emptyText : 'search macromolecule',
+			hidden : this.isHidden,
+			listeners : {
+				specialkey : function(field, e) {
+					if (e.getKey() == e.ENTER) {                        
+						location.hash = "/datacollection/macromoleculeAcronym/" + field.getValue() + "/main";
+					}
+				} 
+			} 
+	}
+	];
+};
+
+
+
+
+ManagerMenu.prototype.getPreparationMenu = function() {
+	var _this = this;
+	function onItemCheck(item, checked) {
+		if (item.text == "Macromolecules") {
+			location.hash = "/saxs/macromolecule/nav";
+		}
+		if (item.text == "Buffers") {
+			location.hash = "/saxs/buffer/nav";
+		}
+
+		if (item.text == "Sample Tracking") {
+			location.hash = "/saxs/shipping/nav";
+		}
+
+		if (item.text == "My Experiments") {
+			location.hash = "/saxs/template/nav";
+		}
+	}
+
+	return Ext.create('Ext.menu.Menu', {
+		items : [ 
+	          {
+				text : 'Macromolecules',
+				icon : '../images/icon/macromolecule.png',
+				handler : onItemCheck 
+			}, 
+			{
+				text : 'Buffers',
+				icon : '../images/icon/buffer.jpg',
+				handler : onItemCheck 
+			}, 
+//			"-", 
+//			{
+//				text : 'Stock Solutions',
+//				icon : '../images/icon/testtube.png',
+//				handler : onItemCheck 
+//			}, 
+//			{
+//				text : 'Sample Tracking',
+//				icon : '../images/icon/shipping.png',
+//				menu:this.getSampleTrackingMenu()
+//			}, 
+			"-", 
+			{
+				text : 'My Experiments',
+				icon : '../images/icon/edit.png',
+				handler : onItemCheck 
+			}
+
+		] });
+};
+
+
+ManagerMenu.prototype.getDataReductionMenu = function() {
+	var _this = this;
+	function onItemCheck(item, checked) {
+		if (item.text == "Sessions") {
+			_this.onSessionClicked.notify();
+		}
+		if (item.text == "Subtraction") {
+			location.hash = "/tool/subtraction/main";
+		}
+		if (item.text == "Experiments") {
+			_this.onExperimentClicked.notify();
+		}
+	}
+
+	return Ext.create('Ext.menu.Menu', {
+		items : [ {
+			text : '<span class="menuCategoryItem">SEC</span>' }, "-", {
+			text : 'Background Test' }, {
+			text : 'Baseline Checker' }, {
+			text : 'Frame Merge' }, "-", {
+			text : '<span class="menuCategoryItem">INDIVIDUAL CONCENTRATION</span>' }, "-", {
+			text : 'Subtraction',
+			checked : false,
+			group : 'theme',
+			checkHandler : onItemCheck }, {
+			text : 'Average' }, "-", {
+			text : '<span class="menuCategoryItem">COMBINING</span>' }, "-", {
+			text : 'Merging tool' } ] });
+};
+
+
+
+ManagerMenu.prototype.getDataExplorerMenu = function() {
+	function onItemCheck(item, checked) {
+		if (item.text == "Calendar") {
+			location.hash = "/session/nav";
+		}
+		if (item.text == "Experiments") {
+			location.hash = "/experiment/nav";
+		}
+	}
+	return Ext.create('Ext.menu.Menu', {
+		items : [ 
+			{
+				text : 'Calendar',
+				icon : '../images/icon/sessions.png',
+				handler : onItemCheck 
+			}
+		] 
+	});
+};
+
+ManagerMenu.prototype.getOnlineDataAnalisysMenu = function() {
+	var _this = this;
+	function onItemCheck(item, checked) {
+		if (item.text == "Structure Validation") {
+			location.hash = "/tool/crysol/main";
+		}
+		if (item.text == "Job list") {
+			location.hash = "/tool/list";
+		}
+	}
+
+	return Ext.create('Ext.menu.Menu', {
+		items : [
+		{
+			text : 'Structure Validation',
+			checked : false,
+			group : 'theme',
+			handler : onItemCheck },
+			"-",
+			{
+				text : 'Job list',
+				checked : false,
+				group : 'theme',
+				handler : onItemCheck }
+		] });
+};
+
 
 /*function SelectionMenu() {
 
@@ -3833,6 +4096,61 @@ DimpleRunMainView.prototype.loadMain = function(run) {
 		}
 	}
 };
+function ScatteringForm(args) {
+    this.id = BUI.id();
+
+    this.width = 600;
+    this.height = 200;
+	this.showTitle = true;
+	if (args != null) {
+		if (args.showTitle != null) {
+			this.showTitle = args.showTitle;
+		}
+        if (args.width != null) {
+			this.width = args.width;
+		}
+        if (args.height != null) {
+			this.height = args.height;
+		}
+	}
+}
+
+ScatteringForm.prototype.getPanel = function() {
+    var _this = this;
+
+	this.panel = Ext.create("Ext.panel.Panel",{
+		items :	[{
+					html : '<div id="' + this.id + '"></div>',
+					autoScroll : false,
+					width : this.width
+				}]
+	});
+
+    this.panel.on('boxready', function() {
+        _this.load();
+    });
+
+	return this.panel;
+};
+
+ScatteringForm.prototype.load = function(data) {
+    if (!data) {
+        var data = {};
+    }
+    data.id = this.id;
+
+	if (data.keys) {
+		data.chunkedKeys = _.chunk(data.keys,Math.ceil(data.keys.length/3.0));
+	}
+
+    var html = "";
+    dust.render("scattering.form.template", data, function (err, out) {
+        html = out;
+    });
+
+	$('#' + this.id).hide().html(html).fadeIn('fast');
+	this.panel.doLayout();
+}
 function SessionMainView(args) {
 	this.icon = 'images/icon/ic_satellite_black_18dp.png';
 	MainView.call(this, args);
@@ -6222,55 +6540,58 @@ function ShipmentEditForm(args) {
 ShipmentEditForm.prototype.load = function(shipment) {
 
 	this.shipment = shipment;
+	var html = "";
+	try{
+		var fromData = EXI.proposalManager.getLabcontacts();
+		var toData = $.extend(EXI.proposalManager.getLabcontacts(), [{ cardName : 'Same as for shipping to beamline', labContactId : -1}, { cardName : 'No return requested', labContactId : 0}]);
 
-	var fromData = EXI.proposalManager.getLabcontacts();
-	var toData = $.extend(EXI.proposalManager.getLabcontacts(), [{ cardName : 'Same as for shipping to beamline', labContactId : -1}, { cardName : 'No return requested', labContactId : 0}]);
+		var beamlineName = "";
+		var startDate = "";
+		if (shipment){
+			if (shipment.sessions.length > 0){
+				beamlineName = shipment.sessions[0].beamlineName;
+				startDate = (new Date(shipment.sessions[0].startDate)).toLocaleDateString();
+			}
+		}
 
-    var html = "";
-	var beamlineName = "";
-	var startDate = "";
-	if (shipment){
-		if (shipment.sessions.length > 0){
-			beamlineName = shipment.sessions[0].beamlineName;
-			startDate = (new Date(shipment.sessions[0].startDate)).toLocaleDateString();
+		var sessionSort = function(o1,o2) {
+			var d1 = new Date(o1.BLSession_startDate);
+			var d2 = new Date(o2.BLSession_startDate);
+			if (d1 === d2) {
+				return 0;
+			} else {
+				return (d1 < d2) ? 1 : -1;
+			}
 		}
-	}
-
-	var sessionSort = function(o1,o2) {
-		var d1 = new Date(o1.BLSession_startDate);
-		var d2 = new Date(o2.BLSession_startDate);
-		if (d1 === d2) {
-			return 0;
-		} else {
-			return (d1 < d2) ? 1 : -1;
+		var sessions = EXI.proposalManager.getSessions();
+		sessions.sort(sessionSort);
+		var sessionsSelectData = [];
+		var currentDay = new Date((new Date()).toDateString());
+		for (var i = 0 ; i < sessions.length ; i++){
+			var session = sessions[i];
+			var sessionStartDate = (new Date(session.BLSession_startDate));
+			if (currentDay <= (new Date(sessionStartDate.toDateString())) ){
+				var dd = sessionStartDate.getDate();
+				var mm = sessionStartDate.getMonth()+1; //January is 0!
+				var yyyy = sessionStartDate.getFullYear();
+				if(dd<10){
+					dd='0'+dd;
+				} 
+				if(mm<10){
+					mm='0'+mm;
+				} 
+				var formattedDate = dd+'/'+mm+'/'+yyyy;
+				sessionsSelectData.push({sessionId : session.sessionId, date : sessionStartDate.toLocaleDateString(), formattedDate : formattedDate, beamLineName : session.beamLineName});
+			}
 		}
+		
+		
+		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment}, function(err, out){
+			html = out;
+		});
+	} catch (e) {
+		html = "There was an error loading the lab contacts.";
 	}
-	var sessions = EXI.proposalManager.getSessions();
-	sessions.sort(sessionSort);
-	var sessionsSelectData = [];
-	var currentDay = new Date((new Date()).toDateString());
-	for (var i = 0 ; i < sessions.length ; i++){
-		var session = sessions[i];
-		var sessionStartDate = (new Date(session.BLSession_startDate));
-		if (currentDay <= (new Date(sessionStartDate.toDateString())) ){
-			var dd = sessionStartDate.getDate();
-			var mm = sessionStartDate.getMonth()+1; //January is 0!
-			var yyyy = sessionStartDate.getFullYear();
-			if(dd<10){
-				dd='0'+dd;
-			} 
-			if(mm<10){
-				mm='0'+mm;
-			} 
-			var formattedDate = dd+'/'+mm+'/'+yyyy;
-			sessionsSelectData.push({sessionId : session.sessionId, date : sessionStartDate.toLocaleDateString(), formattedDate : formattedDate, beamLineName : session.beamLineName});
-		}
-	}
-	
-	
-    dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment}, function(err, out){
-		html = out;
-	});
 	
 	$('#' + this.id).hide().html(html).fadeIn('fast');
 	this.panel.doLayout();
@@ -6282,7 +6603,6 @@ ShipmentEditForm.prototype.getPanel = function() {
 		items :	[{
 					html : '<div id="' + this.id + '"></div>',
 					autoScroll : false,
-					padding : this.padding,
 					width : this.width
 				}]
 	});

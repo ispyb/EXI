@@ -9,6 +9,8 @@ function Exi(args) {
 	this.anonymousMenu = null;
 	/** When user is logged in **/
 	this.userMenu = null;
+	/** When user is manager **/
+	this.managerMenu = null;
 	
 	/** If false when opening a new tab it will close the already open ones **/
 	this.keepTabs = false;
@@ -23,6 +25,9 @@ function Exi(args) {
 		}
 		if (args.anonymousMenu != null){
 			this.anonymousMenu = args.anonymousMenu;
+		}
+		if (args.managerMenu != null){
+			this.managerMenu = args.managerMenu;
 		}
 		
 		if (args.headerCssClass != null){
@@ -52,9 +57,8 @@ function Exi(args) {
 	});
 	
 	
-	this.credentialManager.onLogin.attach(function(sender){
-		_this.mainMenu.populateCredentialsMenu();
-		_this.setUserMenu();
+	this.credentialManager.onLogin.attach(function(sender, credential){
+		_this.manageMenu(credential);
 	});
 	
 	this.credentialManager.onActiveProposalChanged.attach(function(sender){
@@ -72,7 +76,7 @@ function Exi(args) {
 			_this.credentialManager.addCredential(data.user, data.roles, data.token, args.site, args.exiUrl, args.properties);
 			_this.authenticationForm.window.close();			
 			var credential = EXI.credentialManager.getCredentialByUserName(data.user);
-          
+			
 			if (credential.isManager()||credential.isLocalContact()){
 				location.hash = "/welcome/manager/" + data.user + "/main";
 			}
@@ -138,12 +142,23 @@ Exi.prototype.setUserMenu = function() {
 	Ext.getCmp("mainMenu").add(EXI.mainMenu.getPanel());
 };
 
+Exi.prototype.setManagerMenu = function() {
+	this.mainMenu = this.managerMenu;
+	Ext.getCmp("mainMenu").removeAll();
+	Ext.getCmp("mainMenu").add(EXI.mainMenu.getPanel());
+};
+
+Exi.prototype.manageMenu = function (credential) {
+	if (credential.isManager()) {
+		this.setManagerMenu();
+	} else {
+		this.setUserMenu();
+	}
+	this.mainMenu.populateCredentialsMenu();
+}
 
 Exi.prototype.loadSelected = function(selected) {
 };
-
-
-
 
 /**
  * Adds a new Main panel to the center panel
@@ -298,8 +313,8 @@ Exi.prototype.show = function() {
 															_this.setAnonymousMenu();
 														}
 														else{
-															_this.setUserMenu();
-															_this.mainMenu.populateCredentialsMenu();
+															var credential = _this.credentialManager.getCredentials()[0];
+															_this.manageMenu(credential);
 														}
 											} } });
 				}

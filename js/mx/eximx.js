@@ -1,6 +1,7 @@
 function ExiMX() {
 	 Exi.call(this, {
 		 					menu: new MXMainMenu(),
+							managerMenu : new ManagerMenu(),
 		 					anonymousMenu: new MainMenu(),
 		 					controllers : [									
 									new SessionController(), 									
@@ -38,6 +39,8 @@ ExiMX.prototype.setLoading = Exi.prototype.setLoading;
 ExiMX.prototype.show = Exi.prototype.show;
 ExiMX.prototype.setAnonymousMenu = Exi.prototype.setAnonymousMenu;
 ExiMX.prototype.setUserMenu = Exi.prototype.setUserMenu;
+ExiMX.prototype.setManagerMenu = Exi.prototype.setManagerMenu;
+ExiMX.prototype.manageMenu = Exi.prototype.manageMenu;
 ExiMX.prototype.appendDataAdapterParameters = Exi.prototype.appendDataAdapterParameters;
 ExiMX.prototype.hideNavigationPanel = Exi.prototype.hideNavigationPanel;
 ExiMX.prototype.showNavigationPanel = Exi.prototype.showNavigationPanel;
