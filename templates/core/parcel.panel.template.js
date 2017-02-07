@@ -2,8 +2,8 @@
     
         <table class="table valign-middle-rows small-padding-rows" style="margin:0px;">
             <tr>
-                <td id="{id}-index-td" rowspan="1" style="background-color:#ddd;width:25px;"><span style="font-size: 10px;">#{dewar.index}</span></td>
-                <td>
+                <td id="{id}-index-td" rowspan="1" style="background-color:#f5f5f5;width:25px;border-top:none;"><span style="font-size: 10px;">#{dewar.index}</span></td>
+                <td style="border-top:none;">
                     <div class="container-fluid">
                         <div class="row">
                             <div id="{id}-parameters-div" class="col-md-2" style="text-align:center;padding:0px;">
@@ -13,7 +13,7 @@
                         </div>
                     </div>
                 </td>
-                <td id="{id}-buttons-td" rowspan="1" style="background-color:#ddd;">
+                <td id="{id}-buttons-td" rowspan="1" style="background-color:#ddd;border-top:none;">
                     <table class="table valign-middle-rows small-padding-rows table-disabled" style="margin:0px;">
                         <tr>
                             <td>

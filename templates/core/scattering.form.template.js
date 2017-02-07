@@ -14,7 +14,28 @@
         </div>
     </div>
     <div class="form-group row">
-        <div class="container-fluid scattering-plot-checkboxes">
+        <label class="col-md-2 col-form-label">Type:</label>
+        <div class="col-md-10">
+            <select id="{id}-type" class="form-control">
+                {#types}
+                <option value={.value}>{.display}</option>
+                {/types}
+            </select>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-md-2 col-form-label">Beamline:</label>
+        <div class="col-md-10">
+            <select id="{id}-beamline" class="form-control">
+                <option></option>
+                {#beamlines}
+                <option value={.name}>{.name}</option>
+                {/beamlines}
+            </select>
+        </div>
+    </div>
+    <div class="form-group row">
+        <div id="{id}-checkox-div" class="container-fluid scattering-plot-checkboxes">
             {#chunkedKeys}
                 {#.}
                     <div class="col-md-4">
@@ -23,7 +44,5 @@
                 {/.}
             {/chunkedKeys}
         </div>
-    </div>
-    <div id="{id}-notifications">
     </div>
 </div>

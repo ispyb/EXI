@@ -43,20 +43,48 @@ ShippingMainView.prototype.getPanel = function() {
 	});
 
     return this.panel;
+
+	// return Ext.create('Ext.panel.Panel', {   
+	// 				margin : 0,
+	// 				// minHeight : 900,
+	// 				layout : 'fit',
+	// 				minHeight : 600,
+	// 				items: [this.panel]
+	// 			});
 };
 
 
 ShippingMainView.prototype.load = function(shippingId) {
 	var _this = this;
 	this.shippingId = shippingId;
-	
 	this.panel.setTitle("Shipment");
 	if (shippingId != null){
 		this.panel.setLoading();
 		var onSuccess = function(sender, shipment){
-			_this.shipmentForm.load(shipment);
-			_this.parcelGrid.load(shipment);
-			_this.panel.setLoading(false);
+
+			//Check if samples have exported data in order to know if the remove button should be enabled
+
+			var containerIds = _.map(_.union(_.flatten(_.map(shipment.dewarVOs,"containerVOs"))),"containerId");
+			if (containerIds.length > 0) {
+				var onSuccessSamples = function(sender,samples) {
+					var hasExportedData = false;
+					if (samples) {
+						var withoutCollection = _.filter(samples,{DataCollectionGroup_dataCollectionGroupId : null});
+						hasExportedData = !(withoutCollection.length == samples.length);
+					}
+
+					_this.shipmentForm.load(shipment,hasExportedData);
+					_this.parcelGrid.load(shipment,hasExportedData);
+					_this.panel.setLoading(false);
+
+				}
+				EXI.getDataAdapter({onSuccess : onSuccessSamples}).mx.sample.getSamplesByContainerId(containerIds);
+			} else {
+				_this.shipmentForm.load(shipment,false);
+				_this.parcelGrid.load(shipment,false);
+				_this.panel.setLoading(false);
+			}
+
 		};
 		EXI.getDataAdapter({onSuccess : onSuccess}).proposal.shipping.getShipment(shippingId);
     }	

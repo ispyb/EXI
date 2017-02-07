@@ -167,7 +167,7 @@ ContainerSpreadSheet.prototype.getSamplesData = function(puck) {
                     [
                         // crystal.crystalId,
                         (i+1), 
-                        protein.acronym, sample.name, this.getCrystalInfo(crystal), diffraction.experimentKind, sample.BLSample_code,  getValue(diffraction["observedResolution"]),  diffraction.requiredResolution, diffraction.preferredBeamDiameter, 
+                        protein.acronym, sample.name, this.getCrystalInfo(crystal), diffraction.experimentKind, sample.BLSample_code ,  getValue(diffraction["observedResolution"]),  diffraction.requiredResolution, diffraction.preferredBeamDiameter, 
                         diffraction.numberOfPositions, diffraction.radiationSensitivity, diffraction.requiredMultiplicity, diffraction.requiredCompleteness,
 						// this.getUnitCellInfo(crystal),
 						crystal.spaceGroup, sample.smiles, sample.comments
@@ -532,7 +532,7 @@ ContainerSpreadSheet.prototype.manageChange = function (change, source, directio
                 if (!this.isCrystalFormAvailable(parsed,change[3])){
                     this.resetCrystalGroup(change[0]);
                     var proteins = EXI.proposalManager.getProteinByAcronym(change[3]);
-                    if (proteins) {
+                    if (proteins && proteins.length > 0) {
                         var crystalsByProteinId = _.filter(EXI.proposalManager.getCrystals(),function(o) {return o.proteinVO.proteinId == proteins[0].proteinId;});
                         if (crystalsByProteinId && crystalsByProteinId.length > 0){
                             var crystal = _.maxBy(crystalsByProteinId,"crystalId");

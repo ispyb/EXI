@@ -48,7 +48,7 @@ function LoadSampleChangerView (args) {
         var row = data.record;
         if (row) {
             if (_this.showTip){
-                $.notify("Click on a sample changer location to place the dewar","info");
+                $.notify("Click on a sample changer location to place the container","info");
                 _this.sampleChangerWidget.blink();
                 _this.showTip = false;
             }
@@ -119,7 +119,7 @@ LoadSampleChangerView.prototype.setSelectedRow = function (row) {
             this.setSelectedPuck(puck);
         }
     }
-    var text = "<span style='font-size:12px;'>Click on a sample changer </br>location to place the dewar</span>";
+    var text = "<span style='font-size:12px;'>Click on a sample changer </br>location to place the container</span>";
     if (row.get('sampleChangerLocation') != null && row.get('sampleChangerLocation') !="") {
         text = "Unload #" + row.get('sampleChangerLocation');
     }

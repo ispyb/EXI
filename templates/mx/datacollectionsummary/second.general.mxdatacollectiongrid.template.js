@@ -16,12 +16,12 @@
     </tr>
     <tr>
         <td>{.DataCollection_rotationAxis} range</td>
-        <td  class='column_parameter_value'>{.DataCollection_axisRange} &deg;</td>
+        <td  class='column_parameter_value'>{@decimal key="DataCollection_axisRange" decimals=2 /}&deg;</td>
     </tr>
     
     <tr>
         <td>{.DataCollection_rotationAxis} start (total)</td>
-        <td  class='column_parameter_value'>{.DataCollection_axisEnd}&deg; ({.DataCollection_axisTotal}&deg;)</td>
+        <td  class='column_parameter_value'>{@decimal key="DataCollection_axisEnd" decimals=1 /}&deg; ({.DataCollection_axisTotal}&deg;)</td>
     </tr>
     <tr>
         <td>Exposure Time</td>

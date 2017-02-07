@@ -9,8 +9,12 @@
         <td  class='column_parameter_value'>{.BLSample_name}</td>
     </tr> 
     <tr>
-        <td>Shipment / Parcel</td>
-        <td  class='column_parameter_value'>{.Shipping_shippingName} / {.Dewar_code}</td>
+        <td>Shipment</td>
+        <td  class='column_parameter_value'>{.Shipping_shippingName}</td>
+    </tr>
+    <tr>
+        <td>Parcel</td>
+        <td  class='column_parameter_value'>{.Dewar_code}</td>
     </tr> 
      <tr>
         <td> Container / Position </td>
@@ -27,10 +31,6 @@
     <tr>
         <td>Sample changer location</td>
         <td  class='column_parameter_value'>{.Container_sampleChangerLocation}</td>
-    </tr>
-    <tr>
-        <td>Parcel status</td>
-        <td  class='column_parameter_value'>{.Shipping_shippingStatus}</td>
     </tr>
 </table>       
               

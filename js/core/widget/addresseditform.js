@@ -68,11 +68,17 @@ AddressEditForm.prototype.getAddress = function () {
         address.personVO = {};
         address.personVO.personId = null;
     }
+    if (!address.personVO.laboratoryVO){
+        address.personVO.laboratoryVO = {};
+        address.personVO.laboratoryVO.laboratoryId = null;
+    }
     address.personVO.emailAddress = $("#" + this.id + "-emailAddress").val();
     address.personVO.familyName = $("#" + this.id + "-familyName").val();
     address.personVO.givenName = $("#" + this.id + "-givenName").val();
     address.personVO.phoneNumber = $("#" + this.id + "-phoneNumber").val();
     address.personVO.faxNumber = $("#" + this.id + "-faxNumber").val();
+    address.personVO.laboratoryVO.name = $("#" + this.id + "-labName").val();
+    address.personVO.laboratoryVO.address = $("#" + this.id + "-labAddress").val();
     address.cardName = $("#" + this.id + "-cardName").val();
     address.courierAccount = $("#" + this.id + "-courierAccount").val();
     address.defaultCourrierCompany = $("#" + this.id + "-defaultCourrierCompany").val();

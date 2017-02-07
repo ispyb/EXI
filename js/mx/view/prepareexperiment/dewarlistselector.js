@@ -34,30 +34,26 @@ DewarListSelectorGrid.prototype.load = function(dewars){
     var _this = this;
     this.dewars = dewars;
     /** Filter by Dewars */ 
-      
     var filtered = _.keyBy(dewars, "shippingId");
     var data = [];
-    _(filtered).forEach(function(value) {
+    _(filtered).forEach(function(value) {   
+        if (_this.filterByDate){
+            if (value.shippingStatus){
+                if (value.shippingStatus.toUpperCase() == "PROCESSING"){
+                    data.push(value);
+                    return;
+                }                        
+            }       
         
-        if ((value.sessionId) ||(value.shippingStatus.toUpperCase() == "PROCESSING")){
-            if (_this.filterByDate){
-                if (value.shippingStatus){
-                    if (value.shippingStatus.toUpperCase() == "PROCESSING"){
-                        data.push(value);
-                        return;
-                    }                        
-                }       
-            
-                /** Filtering only future sessions */
-                if (value.sessionStartDate){
-                    if (moment().diff(moment(value.sessionStartDate, "'MMMM Do YYYY, h:mm:ss a'")) <= 0){
-                        data.push(value);
-                    }
+            /** Filtering only future sessions */
+            if (value.sessionStartDate){
+                if (moment().diff(moment(value.sessionStartDate, "'MMMM Do YYYY, h:mm:ss a'")) <= 0){
+                    data.push(value);
                 }
             }
-            else{
-                    data.push(value);
-            }
+        }
+        else{
+                data.push(value);
         }
     });
         
@@ -67,12 +63,12 @@ DewarListSelectorGrid.prototype.load = function(dewars){
 };
 
 /**
-* Return the number of containers and samples for a given dewar 
+* Return the number of containers and samples for a given shipment 
 *
-* @method getStatsByDewarId
-* @param {Integer} dewarId DewarId
+* @method getStatsByShippingId
+* @param {Integer} shippingId ShippingId
 */
-DewarListSelectorGrid.prototype.getStatsByDewarId = function(shippingId){ 
+DewarListSelectorGrid.prototype.getStatsByShippingId = function(shippingId){ 
     var _this = this;
     var containers = _.filter(this.dewars, function(e){return e.shippingId == shippingId;});
     var sampleCount = 0;
@@ -98,8 +94,8 @@ DewarListSelectorGrid.prototype.getSelectedData = function() {
 
 DewarListSelectorGrid.prototype.getStore = function(){
     this.store = Ext.create('Ext.data.Store', {
-        fields:['beamlineLocation', 'storageLocation','containerStatus','containerType','sessionStartDate','creationDate','beamLineOperator','shippingStatus','shippingName', 'barCode', 'beamlineName', 'dewarCode', 'dewarStatus', 'sampleChangerLocation', 'sampleCount', 'sessionStartDate', 'type']
-        /*sortInfo: { field: "sessionStartDate", direction: "DESC" },
+        fields:['beamlineLocation', 'storageLocation','containerStatus','containerType','sessionStartDate','creationDate','beamLineOperator','shippingStatus','shippingName', 'barCode', 'beamlineName', 'dewarCode', 'dewarStatus', 'sampleChangerLocation', 'sampleCount', 'sessionStartDate', 'type'],
+        sortInfo: { field: "sessionStartDate", direction: "DESC" },
         sorters:
                 {
                     field: 'sessionStartDate',
@@ -113,7 +109,7 @@ DewarListSelectorGrid.prototype.getStore = function(){
                             return (d1 < d2) ? 1 : -1;
                         }
                     }
-                }*/
+                }
     });
     return this.store;
 };
@@ -150,7 +146,7 @@ DewarListSelectorGrid.prototype.getPanel = function(){
                 {
                     text    : 'Shipment',
                     columns : [
-                         { text: 'Name',  dataIndex: 'shippingName', flex : 1 },
+                         { text: 'Name',  dataIndex: 'shippingName', flex : 3 },
                          { text: 'Status',  dataIndex: 'shippingStatus', flex: 1,
                         renderer : function(grid, a, record){
                                       return record.data.shippingStatus.toUpperCase()
@@ -171,7 +167,7 @@ DewarListSelectorGrid.prototype.getPanel = function(){
                 {
                     text    : 'Experiment',
                     columns : [
-                            { text: 'Start on',  dataIndex: 'sessionStartDate', flex: 2, 
+                            { text: 'Start on',  dataIndex: 'sessionStartDate', flex: 2,
                             renderer : function(grid, a, record){
                                 if (record.data.sessionStartDate){
                                     return moment(record.data.sessionStartDate, "'MMMM Do YYYY, h:mm:ss a'").format("DD/MM/YYYY");
@@ -187,7 +183,7 @@ DewarListSelectorGrid.prototype.getPanel = function(){
                         text: '#',     
                         flex: 1,
                         renderer : function(grid, e, record){
-                            var stats =  _this.getStatsByDewarId(record.data.shippingId);
+                            var stats =  _this.getStatsByShippingId(record.data.shippingId);
                             return stats.dewars + " parcels / " + stats.containers + " containers (" +  stats.samples + " samples)";
                             
                         }

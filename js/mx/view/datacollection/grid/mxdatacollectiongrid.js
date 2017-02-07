@@ -45,13 +45,13 @@ MXDataCollectionGrid.prototype.getToolBar = function() {
 
     var menu =  Ext.create('Ext.menu.Menu', {     
         items: [{
-            text: 'Data Collection',
+            text: 'Session summary',
             handler: function(){
                 _this.renderingType = "DATACOLLECTION";
                 onMenuClicked(_this.uncollapsedDataCollectionGrid);
             }
         },{
-            text: 'Summary',            
+            text: 'Data collections summary',            
             handler: function(){
                 _this.renderingType = "DATACOLLECTION_COLLAPSED";
                 onMenuClicked(_this.collapsedDataCollectionGrid);

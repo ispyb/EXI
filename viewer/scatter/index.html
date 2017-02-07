@@ -47,31 +47,20 @@
         };
         data.push(trace);
       }
-
+      var yTitle = "";
+      if (yValues.length == 1) {
+        yTitle =  yValues[0];
+      }
       var layout = {
         title : getParameterByName("title"),
         xaxis : {
-        
           tickformat: "%c"   
         },
+        yaxis : {title : yTitle},
         hovermode:'closest',
-<<<<<<< HEAD
-        margin: {                           // update the left, bottom, right, top margin
-          l: 70, b: 200, r: 100, t:50
-        }
-=======
-<<<<<<< HEAD
-        margin: {                        
-          l: 40, b: 200, r: 100, t:50
-        }
-=======
         margin: {                           // update the left, bottom, right, top margin
           l: 70, b: 200, r: 100, t:50
         },
-        // width: '100%',
-        // height: '100%'
->>>>>>> 859edd4f4e18e31f7304669914bcd1f254004b9d
->>>>>>> DEV
       };
   
       Plotly.newPlot("plotDiv", data, layout);

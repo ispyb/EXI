@@ -44,6 +44,7 @@ ExiSAXS.prototype.getHeader = function(){
     return html;	
 };
 
+
 ExiSAXS.prototype.getDataAdapter = function(args){
 	return new SaxsDataAdapterFactory(this.appendDataAdapterParameters(args));
 };

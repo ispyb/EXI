@@ -926,10 +926,11 @@ img.smalllazy {
 
 .border-grid-light{
 	
-	border-color:rgba(200,200,200,.5);
+	border-color:#ddd;
 	border-style: solid;
     border-width: 1px;
-	
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
 }
 
 

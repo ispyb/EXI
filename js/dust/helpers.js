@@ -144,3 +144,21 @@ dust.helpers.fileName = function (chunk, context, bodies, params) {
     }
     return chunk;
 }
+
+dust.helpers.formatDate = function (chunk, context, bodies, params) {
+    if (params.date) {
+        if (params.date){
+            if (params.format != null) {
+                try {
+                    formatted = moment(new Date(params.date)).format(params.format);
+                    chunk.write(formatted);
+                } catch (e) {
+                    chunk.write(params.date);
+                }
+            } else {
+                chunk.write(params.date);
+            }
+        }
+    }
+    return chunk;
+}

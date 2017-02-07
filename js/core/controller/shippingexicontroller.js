@@ -23,12 +23,17 @@ ShippingExiController.prototype.loadShipmentsNavigationPanel = function(listView
 			curated.push(data[i][0]);
 		}
 		curated.sort(function(a,b){return b.Shipping_shippingId - a.Shipping_shippingId;});
-		
-		/** Load panel * */
-		EXI.addNavigationPanel(listView);
-		/** Load data * */
-		listView.load(curated);
-		EXI.setLoadingMainPanel(false);
+
+		var onSuccessProposal = function (sender,dewars) {
+			listView.dewars = dewars;
+			/** Load panel * */
+			EXI.addNavigationPanel(listView);
+			/** Load data * */
+			listView.load(curated);
+			EXI.setLoadingMainPanel(false);
+		}
+
+		EXI.getDataAdapter({ onSuccess : onSuccessProposal}).proposal.dewar.getDewarsByProposal();
 	};
 	
 	/** Handle error * */

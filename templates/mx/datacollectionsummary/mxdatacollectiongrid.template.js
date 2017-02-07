@@ -77,7 +77,7 @@
                                                             <td>Total rotation</td> <td class='column_parameter_value'>{.ScreeningStrategySubWedge_oscillationRange} &deg;</td>
                                                         </tr>  
                                                         <tr>
-                                                             <td>Transmission</td> <td class='column_parameter_value'>{@decimal key="ScreeningStrategySubWedge_transmission" decimals=2 /}%</td>
+                                                             <td>Transmission</td> <td class='column_parameter_value'>{@decimal key="ScreeningStrategySubWedge_transmission" decimals=1 /} %</td>
                                                              <td></td> <td class='column_parameter_value'></td>
                                                             
                                                         </tr>     

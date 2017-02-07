@@ -38,7 +38,7 @@ OverviewQueueGrid.prototype.load = function(dataCollections) {
 OverviewQueueGrid.prototype.render = function(data) {
 	var html = "";
 
-	/** Calculates the rowSpan so the template knows when to plot the images. Alsp finds where to draw stronger borders*/	
+	/** Calculates the rowSpan so the template knows when to plot the images. Also finds where to draw stronger borders*/	
 	var grouped = _.groupBy(data, "MeasurementToDataCollection_dataCollectionId");
     
 	_.map(data, function(o){ 

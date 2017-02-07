@@ -56,13 +56,13 @@
     <div class="form-group row">
         <label class="col-md-1"><b>Lab Name:</b></label>
         <div class="col-md-11">
-            <input id="{id}-labName" class="form-control" type="text" value="{labName}">
+            <input id="{id}-labName" class="form-control" type="text" value="{personVO.laboratoryVO.name}">
         </div>
     </div>
     <div class="form-group row">
         <label class="col-md-1"><b>Lab Address:</b></label>
         <div class="col-md-11">
-            <textarea id="{id}-labAddress" class="form-control" rows="3">{labAddress}</textarea>
+            <textarea id="{id}-labAddress" class="form-control" rows="3">{personVO.laboratoryVO.address}</textarea>
         </div>
     </div>
 </div>

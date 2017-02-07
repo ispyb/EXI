@@ -308,7 +308,7 @@ Exi.prototype.show = function() {
 													region : 'west',
 													width : 250,
 													split : false,
-													title : 'Browse by',
+													title : 'Select',
 													cls : 'navigation',
 													collapsible : true,
 													collapsed : true

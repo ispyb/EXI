@@ -35,10 +35,10 @@
     </div>
     <div class="form-group row" style="margin:0px">
         <label class="col-md-1"><b>Lab Name:</b></label>
-        <label class="col-md-6" style="font-weight: normal">{labName}</label>
+        <label class="col-md-6" style="font-weight: normal">{personVO.laboratoryVO.name}</label>
     </div>
     <div class="form-group row" style="margin:0px">
         <label class="col-md-1"><b>Lab Address:</b></label>
-        <textarea  class="col-md-3" rows="3" disabled>{labAddress}</textarea >
+        <textarea  class="col-md-3" style="overflow:hidden;" rows="3" disabled>{personVO.laboratoryVO.address}</textarea >
     </div>
 </div>

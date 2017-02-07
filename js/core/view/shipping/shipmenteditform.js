@@ -2,7 +2,7 @@ function ShipmentEditForm(args) {
     this.id = BUI.id();
 
     this.width = 600;
-    this.height = 200;
+    this.height = 700;
 	this.showTitle = true;
 	if (args != null) {
 		if (args.showTitle != null) {

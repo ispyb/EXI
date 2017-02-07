@@ -47,7 +47,7 @@ AddressForm.prototype.getAddress = function() {
 
 AddressForm.prototype.load = function(address) {
 	this.address = address;
-
+	
 	var html = "";
 	dust.render("address.form.template", address, function(err, out){
 		html = out;
@@ -76,17 +76,6 @@ AddressForm.prototype.getPanel = function() {
 
 	return this.panel;
 };
-
-// AddressForm.prototype.save = function() {
-// 	var _this = this;
-
-// 	_this.panel.setLoading();
-// 	var onSuccess = function(sender) {
-// 		_this.panel.setLoading(false);
-// 		EXI.getDataAdapter().proposal.proposal.update();
-// 	};
-// 	EXI.getDataAdapter({onSuccess : onSuccess }).proposal.labcontacts.saveLabContact(_this.getAddress());
-// };
 
 AddressForm.prototype.getToolBar = function() {
 	var _this = this;

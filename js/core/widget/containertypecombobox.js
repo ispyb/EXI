@@ -7,8 +7,8 @@ function ContainerTypeComboBox(args) {
     this.initDisabled = false;
 
     this.data = [
-                    {"type":"UNIPUCK", "capacity":16},
                     {"type":"SPINE", "capacity":10},
+                    {"type":"UNIPUCK", "capacity":16},
                     {"type":"PLATE", "capacity":96}
                 ]
 
@@ -48,7 +48,7 @@ ContainerTypeComboBox.prototype.getPanel = function () {
         labelStyle: 'padding:5px',
         labelWidth : this.labelWidth,
         displayField: 'type',
-        value:'UNIPUCK',
+        value:'SPINE',
         width: this.width,
         disabled : this.initDisabled
     });
@@ -67,8 +67,11 @@ ContainerTypeComboBox.prototype.getValue = function () {
 
 ContainerTypeComboBox.prototype.getSelectedType = function () {
     var type = this.panel.getValue();
-    if (type == "UNIPUCK" || type == "SPINE") {
-        type = "Puck";
+    if (type == "UNIPUCK") {
+        type = "Unipuck";
+    }
+    else if (type == "SPINE") {
+        type = "Spinepuck";
     }
 	return type;
 };

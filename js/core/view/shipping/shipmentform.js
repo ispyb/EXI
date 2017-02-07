@@ -21,8 +21,9 @@ function ShipmentForm(args) {
 	this.onSaved = new Event(this);
 }
 
-ShipmentForm.prototype.load = function(shipment) {
+ShipmentForm.prototype.load = function(shipment,hasExportedData) {
 	this.shipment = shipment;
+	this.hasExportedData = hasExportedData;
 	var _this = this;
 	
 	var toData = EXI.proposalManager.getLabcontacts();
@@ -48,20 +49,29 @@ ShipmentForm.prototype.load = function(shipment) {
 		$("#" + _this.id + "-edit-button").unbind('click').click(function(sender){
 			_this.edit();
 		});
+		if (!this.hasExportedData){
+			$("#" + _this.id + "-remove-button").removeClass('disabled');
+			$("#" + _this.id + "-remove-button").unbind('click').click(function(sender){
+				alert("Not implemented");
+			});
+		}
 	}
 
 	this.panel.doLayout();
+
+	this.attachCallBackAfterRender();
 
 };
 
 ShipmentForm.prototype.getPanel = function() {
 
 	this.panel = Ext.create("Ext.panel.Panel",{
+		layout : 'fit',
 		items :	[{
-					cls	: 'border-grid',
+					// cls	: 'border-grid',
                     html : '<div id="' + this.id + '"></div>',
                     autoScroll : false,
-					margin : 10,
+					// margin : 10,
 					padding : this.padding,
 					width : this.width
                 }]
@@ -105,3 +115,15 @@ ShipmentForm.prototype.edit = function(dewar) {
 
 	shippingEditForm.load(this.shipment);
 };
+
+ShipmentForm.prototype.attachCallBackAfterRender = function () {
+
+	var _this = this;
+	var tabsEvents = function(grid) {
+		this.grid = grid;
+		$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+			_this.panel.doLayout();
+		});
+    };
+    var timer3 = setTimeout(tabsEvents, 500, this);
+}

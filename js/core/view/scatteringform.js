@@ -50,6 +50,18 @@ ScatteringForm.prototype.load = function(data) {
 	this.data.today = moment().format("YYYY-MM-DD");
 	this.data.tenDaysAgo = moment().subtract(10,'d').format("YYYY-MM-DD");
 
+	if (!this.data.types){
+		this.data.types = [
+								{display : "Overall", value : "overall"},
+								{display : "InnerShell", value : "innerShell"},
+								{display : "OuterShell", value : "outerShell"}
+							]
+	}
+
+	if (!this.data.beamlines) {
+		this.data.beamlines = EXI.credentialManager.getBeamlinesByTechnique("MX");
+	}
+
     var html = "";
     dust.render("scattering.form.template", this.data, function (err, out) {
         html = out;
@@ -66,17 +78,24 @@ ScatteringForm.prototype.plot = function() {
 	$('.scattering-checkbox:checked').each(function(i){
 		checkedValues.push($(this).val());
 	});
-
+	var type = $("#" + this.id + "-type").val();
+	var beamline = $("#" + this.id + "-beamline").val();
+	
 	if (startDate != "" && endDate != "" && checkedValues.length > 0) {
 		var diffDays = moment(endDate,"YYYY-MM-DD").diff(moment(startDate,"YYYY-MM-DD"), 'days');
 		if (diffDays <= 10){
-			var url = EXI.getDataAdapter().mx.stats.getStatisticsByDate(startDate,endDate);
+			url = "";
+			if (beamline != ""){
+				url = EXI.getDataAdapter().mx.stats.getStatisticsByDateAndBeamline(type,startDate,endDate,beamline);
+			} else {
+				url = EXI.getDataAdapter().mx.stats.getStatisticsByDate(type,startDate,endDate);
+			}
 			var urlParams = "url=" + url + "&/&title=" + this.data.title + "&/&y=" + checkedValues.toString() + "&/&x=recordTimeStamp&";
 			window.open("../viewer/scatter/index.html?" + urlParams,"_blank");
 		} else {
 			$("#" + this.id + "-dates").notify("Date interval must be 10 days or lower.", "error");
 		}
 	} else {
-		$("#" + this.id + "-notifications").notify("Set the dates correctly and select the values to plot.", "error");
+		$("#" + this.id + "-checkox-div").notify("Set the dates correctly and select the values to plot.", { className : "error",elementPosition: 'top left'});
 	}
 }

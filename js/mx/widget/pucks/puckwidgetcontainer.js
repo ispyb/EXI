@@ -24,6 +24,10 @@ function PuckWidgetContainer(args) {
 					this.puckWidget = new SpinePuckWidget(args);
 					this.capacity = 10;
 					break;
+				case "Puck":
+					this.puckWidget = new SpinePuckWidget(args);
+					this.capacity = 10;
+					break;
 			}
 		}
 		if (args.code){

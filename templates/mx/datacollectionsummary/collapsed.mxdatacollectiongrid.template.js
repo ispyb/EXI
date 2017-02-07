@@ -3,7 +3,7 @@
       <div class="col-xs-6 col-md-1">
          #{.DataCollection_dataCollectionNumber} {.DataCollectionGroup_experimentType} 
          <br />
-         {.DataCollectionGroup_startTime}
+         {@formatDate date=DataCollectionGroup_startTime format="DD-MM-YYYY hh:mm:ss" /}
       </div>
       <div class="col-xs-6 col-md-2">
          <table class='table-sm table-condensed '>
