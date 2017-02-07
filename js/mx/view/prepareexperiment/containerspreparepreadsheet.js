@@ -34,7 +34,7 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function() {
 
     this.store = Ext.create('Ext.data.Store', {
         storeId:'spreadSheedStore',
-        fields:['shippingName', 'shippingId', 'barCode', 'containerCode', 'containerType', 'sampleCount', 'beamlineName','beamlineCombo','sampleChangerLocation','dewarId','containerId','capacity'],
+        fields:['shippingName', 'shippingId', 'barCode', 'parcelName', 'containerCode', 'containerType', 'sampleCount', 'beamlineName','beamlineCombo','sampleChangerLocation','dewarId','containerId','capacity'],
         data: []
     });
 
@@ -106,6 +106,13 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function() {
                 flex: 1,
                 readOnly: true
             },   
+            {
+                header: 'Parcel',
+                dataIndex: 'parcelName',
+                type: 'text',
+                flex: 1,
+                readOnly: true
+            },
              {
                 header: 'Container',
                 dataIndex: 'containerCode',
@@ -122,6 +129,7 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function() {
                 header: 'Barcode',
                 dataIndex: 'barCode',
                 type: 'text',
+                hidden : true,
                 flex: 1,
                 readOnly: true
             },
@@ -167,7 +175,8 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function() {
                 readOnly: true,
                 renderer : function(value, metaData, record, rowIndex){
                     var beamlines = _.map(EXI.credentialManager.getBeamlinesByTechnique("MX"),"name");
-                    beamlines = _.union(beamlines,[record.data.beamlineName])
+                    beamlines = _.union(beamlines,[record.data.beamlineName]);
+                    _.remove(beamlines, function (beamline) {return _.indexOf(['ID14-4', 'BM14U', 'ID30A-2'], beamline) !== -1});
                     var templateData = {
                                             beamlines   : beamlines,
                                             selected    : record.data.beamlineName,
@@ -289,6 +298,7 @@ ContainerPrepareSpreadSheet.prototype.load = function(dewars, sampleChangerWidge
             data.push({
                 shippingName : dewar.shippingName,
                 shippingId : dewar.shippingId,
+                parcelName : dewar.dewarCode,
                 barCode : dewar.barCode,
                 containerCode : dewar.containerCode,
                 containerType : containerType,

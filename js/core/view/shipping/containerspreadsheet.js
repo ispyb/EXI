@@ -167,7 +167,7 @@ ContainerSpreadSheet.prototype.getSamplesData = function(puck) {
                     [
                         // crystal.crystalId,
                         (i+1), 
-                        protein.acronym, sample.name, this.getCrystalInfo(crystal), diffraction.experimentKind, sample.code,  getValue(diffraction["observedResolution"]),  diffraction.requiredResolution, diffraction.preferredBeamDiameter, 
+                        protein.acronym, sample.name, this.getCrystalInfo(crystal), diffraction.experimentKind, sample.BLSample_code ,  getValue(diffraction["observedResolution"]),  diffraction.requiredResolution, diffraction.preferredBeamDiameter, 
                         diffraction.numberOfPositions, diffraction.radiationSensitivity, diffraction.requiredMultiplicity, diffraction.requiredCompleteness,
 						// this.getUnitCellInfo(crystal),
 						crystal.spaceGroup, sample.smiles, sample.comments
@@ -255,9 +255,7 @@ ContainerSpreadSheet.prototype.getHeader = function() {
 ContainerSpreadSheet.prototype.getPuck = function() {
 	var myPuck = JSON.parse(JSON.stringify(this.puck));
 	var rows = this.parseTableData();
-	myPuck['barcode'] = rows[0]["Pin BarCode"];
     
-	//myPuck.sampleVOs = [];
     var aux = [];
     
     function filterByLocation(samples){
@@ -272,7 +270,7 @@ ContainerSpreadSheet.prototype.getPuck = function() {
         } 
         
 		sample["name"] = rows[i]["Sample Name"];
-		// sample["Dewar_barCode"] = rows[i]["Pin BarCode"];
+		sample["BLSample_code"] = rows[i]["Pin BarCode"];
 		sample["smiles"] = rows[i]["Smiles"];
 		sample["location"]= rows[i]["location"];
 		sample["comments"] = rows[i]["Comments"];
@@ -534,7 +532,7 @@ ContainerSpreadSheet.prototype.manageChange = function (change, source, directio
                 if (!this.isCrystalFormAvailable(parsed,change[3])){
                     this.resetCrystalGroup(change[0]);
                     var proteins = EXI.proposalManager.getProteinByAcronym(change[3]);
-                    if (proteins) {
+                    if (proteins && proteins.length > 0) {
                         var crystalsByProteinId = _.filter(EXI.proposalManager.getCrystals(),function(o) {return o.proteinVO.proteinId == proteins[0].proteinId;});
                         if (crystalsByProteinId && crystalsByProteinId.length > 0){
                             var crystal = _.maxBy(crystalsByProteinId,"crystalId");

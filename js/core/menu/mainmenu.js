@@ -49,17 +49,6 @@ MainMenu.prototype.getHomeItem = function() {
 
 MainMenu.prototype.getShipmentItem = function() { 
 	var _this = this;
-	// function onItemCheck(item, checked) {
-	// 	if (item.text == "Shipments") {
-	// 		location.hash = "/proposal/shipping/nav";
-	// 	}
-	// 	if (item.text == "Manage shipping addresses") {
-	// 		location.hash = "/proposal/addresses/nav";
-	// 	}
-	// 	if (item.text == "Shipment List") {
-	// 		location.hash = "/proposal/shipping/nav";
-	// 	}
-	// }
 
 	function getBiosaxsMenu() {
 		var _this = this;
@@ -67,7 +56,6 @@ MainMenu.prototype.getShipmentItem = function() {
 			if (item.text == "Stock Solutions") {
 				location.hash = "/saxs/stocksolution/nav";
 			}
-			
 		}
 
 		return Ext.create('Ext.menu.Menu', {
@@ -122,7 +110,8 @@ MainMenu.prototype.getShipmentItem = function() {
 						{
 							text : 'Add new',
 							icon : '../images/icon/add.png',
-							handler : onItemCheck 
+							handler : onItemCheck,
+							disabled : true
 						}, {
 							text : 'List',
 							icon : '../images/icon/ic_list_black_24dp.png',
@@ -135,7 +124,7 @@ MainMenu.prototype.getShipmentItem = function() {
 		var _this = this;
 		function onItemCheck(item, checked) {
 			if (item.text == "Add new") {
-				var shippingEditForm = new ShipmentEditForm();
+				var shippingEditForm = new ShipmentEditForm({width : 600, height : 700});
 				
 				shippingEditForm.onSaved.attach(function (sender, shipment) {
 					window.close();
@@ -144,8 +133,9 @@ MainMenu.prototype.getShipmentItem = function() {
 
 				var window = Ext.create('Ext.window.Window', {
 					title : 'Shipment',
-					height : 450,
-					width : 600,
+					height : 500,
+					width : 650,
+					padding : '10 10 10 10',
 					modal : true,
 					layout : 'fit',
 					items : [ shippingEditForm.getPanel() ],
@@ -209,7 +199,6 @@ MainMenu.prototype.getShipmentItem = function() {
 	};
 
 };
-
 
 MainMenu.prototype.getHelpMenu = function() {
 	var _this = this;

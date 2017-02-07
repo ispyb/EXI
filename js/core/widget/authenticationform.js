@@ -19,7 +19,6 @@ AuthenticationForm.prototype.show = function(){
 	this.window.show();
 };
 
-
 AuthenticationForm.prototype.getAuthenticationForm = function(){         
      if (ExtISPyB.sites){
         if (ExtISPyB.sites.length > 1){

@@ -21,11 +21,23 @@
     </tr>
      <tr>
         <td>Kappa Start</td>
-        <td  class='column_parameter_value'>{.DataCollection_kappaStart}</td>
+        <td  class='column_parameter_value'>
+            {@eq key=DataCollection_kappaStart type="number" value=-9999}
+                N/A
+            {:else}
+                {.DataCollection_kappaStart}
+            {/eq}
+        </td>
     </tr>
      <tr>
         <td>Phi Start</td>
-        <td  class='column_parameter_value'>{.DataCollection_phiStart}</td>
+        <td  class='column_parameter_value'>
+            {@eq key=DataCollection_phiStart type="number" value=-9999}
+                N/A
+            {:else}
+                {.DataCollection_phiStart}
+            {/eq}
+        </td>
     </tr>
 </table>       
               

@@ -1,5 +1,5 @@
 function SAXSExiController() {    
-	this.init();
+    this.init();
     this.timers = [];
     this.timeout = 60000;
 }

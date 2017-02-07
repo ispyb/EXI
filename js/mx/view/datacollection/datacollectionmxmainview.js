@@ -17,6 +17,7 @@ function DataCollectionMxMainView() {
 DataCollectionMxMainView.prototype.getPanel = MainView.prototype.getPanel;
 
 DataCollectionMxMainView.prototype.getContainer = function() {
+
     this.container = Ext.create('Ext.tab.Panel', {   
     minHeight : 900,    
     padding : "5 40 0 5",
@@ -74,6 +75,12 @@ DataCollectionMxMainView.prototype.loadFXEScans = function(data) {
 };
 
 DataCollectionMxMainView.prototype.loadCollections = function(dataCollections) {
+    this.panel.setTitle("");
+    var proposalId = _.uniq(_.map(dataCollections,"BLSession_proposalId"));
+    if (proposalId && proposalId.length == 1) {
+        proposal = EXI.proposalManager.getProposalById(proposalId[0]);
+        this.panel.setTitle(proposal.code + proposal.number);
+    }
 	var data = _.filter(dataCollections, function(u) {
         return u.DataCollection_dataCollectionId != null;
     });

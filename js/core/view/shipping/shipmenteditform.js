@@ -2,7 +2,7 @@ function ShipmentEditForm(args) {
     this.id = BUI.id();
 
     this.width = 600;
-    this.height = 200;
+    this.height = 700;
 	this.showTitle = true;
 	if (args != null) {
 		if (args.showTitle != null) {
@@ -22,55 +22,58 @@ function ShipmentEditForm(args) {
 ShipmentEditForm.prototype.load = function(shipment) {
 
 	this.shipment = shipment;
+	var html = "";
+	try{
+		var fromData = EXI.proposalManager.getLabcontacts();
+		var toData = $.extend(EXI.proposalManager.getLabcontacts(), [{ cardName : 'Same as for shipping to beamline', labContactId : -1}, { cardName : 'No return requested', labContactId : 0}]);
 
-	var fromData = EXI.proposalManager.getLabcontacts();
-	var toData = $.extend(EXI.proposalManager.getLabcontacts(), [{ cardName : 'Same as for shipping to beamline', labContactId : -1}, { cardName : 'No return requested', labContactId : 0}]);
+		var beamlineName = "";
+		var startDate = "";
+		if (shipment){
+			if (shipment.sessions.length > 0){
+				beamlineName = shipment.sessions[0].beamlineName;
+				startDate = (new Date(shipment.sessions[0].startDate)).toLocaleDateString();
+			}
+		}
 
-    var html = "";
-	var beamlineName = "";
-	var startDate = "";
-	if (shipment){
-		if (shipment.sessions.length > 0){
-			beamlineName = shipment.sessions[0].beamlineName;
-			startDate = (new Date(shipment.sessions[0].startDate)).toLocaleDateString();
+		var sessionSort = function(o1,o2) {
+			var d1 = new Date(o1.BLSession_startDate);
+			var d2 = new Date(o2.BLSession_startDate);
+			if (d1 === d2) {
+				return 0;
+			} else {
+				return (d1 < d2) ? 1 : -1;
+			}
 		}
-	}
-
-	var sessionSort = function(o1,o2) {
-		var d1 = new Date(o1.BLSession_startDate);
-		var d2 = new Date(o2.BLSession_startDate);
-		if (d1 === d2) {
-			return 0;
-		} else {
-			return (d1 < d2) ? 1 : -1;
+		var sessions = EXI.proposalManager.getSessions();
+		sessions.sort(sessionSort);
+		var sessionsSelectData = [];
+		var currentDay = new Date((new Date()).toDateString());
+		for (var i = 0 ; i < sessions.length ; i++){
+			var session = sessions[i];
+			var sessionStartDate = (new Date(session.BLSession_startDate));
+			if (currentDay <= (new Date(sessionStartDate.toDateString())) ){
+				var dd = sessionStartDate.getDate();
+				var mm = sessionStartDate.getMonth()+1; //January is 0!
+				var yyyy = sessionStartDate.getFullYear();
+				if(dd<10){
+					dd='0'+dd;
+				} 
+				if(mm<10){
+					mm='0'+mm;
+				} 
+				var formattedDate = dd+'/'+mm+'/'+yyyy;
+				sessionsSelectData.push({sessionId : session.sessionId, date : sessionStartDate.toLocaleDateString(), formattedDate : formattedDate, beamLineName : session.beamLineName});
+			}
 		}
+		
+		
+		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment}, function(err, out){
+			html = out;
+		});
+	} catch (e) {
+		html = "There was an error loading the lab contacts.";
 	}
-	var sessions = EXI.proposalManager.getSessions();
-	sessions.sort(sessionSort);
-	var sessionsSelectData = [];
-	var currentDay = new Date((new Date()).toDateString());
-	for (var i = 0 ; i < sessions.length ; i++){
-		var session = sessions[i];
-		var sessionStartDate = (new Date(session.BLSession_startDate));
-		if (currentDay <= (new Date(sessionStartDate.toDateString())) ){
-			var dd = sessionStartDate.getDate();
-			var mm = sessionStartDate.getMonth()+1; //January is 0!
-			var yyyy = sessionStartDate.getFullYear();
-			if(dd<10){
-				dd='0'+dd;
-			} 
-			if(mm<10){
-				mm='0'+mm;
-			} 
-			var formattedDate = dd+'/'+mm+'/'+yyyy;
-			sessionsSelectData.push({sessionId : session.sessionId, date : sessionStartDate.toLocaleDateString(), formattedDate : formattedDate, beamLineName : session.beamLineName});
-		}
-	}
-	
-	
-    dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment}, function(err, out){
-		html = out;
-	});
 	
 	$('#' + this.id).hide().html(html).fadeIn('fast');
 	this.panel.doLayout();
@@ -82,8 +85,8 @@ ShipmentEditForm.prototype.getPanel = function() {
 		items :	[{
 					html : '<div id="' + this.id + '"></div>',
 					autoScroll : false,
-					padding : this.padding,
-					width : this.width
+					width : this.width,
+					height : this.height
 				}]
 	});
 

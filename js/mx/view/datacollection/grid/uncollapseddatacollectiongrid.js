@@ -61,6 +61,19 @@ UncollapsedDataCollectionGrid.prototype.getPanel = function(){
 */
 UncollapsedDataCollectionGrid.prototype.displayDataCollectionTab = function(target, dataCollectionGroupId) {
     var onSuccess = function(sender, data){
+       
+        _.forEach(data, function(value) {
+            // Format new date as HH:MM:SS, the slice is for zero-padding
+            d = new Date(Date.parse(value.startTime))
+            hours = ("0" + d.getHours()).slice(-2)
+            minutes = ("0" + d.getMinutes()).slice(-2)
+            seconds = ("0" + d.getSeconds()).slice(-2)
+            value.formattedStartTime = hours + ":" +minutes + ":" + seconds;
+            // URL to image quality indicators
+            value.urlImageQualityIndicators = EXI.getDataAdapter().mx.dataCollection.getQualityIndicatorPlot(value.dataCollectionId);
+            // Result from auto-processing>                     
+            value.onlineresults = UncollapsedDataCollectionGrid.prototype._getAutoprocessingStatistics(value);
+        });
         var html = "";
         
         dust.render("datacollections.mxdatacollectiongrid.template", data, function(err, out) {                                                                                               

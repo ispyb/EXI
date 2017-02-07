@@ -1,9 +1,9 @@
    <table class='table-sm table table-striped'>
                 <thead>   
                 <tr>
-                    <th style='padding:0 15px 0 15px;font-weight: normal;'>cell A</th>
-                    <th style='padding:0 15px 0 15px;font-weight: normal;'>cell B</th>
-                    <th style='padding:0 15px 0 15px;font-weight: normal;'>cell C</th>
+                    <th style='padding:0 15px 0 15px;font-weight: normal;'>Cell A</th>
+                    <th style='padding:0 15px 0 15px;font-weight: normal;'>Cell B</th>
+                    <th style='padding:0 15px 0 15px;font-weight: normal;'>Cell C</th>
                     
                 </tr>
                 </thead>
