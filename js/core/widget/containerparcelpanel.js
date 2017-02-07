@@ -113,26 +113,28 @@ ContainerParcelPanel.prototype.getPanel = function () {
 * @return
 */
 ContainerParcelPanel.prototype.load = function (samples) {
-    if (this.data.puckType == "Puck") {
-        _.map(samples,function (s) {s.location = parseInt(s.BLSample_location)});
-        if (_.maxBy(samples,"location").location > 10) {
-            this.data.puckType = "Unipuck";
-            this.container = this.createContainer(this.data);
+    if (samples != null && samples.length > 0){
+        if (this.data.puckType == "Puck") {
+            _.map(samples,function (s) {s.location = parseInt(s.BLSample_location)});
+            if (_.maxBy(samples,"location").location > 10) {
+                this.data.puckType = "Unipuck";
+                this.container = this.createContainer(this.data);
+            }
         }
-    }
-    this.containerPanel.removeAll();
-    this.containerPanel.add(this.container.getPanel());
-    if (samples.length > 0){
-        this.container.loadSamples(samples);
-        if (!this.container.containerId) {
-            this.container.containerId = this.containerId;
+        this.containerPanel.removeAll();
+        this.containerPanel.add(this.container.getPanel());
+        if (samples.length > 0){
+            this.container.loadSamples(samples);
+            if (!this.container.containerId) {
+                this.container.containerId = this.containerId;
+            }
+            // this.shippingId = samples[0].Shipping_shippingId;
         }
-        // this.shippingId = samples[0].Shipping_shippingId;
-    }
-    
-    var withoutCollection = _.filter(samples,{DataCollectionGroup_dataCollectionGroupId : null});
-    if (withoutCollection.length < samples.length) {
-        this.withoutCollection = false;
+        
+        var withoutCollection = _.filter(samples,{DataCollectionGroup_dataCollectionGroupId : null});
+        if (withoutCollection.length < samples.length) {
+            this.withoutCollection = false;
+        }
     }
 };
 
@@ -215,6 +217,8 @@ ContainerParcelPanel.prototype.createContainer = function (data) {
     } else if (data.puckType == "StockSolution") {
         data.stockSolutionId = this.containerId;
         container= new StockSolutionContainer(data);
+    } else if (data.puckType == "StatisticsPuck") {
+        container= new PuckStatisticsContainer(data);
     }
 
     container.onClick.attach(function (sender, id) {

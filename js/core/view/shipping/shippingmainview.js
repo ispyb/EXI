@@ -74,7 +74,7 @@ ShippingMainView.prototype.load = function(shippingId) {
 					}
 
 					_this.shipmentForm.load(shipment,hasExportedData);
-					_this.parcelGrid.load(shipment,hasExportedData);
+					_this.parcelGrid.load(shipment,hasExportedData,samples,withoutCollection);
 					_this.panel.setLoading(false);
 
 				}

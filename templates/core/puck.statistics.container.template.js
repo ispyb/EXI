@@ -12,10 +12,16 @@
                     </td>
                 </tr>
                 <tr>
-                    <td>{macromoleculeAcronym}</td>
+                    <td>
+                        <span id='{id}-samples'>{nSamples}</span>
+                        <span style="font-size:9px;"> Samples</span>
+                    </td>
                 </tr>
                 <tr>
-                    <td>{buffer}</td>
+                    <td>
+                        <span id='{id}-measured'>{nMeasured}</span>
+                        <span style="font-size:8px;"> Measured</span>
+                    </td>
                 </tr>
             </table>
         {/fillPanel}

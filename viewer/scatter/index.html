@@ -5,9 +5,38 @@
   <meta charset="utf-8">
   
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+      .loader {
+        border: 16px solid #f3f3f3;
+        border-radius: 50%;
+        border-top: 16px solid #3498db;
+        width: 120px;
+        height: 120px;
+        -webkit-animation: spin 2s linear infinite;
+        animation: spin 2s linear infinite;
+      }
+
+      @-webkit-keyframes spin {
+        0% { -webkit-transform: rotate(0deg); }
+        100% { -webkit-transform: rotate(360deg); }
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+  </style>
+
 </head>
+
 <body>
     <div id="viewerScatter">
+      <div id='loadingDiv' style="position: absolute;
+    top: 30%;
+    left: 45%;
+    height: 70%;
+    width: 70%;
+    margin: 0% 0 0 0%;"><div class="loader"></div></div>
       <div id="plotDiv" class="plotDivScatter" style="position: absolute;
     top: 45%;
     left: 40%;
@@ -62,8 +91,8 @@
           l: 70, b: 200, r: 100, t:50
         },
       };
-  
       Plotly.newPlot("plotDiv", data, layout);
+      document.getElementById("loadingDiv").innerHTML = "";
   });
 
   </script>
