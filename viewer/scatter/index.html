@@ -8,6 +8,7 @@
 </head>
 <body>
     <div id="viewerScatter">
+      <div id='loadingDiv'>LOADING...</div>
       <div id="plotDiv" class="plotDivScatter" style="position: absolute;
     top: 45%;
     left: 40%;
@@ -62,8 +63,8 @@
           l: 70, b: 200, r: 100, t:50
         },
       };
-  
       Plotly.newPlot("plotDiv", data, layout);
+      document.getElementById("loadingDiv").innerHTML = "";
   });
 
   </script>

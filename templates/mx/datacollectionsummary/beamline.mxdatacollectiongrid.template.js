@@ -22,11 +22,12 @@
      <tr>
         <td>Kappa Start</td>
         <td  class='column_parameter_value'>
-            {@eq key=DataCollection_kappaStart type="number" value=-9999}
+            {.DataCollection_kappaStart}
+            {!{@eq key=DataCollection_kappaStart type="number" value=-9999}
                 N/A
             {:else}
                 {.DataCollection_kappaStart}
-            {/eq}
+            {/eq}!}
         </td>
     </tr>
      <tr>

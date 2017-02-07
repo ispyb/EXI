@@ -20,6 +20,7 @@ function ParcelPanel(args) {
 	this.shippingId = 0;
 	this.shippingStatus = "";
 	this.containersPanel = null;
+	this.currentTab = "content";
 
 	this.isSaveButtonHidden = false;
 	this.isHidden = false;
@@ -43,13 +44,16 @@ function ParcelPanel(args) {
 		if (args.shippingStatus != null) {
 			this.shippingStatus = args.shippingStatus;
 		}
+		if (args.currentTab != null) {
+			this.currentTab = args.currentTab;
+		}
 	}
 	
 	this.onSavedClick = new Event(this);
 
 }
 
-ParcelPanel.prototype.load = function(dewar, shipment) {
+ParcelPanel.prototype.load = function(dewar, shipment, samples, withoutCollection) {
 	var _this = this;
 	this.dewar = dewar;
 	this.dewar.index = this.index;
@@ -59,6 +63,8 @@ ParcelPanel.prototype.load = function(dewar, shipment) {
 			this.dewar.beamlineName = shipment.sessions[0].beamlineName;
 		}
 	}
+	this.samples = samples;
+	this.withoutCollection = withoutCollection;
 	
 	/** Loading the template **/
 	var html = "";
@@ -102,31 +108,59 @@ ParcelPanel.prototype.load = function(dewar, shipment) {
 	});
 
 	/** Set parameters **/
-	this.renderShipmentParameters(dewar);
+	if (this.currentTab == "content"){
+		this.renderDewarParameters(dewar);
+	} else {
+		this.renderDewarStatistics(dewar);
+	}
+	this.renderDewarComments(dewar);
 
 	/** Rendering pucks **/
 	this.renderPucks(dewar);
 };
 
-ParcelPanel.prototype.renderShipmentParameters = function (dewar) {
+ParcelPanel.prototype.renderDewarParameters = function (dewar) {
 	var html = "";
 	dust.render("parcel.panel.parameter.table.template", {id : this.id, dewar : dewar, height : this.height}, function(err, out){
 		html = out;
 	});
-
 	$('#' + this.id + "-parameters-div").hide().html(html).fadeIn("fast");
+};
+
+ParcelPanel.prototype.renderDewarStatistics = function (dewar) {
+	var html = "";
+	var nContainers = 0;
+	if (dewar.containerVOs) {
+		nContainers = dewar.containerVOs.length;
+	}
+	var nSamples = 0;
+	var nMeasured = 0;
+	if (this.samples) {
+		nSamples = this.samples.length;
+	}
+	var nMeasured = nSamples;
+	if (this.withoutCollection) {
+		nMeasured = nSamples - this.withoutCollection.length;
+	}
+	dust.render("parcel.panel.statistics.template", {id : this.id,height : this.height, dewar : dewar, nContainers : nContainers, nSamples : nSamples, nMeasured : nMeasured}, function(err, out){
+		html = out;
+	});
+	$('#' + this.id + "-parameters-div").hide().html(html).fadeIn("fast");
+}
+
+ParcelPanel.prototype.renderDewarComments = function (dewar) {
 	if (dewar.comments != "" && dewar.comments != null) {
 		$('#' + this.id + "-comments").hide().html("Comments: " + dewar.comments).fadeIn("fast");
 		$('#' + this.id + "-index-td").attr('rowspan',2);
 		$('#' + this.id + "-buttons-td").attr('rowspan',2);
 		this.panel.setHeight(this.height + 25);
 	} else {
-		this.panel.setHeight(this.height);
+		$('#' + this.id + "-comments").hide().html("").fadeIn("fast");
 		$('#' + this.id + "-index-td").attr('rowspan',1);
 		$('#' + this.id + "-buttons-td").attr('rowspan',1);
+		this.panel.setHeight(this.height);
 	}
-	this.panel.doLayout();
-};
+}
 
 ParcelPanel.prototype.renderPucks = function (dewar) {
 	var _this = this;
@@ -162,26 +196,47 @@ ParcelPanel.prototype.renderPucks = function (dewar) {
 			
 			/** Sorting container by id **/
 			dewar.containerVOs.sort(function(a, b){return a.containerId - b.containerId;});
-			var containerPanelsMap = {};
+			// var containerPanelsMap = {};
 			var containerIds = [];
 			
 			for (var i = 0; i< dewar.containerVOs.length; i++){
 				var container = dewar.containerVOs[i];
-				var containerParcelPanel = new ContainerParcelPanel({type : container.containerType, height : this.containersPanelHeight/rows, width : this.containersParcelWidth,containerId : container.containerId, shippingId : this.shippingId, shippingStatus : this.shippingStatus, capacity : container.capacity, code : container.code});
+				var type = container.containerType;
+				if (this.currentTab == "statistics") {
+					type = "StatisticsPuck";
+				}
+				var containerParcelPanel = new ContainerParcelPanel({
+																	type : type, 
+																	height : this.containersPanelHeight/rows, 
+																	width : this.containersParcelWidth,
+																	containerId : container.containerId, 
+																	shippingId : this.shippingId, 
+																	shippingStatus : this.shippingStatus, 
+																	capacity : container.capacity, 
+																	code : container.code
+																});
 				containerParcelPanel.onContainerRemoved.attach(function (sender, containerId) {
 					_.remove(_this.dewar.containerVOs, {containerId: containerId});
 					_this.renderPucks(_this.dewar);
 				});
-				containerPanelsMap[container.containerId] = containerParcelPanel;
+				// containerPanelsMap[container.containerId] = containerParcelPanel;
 				containerIds.push(container.containerId);
-				
 				containerRows[Math.floor(i/maxNumberForRow)].insert(containerParcelPanel.getPanel());
+				containerParcelPanel.load(_.filter(this.samples,{"BLSample_containerId":container.containerId}));
 			}
 			
 			for (var i = 0; i< stockSolutions.length; i++){
 				$('#hoveringTooltipDiv-' + stockSolutions[i].stockSolutionId).remove();
-				var containerParcelPanel = new ContainerParcelPanel({type : "StockSolution", height : this.containersPanelHeight/rows, width : this.containersParcelWidth,containerId : stockSolutions[i].stockSolutionId, shippingId : this.shippingId, shippingStatus : this.shippingStatus, code : stockSolutions[i].name});	
-				containerPanelsMap[stockSolutions[i].boxId] = containerParcelPanel;
+				var containerParcelPanel = new ContainerParcelPanel(
+																		{type : "StockSolution", 
+																		height : this.containersPanelHeight/rows, 
+																		width : this.containersParcelWidth,
+																		containerId : stockSolutions[i].stockSolutionId, 
+																		shippingId : this.shippingId, 
+																		shippingStatus : this.shippingStatus, 
+																		code : stockSolutions[i].name
+																	});	
+				// containerPanelsMap[stockSolutions[i].boxId] = containerParcelPanel;
 				containerIds.push(stockSolutions[i].boxId);
 				containerParcelPanel.onContainerRemoved.attach(function (sender, stockSolutionId) {
 					var stockSolution = EXI.proposalManager.getStockSolutionById(stockSolutionId);
@@ -198,27 +253,27 @@ ParcelPanel.prototype.renderPucks = function (dewar) {
 				containerRows[Math.floor((i + dewar.containerVOs.length)/maxNumberForRow)].insert(containerParcelPanel.getPanel());
 			}
 
-			if (!_.isEmpty(containerPanelsMap)) {
+			// if (!_.isEmpty(containerPanelsMap)) {
 				
-				var onSuccess = function (sender, samples) {
-					if (samples) {
-						var samplesMap = {};
-						for (var i = 0 ; i < samples.length ; i++) {
-							var sample = samples[i];
-							if (samplesMap[sample.Container_containerId]){
-								samplesMap[sample.Container_containerId].push(sample);
-							} else {
-								samplesMap[sample.Container_containerId] = [sample];
-							}
-						}
-						_.each(samplesMap, function(samples, containerId) {
-							containerPanelsMap[containerId].load(samples);
-						});
-					}
-				}
+			// 	var onSuccess = function (sender, samples) {
+			// 		if (samples) {
+			// 			var samplesMap = {};
+			// 			for (var i = 0 ; i < samples.length ; i++) {
+			// 				var sample = samples[i];
+			// 				if (samplesMap[sample.Container_containerId]){
+			// 					samplesMap[sample.Container_containerId].push(sample);
+			// 				} else {
+			// 					samplesMap[sample.Container_containerId] = [sample];
+			// 				}
+			// 			}
+			// 			_.each(samplesMap, function(samples, containerId) {
+			// 				containerPanelsMap[containerId].load(samples);
+			// 			});
+			// 		}
+			// 	}
 
-				EXI.getDataAdapter({onSuccess : onSuccess}).mx.sample.getSamplesByContainerId(containerIds);
-			}
+			// 	EXI.getDataAdapter({onSuccess : onSuccess}).mx.sample.getSamplesByContainerId(containerIds);
+			// }
 		}
 	}
 }
@@ -290,19 +345,16 @@ ParcelPanel.prototype.showCaseForm = function() {
 	    items: [
 	            	caseForm.getPanel(_this.dewar)
 	    ],
-	    // listeners : {
-		// 	afterrender : function(component, eOpts) {
-		// 		if (_this.puck != null){
-		// 			_this.load(_this.puck);
-		// 		}
-		// 	}
-	    // },
 	    buttons : [ {
 						text : 'Save',
 						handler : function() {
 							_this.onSavedClick.notify(caseForm.getDewar());
 							window.close();
-                            _this.renderShipmentParameters(_this.dewar);
+							if (_this.currentTab == "content") {
+                            	_this.renderDewarParameters(_this.dewar);
+							}
+							_this.renderDewarComments(_this.dewar);
+							_this.panel.doLayout();
 						}
 					}, {
 						text : 'Cancel',

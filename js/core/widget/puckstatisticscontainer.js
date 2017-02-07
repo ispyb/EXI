@@ -1,4 +1,4 @@
-function StockSolutionContainer(args) {
+function PuckStatisticsContainer(args) {
     this.id = BUI.id();
 	
     this.templateData = {
@@ -9,13 +9,15 @@ function StockSolutionContainer(args) {
                             width       	: 100,
                             height      	: 100,
 							margin			: 15,
-							stockId			: 0,
+							// rInner			: 10,
 							enableMainClick : false,
 							enableClick : false,
-                            code            : ""
+                            code            : "",
+							enableMainMouseOver : false,
+							nSamples : 0,
+							nMeasured : 0
                         };
 
-	this.stockSolutionId = 0;
     this.samples = null;
 	this.code = "";
 
@@ -44,13 +46,6 @@ function StockSolutionContainer(args) {
         if (args.code) {
             this.templateData.code = args.code;
         }
-        if (args.stockSolutionId) {
-            this.stockSolutionId = args.stockSolutionId;
-            var stockSolution = EXI.proposalManager.getStockSolutionById(this.stockSolutionId);
-            this.templateData.macromoleculeAcronym = EXI.proposalManager.getMacromoleculeById(stockSolution.macromoleculeId).acronym;
-            this.templateData.buffer = EXI.proposalManager.getBufferById(stockSolution.bufferId).acronym;
-            this.templateData.stockId = this.stockSolutionId;
-        }
 	}
 
 	this.onClick = new Event(this);
@@ -58,7 +53,7 @@ function StockSolutionContainer(args) {
 	this.onMouseOut = new Event(this);
 };
 
-StockSolutionContainer.prototype.getPanel = function () {
+PuckStatisticsContainer.prototype.getPanel = function () {
 	
 	var _this = this;
 	
@@ -96,30 +91,35 @@ StockSolutionContainer.prototype.getPanel = function () {
 	
 };
 
-StockSolutionContainer.prototype.loadSamples = function (samples) {
+PuckStatisticsContainer.prototype.loadSamples = function (samples) {
     this.samples = samples;
-    if (samples){
-		if (samples.length > 0){
-			this.containerId = samples[0].Container_containerId; 
+    if (samples && samples.length > 0){
+		this.templateData.nSamples = samples.length;
+		this.templateData.nMeasured = samples.length;
+		var withoutCollection = _.filter(samples,{DataCollectionGroup_dataCollectionGroupId : null});
+		if (withoutCollection) {
+			this.templateData.nMeasured = samples.length - withoutCollection.length;
 		}
+		$("#" + this.id + "-samples").html(this.templateData.nSamples);
+		$("#" + this.id + "-measured").html(this.templateData.nMeasured);
 	}
 };
 
-StockSolutionContainer.prototype.getHTML = function (samples) {
+PuckStatisticsContainer.prototype.getHTML = function (samples) {
 	var html = "";
 	if (this.templateData.height < 40) {
 		this.templateData.fillPanel = false;
 	} else {
 		this.templateData.fillPanel = true;
 	}
-	dust.render("stock.solution.container.template", this.templateData, function(err, out){
+	dust.render("puck.statistics.container.template", this.templateData, function(err, out){
 		html = out;
 	});
 	
 	return html;
 };
 
-StockSolutionContainer.prototype.setOnMouseOverEvent = function () {
+PuckStatisticsContainer.prototype.setOnMouseOverEvent = function () {
 	var _this = this;
 	
 	$("#" + this.id).unbind('mouseover').mouseover(function(sender){
@@ -130,11 +130,11 @@ StockSolutionContainer.prototype.setOnMouseOverEvent = function () {
 			
 			// TOOLTIP
 			var tooltipHtml = "";
-			dust.render("stock.solution.tooltip.template", _this.templateData, function(err, out) {
+			dust.render("puck.statistics.tooltip.template", _this.templateData, function(err, out) {
 				tooltipHtml = out;
 			});
 			$('body').append(tooltipHtml);
-			$('#hoveringTooltipDiv-' + _this.stockSolutionId).css({
+			$('#hoveringTooltipDiv-' + _this.id).css({
 				"top" : $(this).offset().top,
 				"left" : $(this).offset().left + _this.templateData.width
 			});
@@ -148,13 +148,13 @@ StockSolutionContainer.prototype.setOnMouseOverEvent = function () {
 			$("#" + stockId).removeClass("stock-solution-focus");
 
 			// TOOLTIP
-			$('#hoveringTooltipDiv-' + _this.stockSolutionId).remove();
+			$('#hoveringTooltipDiv-' + _this.id).remove();
 		}
 	});
 
 }
 
-StockSolutionContainer.prototype.focus = function (bool) {
+PuckStatisticsContainer.prototype.focus = function (bool) {
 	if (bool){
 		$("#" + this.id + "-container").addClass("stock-solution-selected");		
 	} else {

@@ -31,8 +31,9 @@ function ParcelGrid(args) {
 		}
 	}
 
-	this.shipment = "";
+	this.shipment = null;
 	this.dewars = {};
+	this.parcelPanels = {};
 
 	/** Events **/
 	this.onSuccess = new Event(this);
@@ -54,28 +55,17 @@ ParcelGrid.prototype._getTopButtons = function() {
 	}));
 };
 
-ParcelGrid.prototype.load = function(shipment,hasExportedData) {
+ParcelGrid.prototype.load = function(shipment,hasExportedData,samples,withoutCollection) {
 	var _this = this;
 	this.shipment = shipment;
 	this.dewars = shipment.dewarVOs;
 	this.hasExportedData = hasExportedData;
-
-	$("#" + this.id + "-content").html("");
+	this.samples = _.groupBy(samples,"Dewar_dewarId");
+	this.withoutCollection = _.groupBy(withoutCollection,"Dewar_dewarId");
 
 	this.dewars.sort(function(a, b) {
 		return a.dewarId - b.dewarId;
 	});
-
-    function onSaved(sender, dewar) {
-			_this.panel.setLoading();
-			dewar["sessionId"] = dewar.firstExperimentId;
-			dewar["shippingId"] = _this.shipment.shippingId;
-			
-			var onSuccess = function(sender, shipment) {				
-				_this.panel.setLoading(false);
-			};			
-			EXI.getDataAdapter({onSuccess : onSuccess}).proposal.dewar.saveDewar(_this.shipment.shippingId, dewar);
-    }
 	
 	$("#" + this.id + "-label").html("Content (" + this.dewars.length + " Parcels)");
 	$("#" + this.id + "-add-button").removeClass("disabled");
@@ -83,29 +73,51 @@ ParcelGrid.prototype.load = function(shipment,hasExportedData) {
 		_this.edit();
 	});
 
-	this.parcelPanels = Ext.create('Ext.panel.Panel', {
+	this.fillTab("content", this.dewars);
+
+	this.attachCallBackAfterRender();
+};
+
+ParcelGrid.prototype.fillTab = function (tabName, dewars) {
+	var _this = this;
+	$("#" + tabName + "-" + this.id).html("");
+	this.parcelPanels[tabName] = Ext.create('Ext.panel.Panel', {
 															// cls 		: 'border-grid',
 															// width 		: this.width,
 															autoScroll	:true,
 															autoHeight 	:true,
 															maxHeight	: this.height,
-															renderTo	: this.id + "-content"
+															renderTo	: tabName + "-" + this.id
 														});
-	for ( var i in this.dewars) {
+
+	function onSaved(sender, dewar) {
+			_this.panel.setLoading();
+			dewar["sessionId"] = dewar.firstExperimentId;
+			dewar["shippingId"] = _this.shipment.shippingId;
+			
+			var onSuccess = function(sender, shipment) {				
+				_this.panel.setLoading(false);
+				_this.panel.doLayout();
+			};			
+			EXI.getDataAdapter({onSuccess : onSuccess}).proposal.dewar.saveDewar(_this.shipment.shippingId, dewar);
+    }
+
+	for ( var i in dewars) {
 		var parcelPanel = new ParcelPanel({
 			height : 90,
 			width : this.width - 60,
 			shippingId : this.shipment.shippingId,
 			shippingStatus : this.shipment.shippingStatus,
-			index : Number(i)+1
+			index : Number(i)+1,
+			currentTab : tabName
 		});
-		this.parcelPanels.insert(parcelPanel.getPanel());
-		parcelPanel.load(this.dewars[i],this.shipment);
+		this.parcelPanels[tabName].insert(parcelPanel.getPanel());
+		parcelPanel.load(this.dewars[i],this.shipment,this.samples[this.dewars[i].dewarId],this.withoutCollection[this.dewars[i].dewarId]);
 		parcelPanel.onSavedClick.attach(onSaved);
 	}
-	this.parcelPanels.doLayout();
+	this.parcelPanels[tabName].doLayout();
 	this.panel.doLayout();
-};
+}
 
 ParcelGrid.prototype.edit = function(dewar) {
 	var _this = this;
@@ -183,6 +195,13 @@ ParcelGrid.prototype.attachCallBackAfterRender = function () {
 	var tabsEvents = function(grid) {
 		this.grid = grid;
 		$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+			var target = $(e.target).attr("href");
+			if (target.startsWith("#co")){
+				_this.fillTab("content",_this.dewars);
+			}
+			if (target.startsWith("#st")){
+				_this.fillTab("statistics",_this.dewars);
+			}
 			_this.panel.doLayout();
 		});
     };

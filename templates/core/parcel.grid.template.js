@@ -11,16 +11,16 @@
             </div>
             <div class="pull-right">
                 <ul class="nav nav-tabs" id="{id}-tabs">
-                    <li class="active"><a data-toggle="tab" href="#{id}-content">Content</a></li>
-                    {!<li><a data-toggle="tab" href="##{id}-statistics">Statistics</a></li>!}       
+                    <li class="active"><a data-toggle="tab" href="#content-{id}">Content</a></li>
+                    <li><a data-toggle="tab" href="#statistics-{id}">Statistics</a></li>     
                 </ul>
             </div>
         </div>
         <div class="tab-content">
-             <div id="{id}-content" class="tab-pane fade in active">
+             <div id="content-{id}" class="tab-pane fade in active">
                 
             </div>
-            <div id="{id}-statistics" class="tab-pane fade">
+            <div id="statistics-{id}" class="tab-pane fade">
             </div>
         </div>
     </div>
