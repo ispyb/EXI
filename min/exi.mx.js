@@ -994,14 +994,14 @@ MXManagerMenu.prototype.getManagerMenu = function() {
 			var scatteringForm = new ScatteringForm({width : 650, height : 560});
 
 			var window = Ext.create('Ext.window.Window', {
-				title : 'Autoprocessing scaling statistics',
+				title: "Plot autoprocessing values for last week",
 				height : 560,
 				width : 650,
 				modal : true,
 				layout : 'fit',
 				items : [ scatteringForm.getPanel() ],
 				buttons : [ {
-						text : 'Plot',
+						text : 'Plot (last 7 days)',
 						handler : function() {
 							scatteringForm.plot();
 						}
@@ -1013,7 +1013,7 @@ MXManagerMenu.prototype.getManagerMenu = function() {
 					} ]
 			}).show();
 
-			var keys = ["rPimWithinIPlusIMinus","anomalousMultiplicity","multiplicity","resolutionLimitLow","ccHalf",
+			var keys = ["ISA", "rPimWithinIPlusIMinus","anomalousMultiplicity","multiplicity","resolutionLimitLow","ccHalf",
 			"strategySubWedgeOrigId","completeness","rMerge","anomalous","meanIOverSigI","ccAno","autoProcScalingId",
 			"nTotalObservations","sigAno","rMeasWithinIPlusIMinus","anomalousCompleteness","resolutionLimitHigh",
 			"fractionalPartialBias","rMeasAllIPlusIMinus","nTotalUniqueObservations","rPimAllIPlusIMinus"];
@@ -1035,7 +1035,7 @@ MXManagerMenu.prototype.getManagerMenu = function() {
 										text: 'Autoproc Scaling Statistics',
 										icon : '../images/icon/ic_insert_chart_black_36dp.png',
 										handler: onItemCheck,
-										disabled : true
+										disabled : false
 									}
 								]
 							}
@@ -1043,6 +1043,7 @@ MXManagerMenu.prototype.getManagerMenu = function() {
 			] 
 	});
 };
+
 /**
 * AutoProcIntegrationListView displays the crystal as list on the navigation panels
 *
@@ -3345,6 +3346,60 @@ CollapsedDataCollectionGrid.prototype.load = DataCollectionGrid.prototype.load;
 CollapsedDataCollectionGrid.prototype.loadMagnifiers = DataCollectionGrid.prototype.loadMagnifiers;
 CollapsedDataCollectionGrid.prototype.getPanel = DataCollectionGrid.prototype.getPanel;
 
+function CommentEditForm(args) {
+    this.id = BUI.id();
+
+    this.targetId = null;
+    this.templateData = {id : this.id};
+    this.mode = "DATACOLLECTIONGROUP";
+
+    if (args) {
+        if (args.mode) {
+            this.mode = args.mode;
+        }
+    }
+
+    this.onSave = new Event(this);
+}
+
+CommentEditForm.prototype.show = function(){
+    var _this = this;
+    
+    var html = "";
+    dust.render("comment.edit.form.template", this.templateData, function(err,out){
+        html = out;
+    });
+
+    $("body").append(html);
+    $("#" + this.id + "-save").unbind('click').click(function(sender){
+        _this.save();
+    });
+    $("#" + this.id + "-modal").on('hidden.bs.modal', function(){
+        $(this).remove();
+    });
+    
+    $("#" + this.id + "-modal").modal();
+};
+
+
+CommentEditForm.prototype.load = function (targetId, comments) {
+    this.targetId = targetId;
+    this.templateData.comments = comments;
+}
+
+CommentEditForm.prototype.save = function(){
+    var _this = this;
+    var comment = $("#" + this.id + "-comments").val();
+
+    var onSuccess = function (sender) {
+        _this.onSave.notify(comment);
+    }
+    if (this.mode == "DATACOLLECTIONGROUP"){
+        EXI.getDataAdapter({onSuccess : onSuccess}).mx.dataCollectionGroup.saveComments(this.targetId,comment);
+    } else {
+        EXI.getDataAdapter({onSuccess : onSuccess}).mx.dataCollection.saveComments(this.targetId,comment);
+    }
+}
 /**
 * Displays the containers of the data collections by session or acronym of the protein
 *
@@ -3352,7 +3407,7 @@ CollapsedDataCollectionGrid.prototype.getPanel = DataCollectionGrid.prototype.ge
 * @constructor
 */
 function ContainersDataCollectionGrid(args) {
-    this.legend = new PuckLegend({width : 300, height : 50, cy : "12.5%", tOffset : 30});
+    this.legend = new PuckLegend({width : 300, height : 50, cy : "12.5%", tOffset : "17%"});
 }
 
 ContainersDataCollectionGrid.prototype.getPanel = function (dataCollectionGroup) {
@@ -3424,20 +3479,6 @@ ContainersDataCollectionGrid.prototype.getColumns = function() {
                                 }
                             }
                             dataCollectionIdsPerContainer[data.containerIds[i]] = dataCollectionIds;
-                            // var attributesContainerWidget = {mainRadius :  pucksPanelHeight/4, 
-                            //                                 enableMouseOver : true, 
-                            //                                 enableClick : true, 
-                            //                                 containerId : containerIdNumber, 
-                            //                                 dataCollectionId : containers.DataCollection_dataCollectionId, 
-                            //                                 initSelected : data.selected[containerIdNumber],
-                            //                                 dataCollectionIds : dataCollectionIds
-                            //                             }
-                            // pucks[containerIdNumber] = new UniPuckWidget(attributesContainerWidget);
-                            // if (containers[0].Container_capacity == 10){
-                            //     pucks[containerIdNumber] = new SpinePuckWidget(attributesContainerWidget);
-                            // }
-
-                            // tree.find("#puck-panel-" + data.containerIds[i]).html(pucks[containerIdNumber].getPanel().html);
                         }
                     }
 
@@ -4140,12 +4181,11 @@ UncollapsedDataCollectionGrid.prototype.loadMagnifiers = DataCollectionGrid.prot
 */
 UncollapsedDataCollectionGrid.prototype.load = function(dataCollectionGroup){
     try{
+        var _this = this;
         this.dataCollectionGroup = dataCollectionGroup;
-        
         this.store.loadData(dataCollectionGroup);
         this.loadMagnifiers(dataCollectionGroup);
         this.attachCallBackAfterRender();
-        
     }
     catch(e){
         console.log(e);
@@ -4169,7 +4209,6 @@ UncollapsedDataCollectionGrid.prototype.getPanel = function(){
     return this.panel;
 };
 
-
 /**
 * Displays the data collection tab with all the data collection related to the data collection group
 *
@@ -4178,6 +4217,7 @@ UncollapsedDataCollectionGrid.prototype.getPanel = function(){
 * @method displayDataCollectionTab
 */
 UncollapsedDataCollectionGrid.prototype.displayDataCollectionTab = function(target, dataCollectionGroupId) {
+    var _this = this;
     var onSuccess = function(sender, data){
        
         _.forEach(data, function(value) {
@@ -4198,6 +4238,10 @@ UncollapsedDataCollectionGrid.prototype.displayDataCollectionTab = function(targ
             html = html + out;
         });
         $(target).html(html);
+        $(".dataCollection-edit").unbind('click').click(function(sender){
+            var dataCollectionId = sender.target.id.split("-")[0];
+            _this.editComments(dataCollectionId,"DATACOLLECTION");
+        });
     };
     
     var onError = function(sender, msg){
@@ -4245,10 +4289,11 @@ UncollapsedDataCollectionGrid.prototype.displayWorkflowsTab = function(target, d
         var html = "";
         var items = (new WorkflowSectionDataCollection().parseWorkflow(dc));
         
-        dust.render("workflows.mxdatacollectiongrid.template",  items, function(err, out) {
+        dust.render("workflows.mxdatacollectiongrid.template",  {items : items, dataCollectionId : dataCollectionId, comments : dc.DataCollectionGroup_comments}, function(err, out) {
                         html = html + out;
         });
         $(target).html(html);
+
     }   
 };
 
@@ -4485,13 +4530,19 @@ UncollapsedDataCollectionGrid.prototype.attachCallBackAfterRender = function() {
     
     var _this = this;
     
+    $(".dataCollectionGroup-edit").unbind('click').click(function(sender){
+        var dataCollectionGroupId = sender.target.id.split("-")[0];
+        _this.editComments(dataCollectionGroupId,"DATACOLLECTIONGROUP");
+    });                              
+
     var nodeWithScroll = document.getElementById(document.getElementById(_this.id).parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.id);
     var lazy = {
             bind: 'event',
             /** !!IMPORTANT this is the parent node which contains the scroll **/
             appendScroll: nodeWithScroll,
             beforeLoad: function(element) {
-                console.log('image "' + (element.data('src')) + '" is about to be loaded');                                
+                console.log('image "' + (element.data('src')) + '" is about to be loaded');
+               
             },           
             onFinishedAll: function() {
                 EXI.mainStatusBar.showReady();
@@ -4505,37 +4556,58 @@ UncollapsedDataCollectionGrid.prototype.attachCallBackAfterRender = function() {
             this.grid = grid;
             $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
                 var target = $(e.target).attr("href"); 
-                
-                /** Activate tab of data collections */
-                if (target.startsWith("#dc")){
-                   var dataCollectionGroupId = target.slice(4);
-                   _this.displayDataCollectionTab(target, dataCollectionGroupId);
-                }
-                
-                if (target.startsWith("#re")){
-                    var dataCollectionId = target.slice(4);  
-                    _this.displayResultAutoprocessingTab(target, dataCollectionId);                                       
+                if (target){
+                    /** Activate tab of data collections */
+                    if (target.startsWith("#dc")){
+                    var dataCollectionGroupId = target.slice(4);
+                    _this.displayDataCollectionTab(target, dataCollectionGroupId);
+                    }
+                    
+                    if (target.startsWith("#re")){
+                        var dataCollectionId = target.slice(4);  
+                        _this.displayResultAutoprocessingTab(target, dataCollectionId);                                       
+                    }
+
+                    if (target.startsWith("#sa")){                    
+                        var dataCollectionId = target.slice(4);                        
+                        _this.displaySampleTab(target, dataCollectionId);                   
+                    }
+                    
+                    if (target.startsWith("#wf")){      
+                        var dataCollectionId = target.slice(4);
+                        _this.displayWorkflowsTab(target, dataCollectionId);              
+                    
+                    }
+                    
+                    if (target.startsWith("#ph")){                           
+                        var dataCollectionGroupId = target.slice(4);
+                        _this.displayPhasingTab(target, dataCollectionGroupId);              
+                    }
                 }
 
-                 if (target.startsWith("#sa")){                    
-                    var dataCollectionId = target.slice(4);                        
-                    _this.displaySampleTab(target, dataCollectionId);                   
-                }
-                
-                if (target.startsWith("#wf")){      
-                    var dataCollectionId = target.slice(4);
-                    _this.displayWorkflowsTab(target, dataCollectionId);              
-                   
-                }
-                
-                  if (target.startsWith("#ph")){                           
-                    var dataCollectionGroupId = target.slice(4);
-                    _this.displayPhasingTab(target, dataCollectionGroupId);              
-                   
-                }
+                // $(".dataCollectionGroup-edit").unbind('click').click(function(sender){
+                //     var dataCollectionGroupId = sender.target.id.split("-")[0];
+                //     _this.editComments(dataCollectionGroupId,"DATACOLLECTIONGROUP");
+                // });  
             });
     };
     var timer3 = setTimeout(tabsEvents, 500, _this);
+};
+
+/**
+* Opens a modal to edit a comment
+* @method editComments
+* @param Integer id The id
+* @param String mode To edit the dataCollection comment use DATACOLLECTION and to edit the dataCollectionGroup comment use DATACOLLECTIONGROUP
+*/
+UncollapsedDataCollectionGrid.prototype.editComments = function (id,mode) {
+    var comment = $("#comments_" + id).html().trim();
+    var commentEditForm = new CommentEditForm({mode : mode});
+    commentEditForm.onSave.attach(function(sender,comment) {
+        $("#comments_" + id).html(comment);
+    });
+    commentEditForm.load(id,comment);
+    commentEditForm.show();
 };
 function WorkflowSectionDataCollection(args) {
 	this.noFoundClass = "summary_datacollection_noFound";
@@ -5451,6 +5523,8 @@ ConfirmShipmentView.prototype.loadPucksList = function (sampleChangerWidget) {
 function ContainerPrepareSpreadSheet(args){
     this.id = BUI.id();
 
+    this.preselectedRowContainerId = null;
+
     this.height = 600;
     this.width = 600;
     if (args != null){
@@ -5496,11 +5570,13 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function() {
                                     background: '#444444',
                                 },
                                 handler : function(){
+                                    // EXI.getDataAdapter().proposal.dewar.updateSampleLocation(_.map(_this.containers,"containerId"), ["null"], [""]);
+
                                     var onSuccess = function (sender,c) {
                                         _this.onUnloadAllButtonClicked.notify();
                                         _this.loadProcessingDewars(_this.sampleChangerWidget);
                                     }
-                                    EXI.getDataAdapter({onSuccess:onSuccess}).proposal.dewar.emptySampleLocation(_.map(_this.dewars,"containerId"));
+                                    EXI.getDataAdapter({onSuccess:onSuccess}).proposal.dewar.emptySampleLocation(_.map(_this.containers,"containerId"));
                                 }
                             }
         ],
@@ -5592,7 +5668,7 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function() {
                              case "Spinepuck":
                                 return "<kbd style='color:black;font-size:11px;background-color:#CCCCCC;'>SPINEPUCK</kbd>";  
                             default:
-                               return record.data.containerType;
+                               return "<kbd style='color:white;font-size:11px;background-color:#000000;'>" + record.data.containerType + "</kbd>";
                         }
                 }
             },
@@ -5646,11 +5722,14 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function() {
         ],
         viewConfig: {
             getRowClass: function(record, index, rowParams, store) {
+                if (record.get('containerType') != "Unipuck" && record.get('containerType') != "Spinepuck"){
+                    return "disabled-row";
+                }
                 if (record.get('sampleChangerLocation') == "" || record.get('sampleChangerLocation') == " " || record.get('sampleChangerLocation') == null ) {
                     return "warning-row";
                 }
-                for (var i = 0 ; i < _this.dewars.length ; i++){
-                    var dewar = _this.dewars[i];
+                for (var i = 0 ; i < _this.containers.length ; i++){
+                    var dewar = _this.containers[i];
                     if (record.get('containerId') != dewar.containerId && dewar.beamlineLocation == record.get('beamlineName')) {
                         if (record.get('sampleChangerLocation') == dewar.sampleChangerLocation){
                             return "puck-error";
@@ -5671,8 +5750,10 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function() {
         },
         listeners: {
             itemclick: function(grid, record, item, index, e) {
-                if (e.target.tagName != "SELECT"){
-                    _this.onSelectRow.notify({record : record, item : item});          
+                if (record.data.containerType == "Unipuck" || record.data.containerType == "Spinepuck"){
+                    if (e.target.tagName != "SELECT"){
+                        _this.onSelectRow.notify({record : record, item : item});          
+                    }
                 }
             }
            
@@ -5704,9 +5785,41 @@ ContainerPrepareSpreadSheet.prototype.loadProcessingDewars = function (sampleCha
     this.panel.setLoading();
     var onSuccessProposal = function(sender, containers) {
         var processingContainers = _.filter(containers, function(e){return e.shippingStatus == "processing";});
-        _this.load(processingContainers,sampleChangerWidget);
-        _this.panel.setLoading(false);
-        _this.onLoaded.notify(processingContainers);
+        //Check if some of the containers have the old value Puck for containerType, in which case, we need to use the sample locations to specify the type
+        var containersFromISPyB = _.filter(processingContainers,{"containerType":"Puck"});
+        if (containersFromISPyB.length > 0) {
+            var onSampleSuccess = function (sender, samples) {
+                if (samples && samples.length > 0) {
+                    _.map(samples,function (s) {s.location = parseInt(s.BLSample_location)});
+                    var groupedByContainer = _.groupBy(samples,"Container_containerId");
+                    _.forEach(groupedByContainer,function(smpls, containerId){
+                                                                var type = "Spinepuck";
+                                                                if (_.maxBy(smpls,"location") > 10) {
+                                                                    type = "Unipuck";  
+                                                                }
+                                                                _.map(processingContainers,function (c) {
+                                                                    if (c.containerId == containerId) {
+                                                                        c.containerType = type;
+                                                                        if (type == "Spinepuck") {
+                                                                            c.capacity = 10;
+                                                                        } else if (type == "Unipuck") {
+                                                                            c.capacity = 16;
+                                                                        }
+                                                                    }
+                                                                });
+                                                            }
+                    );
+                }
+                _this.load(processingContainers,sampleChangerWidget);
+                _this.panel.setLoading(false);
+                _this.onLoaded.notify(processingContainers);
+            }
+            EXI.getDataAdapter({onSuccess : onSampleSuccess}).mx.sample.getSamplesByContainerId(_.map(containersFromISPyB,"containerId"));
+        } else {
+            _this.load(processingContainers,sampleChangerWidget);
+            _this.panel.setLoading(false);
+            _this.onLoaded.notify(processingContainers);
+        }
     };
     var onError = function(sender, error) {        
         EXI.setError("Ops, there was an error");
@@ -5722,37 +5835,36 @@ ContainerPrepareSpreadSheet.prototype.loadProcessingDewars = function (sampleCha
 * @param dewars
 * @return
 */
-ContainerPrepareSpreadSheet.prototype.load = function(dewars, sampleChangerWidget) {
+ContainerPrepareSpreadSheet.prototype.load = function(containers, sampleChangerWidget) {
     var _this = this;
-    this.dewars = dewars;
+    this.containers = containers;
     if (sampleChangerWidget){
         this.sampleChangerWidget = sampleChangerWidget;
     }
     var data = [];
     var error = false;
     //Parse data
-    for (var i = 0 ; i < dewars.length ; i++) {
-        var dewar = dewars[i];
-        if (dewar.containerId){
-            var containerType = "Unipuck";
-            if (dewar.capacity){
-                if (dewar.capacity == 10) {
-                    containerType = "Spinepuck";
-                }
+    for (var i = 0 ; i < containers.length ; i++) {
+        var container = containers[i];
+        if (container.containerId){
+            var containerType = container.containerType;
+            if (containerType == "Puck") {
+                containerType = "Spinepuck";
+                container.capacity = 10;
             }
             data.push({
-                shippingName : dewar.shippingName,
-                shippingId : dewar.shippingId,
-                parcelName : dewar.dewarCode,
-                barCode : dewar.barCode,
-                containerCode : dewar.containerCode,
+                shippingName : container.shippingName,
+                shippingId : container.shippingId,
+                parcelName : container.containerCode,
+                barCode : container.barCode,
+                containerCode : container.containerCode,
                 containerType : containerType,
-                sampleCount : dewar.sampleCount,
-                beamlineName : dewar.beamlineLocation,
-                sampleChangerLocation : dewar.sampleChangerLocation,
-                dewarId : dewar.dewarId,
-                containerId : dewar.containerId,
-                capacity : dewar.capacity
+                sampleCount : container.sampleCount,
+                beamlineName : container.beamlineLocation,
+                sampleChangerLocation : container.sampleChangerLocation,
+                dewarId : container.dewarId,
+                containerId : container.containerId,
+                capacity : container.capacity
             });
         } else {
             error = true;
@@ -5760,7 +5872,7 @@ ContainerPrepareSpreadSheet.prototype.load = function(dewars, sampleChangerWidge
     }
 
     if (error){
-        $.notify("Error: error loading the dewars", "error");
+        $.notify("Error: error loading the containers", "error");
     }
 
     this.store.loadData(data);
@@ -5771,6 +5883,14 @@ ContainerPrepareSpreadSheet.prototype.load = function(dewars, sampleChangerWidge
         _this.updateBeamlineName(containerId,beamline);
         _this.onBeamlineChanged.notify(beamline);
     });
+    //Check if any row should be selected
+    if (this.preselectedRowContainerId) {
+        var row = _.filter(this.panel.getStore().data.items,function (o) {return o.data.containerId == parseInt(_this.preselectedRowContainerId);});
+        if (row && row.length > 0) {
+            this.onSelectRow.notify({record : row[0]});
+            this.preselectedRowContainerId = null;
+        }
+    }
 };
 
 /**
@@ -5810,6 +5930,7 @@ ContainerPrepareSpreadSheet.prototype.updateBeamlineName = function (containerId
     var _this = this;
 
     var onSuccess = function(sender, containers) {
+        _this.preselectedRowContainerId = containerId
         _this.loadProcessingDewars();
     };
     var onError = function(sender, error) {        
@@ -6079,7 +6200,7 @@ function LoadSampleChangerView (args) {
     this.showTip = true;
     this.height = 600;
     this.width = 600;
-    this.widgetRadius = 185;
+    this.widgetRadius = 170;
     if (args != null){
         if (args.height){
             this.height = args.height;
@@ -6094,6 +6215,14 @@ function LoadSampleChangerView (args) {
         isLoading : false
     };
     this.sampleChangerWidget = new FlexHCDWidget(data);
+    this.legend = new PuckLegend({
+                                    width       : 60, 
+                                    height      : 300, 
+                                    cy          : "50%", 
+                                    tOffset     : 30,
+                                    style       : "vertical",
+                                    fontSize    : "0.45vw"
+                                });
 
     this.selectedRowItem = null;
     this.selectedContainerId = null;
@@ -6339,6 +6468,7 @@ LoadSampleChangerView.prototype.changeSampleChangerWidgetByBeamline = function (
     this.widgetContainer.removeAll();
     this.load(this.containers);
     this.widgetContainer.insert(this.sampleChangerWidget.getPanel());
+    this.widgetContainer.insert(this.legend.getPanel());
     this.reloadSampleChangerWidget();
     this.sampleChangerWidget.blink();
     this.returnToSelectionStatus();
@@ -6411,19 +6541,21 @@ LoadSampleChangerView.prototype.getPanel = function () {
             type: 'hbox',
             pack: 'center'
         },  
-        items : [this.sampleChangerWidget.getPanel()]
+        items : [this.sampleChangerWidget.getPanel(),
+                this.legend.getPanel()]
     });
 
     this.verticalPanel = Ext.create('Ext.panel.Panel', {
         // layout : 'hbox',
-            layout: {
-                type: 'vbox',
-                align: 'center',
-                pack: 'center'
-            },
-            items : [{html : "<div id='" + this.id + "-notifications' class='container-fluid' align='center' ><div class='row' style='width:370px;'><div class='col-md-9'><span id='" + this.id + "-scw-label' class='" + this.id + "-lab' style='width:500px;font-size:20px;font-weight:100;'></span></div><div class='col-md-2'><button id='" + this.id + "-unloadSC-button' type='button' class='btn btn-default btn-xs' style='background:rgb(68, 68, 68);color: #ffffff;'><b>Unload SC</b></button></div></div></div>"},
-                        this.widgetContainer    
-            ]
+        margin : 10,
+        layout: {
+            type: 'vbox',
+            align: 'center',
+            pack: 'center'
+        },
+        items : [{html : "<div id='" + this.id + "-notifications' class='container-fluid' align='center' ><div class='row' style='width:370px;'><div class='col-md-9'><span id='" + this.id + "-scw-label' class='" + this.id + "-lab' style='width:500px;font-size:20px;font-weight:100;'></span></div><div class='col-md-2'><button id='" + this.id + "-unloadSC-button' type='button' class='btn btn-default btn-xs' style='background:rgb(68, 68, 68);color: #ffffff;'><b>Unload SC</b></button></div></div></div>"},
+                    this.widgetContainer    
+        ]
     });
 
     this.panel = Ext.create('Ext.panel.Panel', {
@@ -6904,7 +7036,7 @@ PreviewPanelView.prototype.getPanel = function () {
     });
 
     this.panel = Ext.create('Ext.panel.Panel', {
-        margin : 5,
+        margins : {top : 25},
         cls : 'border-grid',
         layout : 'hbox',
         width : this.width,
@@ -8214,6 +8346,7 @@ EnergyScanGrid.prototype.getPanel = function(dataCollectionGroup) {
                 renderer: function(grid, e, record) {
                     var html = "";                
                     record.data.choochURL = EXI.getDataAdapter().mx.energyscan.getChoochJpegByEnergyScanId(record.data.energyScanId);
+
                     dust.render("energyscangrid.template", record.data, function(err, out) {  
                         html = out;
                     });
@@ -8350,6 +8483,10 @@ SampleChangerWidget.prototype.getPanel = function () {
 			],
 			
 	});
+
+	if (this.onRender) {
+		this.panel.on('boxready',function() {_this.onRender()});
+	}
 
 	for (puckType in this.pucks) {
 		for (puck in this.pucks[puckType]){
@@ -8507,7 +8644,7 @@ SampleChangerWidget.prototype.setClickListeners = function () {
 		var puck = allPucks[puckIndex];
 		$("#" + puck.puckWidget.id).css('cursor','pointer');
 		$("#" + puck.puckWidget.id).unbind('click').click(function(sender){
-			if (!sender.target.classList.contains('puck-disabled')){
+			if (!sender.target.classList.contains('puck-disabled') && !sender.target.classList.contains('puck-always-disabled')){
 				_this.onPuckSelected.notify(_this.findPuckById(sender.target.id));
 			}
 		});
@@ -8540,6 +8677,17 @@ SampleChangerWidget.prototype.disablePucksOfDifferentCapacity = function (capaci
 SampleChangerWidget.prototype.disablePuck = function (puck) {
 	$("#" + puck.id).addClass("puck-disabled");
 	puck.disableAllCells();
+};
+
+/**
+* Adds the class to the puck
+*
+* @method addClassToPuck
+* @param puck The puck to have the class added
+* @param cls The class to add
+*/
+SampleChangerWidget.prototype.addClassToPuck = function (puck,cls) {
+	$("#" + puck.id).addClass(cls);
 };
 
 /**
@@ -8660,6 +8808,7 @@ FlexHCDWidget.prototype.enableAllPucks = SampleChangerWidget.prototype.enableAll
 FlexHCDWidget.prototype.disablePuck = SampleChangerWidget.prototype.disablePuck;
 FlexHCDWidget.prototype.enablePuck = SampleChangerWidget.prototype.enablePuck;
 FlexHCDWidget.prototype.removeClassToAllPucks = SampleChangerWidget.prototype.removeClassToAllPucks;
+FlexHCDWidget.prototype.addClassToPuck = SampleChangerWidget.prototype.addClassToPuck;
 
 /**
 * Creates the particular structure of the FlexHCD
@@ -8740,12 +8889,22 @@ FlexHCDWidget.prototype.convertSampleChangerLocationToId = function (sampleChang
 		return null;
 	}
 };
+
+FlexHCDWidget.prototype.onRender = function () {
+	//Disable the 24th puck
+	var puck24 = this.findPuckById(this.id + "-8-3");
+	this.addClassToPuck(puck24,"puck-always-disabled");
+	puck24.addClassToCells("cell-always-disabled");
+}
 function PuckLegend(args){
     this.id = BUI.id();
     this.width = 200;
     this.height = 10;
+    this.style = "horizontal";
     var cy = "30.5%";
-    var tOffset = 8;
+    var fontSize = "0.55vw";
+    var rad = "7%";
+    var tOffset = "50%"; //Text offset
 
     if (args) {
         if (args.width) {
@@ -8760,14 +8919,29 @@ function PuckLegend(args){
         if (args.tOffset) {
             tOffset = args.tOffset;
         }
+        if (args.style) {
+            this.style = args.style;
+        }
+        if (args.rad) {
+            rad = args.rad;
+        }
+        if (args.fontSize) {
+            fontSize = args.fontSize;
+        }
     }
-    var fontSize = "0.55vw";
-    var rad = "7%";
+    
     var circles = [];
-    circles.push({cx : "7%", cy : cy, r : rad, cls : "cell_empty", text : "EMPTY"});
-    circles.push({cx : "27%", cy : cy, r : rad, cls : "cell_collected", text : "COLLECTED"});
-    circles.push({cx : "47%", cy : cy, r : rad, cls : "cell_filled", text : "FILLED"});
-    circles.push({cx : "67%", cy : cy, r : rad, cls : "cell_selected", text : "SELECTED"});
+    if (this.style == "horizontal") {
+        circles.push({cx : "7%", cy : cy, r : rad, cls : "cell_empty", text : "EMPTY"});
+        circles.push({cx : "27%", cy : cy, r : rad, cls : "cell_collected", text : "COLLECTED"});
+        circles.push({cx : "47%", cy : cy, r : rad, cls : "cell_filled", text : "FILLED"});
+        circles.push({cx : "67%", cy : cy, r : rad, cls : "cell_selected", text : "SELECTED"});
+} else if (this.style == "vertical") {
+        circles.push({cy : "7%", cx : cy, r : rad, cls : "cell_empty", text : "EMPTY"});
+        circles.push({cy : "27%", cx : cy, r : rad, cls : "cell_collected", text : "COLLECTED"});
+        circles.push({cy : "47%", cx : cy, r : rad, cls : "cell_filled", text : "FILLED"});
+        circles.push({cy : "67%", cx : cy, r : rad, cls : "cell_selected", text : "SELECTED"});
+    }
 
     this.data = {
                     id          : this.id,
@@ -9157,6 +9331,20 @@ PuckWidget.prototype.findCellIndexById = function (id) {
 };
 
 /**
+* Adds the class to each cell
+*
+* @method addClassToCells
+* @param cls The class to add
+* @return
+*/
+PuckWidget.prototype.addClassToCells = function (cls) {
+	for (var i = 0 ; i < this.data.cells.length ; i++) {
+		var cell = this.data.cells[i];
+		$("#" + cell.id).addClass(cls);
+	}
+};
+
+/**
 * Adds the disabled class to each cell
 *
 * @method disableAllCells
@@ -9371,6 +9559,7 @@ RoboDiffWidget.prototype.enableAllPucks = SampleChangerWidget.prototype.enableAl
 RoboDiffWidget.prototype.disablePuck = SampleChangerWidget.prototype.disablePuck;
 RoboDiffWidget.prototype.enablePuck = SampleChangerWidget.prototype.enablePuck;
 RoboDiffWidget.prototype.removeClassToAllPucks = SampleChangerWidget.prototype.removeClassToAllPucks;
+RoboDiffWidget.prototype.addClassToPuck = SampleChangerWidget.prototype.addClassToPuck;
 
 /**
 * Creates the particular structure of the FlexHCD
@@ -9652,6 +9841,7 @@ SC3Widget.prototype.enableAllPucks = SampleChangerWidget.prototype.enableAllPuck
 SC3Widget.prototype.disablePuck = SampleChangerWidget.prototype.disablePuck;
 SC3Widget.prototype.enablePuck = SampleChangerWidget.prototype.enablePuck;
 SC3Widget.prototype.removeClassToAllPucks = SampleChangerWidget.prototype.removeClassToAllPucks;
+SC3Widget.prototype.addClassToPuck = SampleChangerWidget.prototype.addClassToPuck;
 
 /**
 * Creates the particular structure of the SC3
@@ -9723,6 +9913,7 @@ SpinePuckWidget.prototype.emptyAll = PuckWidget.prototype.emptyAll;
 SpinePuckWidget.prototype.disableAllCells = PuckWidget.prototype.disableAllCells;
 SpinePuckWidget.prototype.allowAllCells = PuckWidget.prototype.allowAllCells;
 SpinePuckWidget.prototype.blink = PuckWidget.prototype.blink;
+SpinePuckWidget.prototype.addClassToCells = PuckWidget.prototype.addClassToCells;
 
 /**
 * Parses the data
@@ -9768,6 +9959,7 @@ UniPuckWidget.prototype.emptyAll = PuckWidget.prototype.emptyAll;
 UniPuckWidget.prototype.disableAllCells = PuckWidget.prototype.disableAllCells;
 UniPuckWidget.prototype.allowAllCells = PuckWidget.prototype.allowAllCells;
 UniPuckWidget.prototype.blink = PuckWidget.prototype.blink;
+UniPuckWidget.prototype.addClassToCells = PuckWidget.prototype.addClassToCells;
 
 /**
 * Parses the data

@@ -27,6 +27,7 @@ UniPuckWidget.prototype.emptyAll = PuckWidget.prototype.emptyAll;
 UniPuckWidget.prototype.disableAllCells = PuckWidget.prototype.disableAllCells;
 UniPuckWidget.prototype.allowAllCells = PuckWidget.prototype.allowAllCells;
 UniPuckWidget.prototype.blink = PuckWidget.prototype.blink;
+UniPuckWidget.prototype.addClassToCells = PuckWidget.prototype.addClassToCells;
 
 /**
 * Parses the data

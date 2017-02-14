@@ -126,19 +126,15 @@ AutoProcIntegrationMainView.prototype.load = function(data) {
 	var _this = this;
 	this.panel.setTitle("Autoprocessing");
 	
-	
 	this.autoProcIntegrationGrid.load(data);
-    
     
     var autoprocProgramId = [];
     for (var i = 0; i < data.length; i++) {
         if (data[i].v_datacollection_summary_phasing_autoProcProgramId){
             autoprocProgramId.push(data[i].v_datacollection_summary_phasing_autoProcProgramId);
         }
-        
     }
-   
-   
+
     var annoCorrPlotter = new AutoProcIntegrationCurvePlotter({
                             height : 250,
                             title : "Anom Corr vs Resolution",

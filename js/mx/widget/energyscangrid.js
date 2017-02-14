@@ -32,6 +32,7 @@ EnergyScanGrid.prototype.getPanel = function(dataCollectionGroup) {
                 renderer: function(grid, e, record) {
                     var html = "";                
                     record.data.choochURL = EXI.getDataAdapter().mx.energyscan.getChoochJpegByEnergyScanId(record.data.energyScanId);
+
                     dust.render("energyscangrid.template", record.data, function(err, out) {  
                         html = out;
                     });

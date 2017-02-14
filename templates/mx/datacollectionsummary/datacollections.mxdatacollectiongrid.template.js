@@ -1,5 +1,5 @@
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+{!<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>!}
 <div class="container-fluid containerWithScroll" >
     <div class="row">
         <div class="col-xs-12 col-md-2">        
@@ -19,6 +19,7 @@
                     <th>Indicators</th>
                     <th>Results</th>
                     <th>Phasing</th>
+                    <th>Comments</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -67,6 +68,12 @@
                           <a target='blank' href="#/autoprocintegration/datacollection/{.dataCollectionId}/main">
                           <span class="badge" style='background-color:#337ab7;'>{.hasAutoProcessing}</span></a>{/gt}</td>
                     <td>{@gt key=hasPhasing value=0}<div class='summary_datacollection_success'></div>{/gt}</td>
+                    <td>
+                        <a class="btn btn-xs">
+                            <span id="{.dataCollectionId}-edit-comments" class="glyphicon glyphicon-edit dataCollection-edit"></span>
+                        </a>
+                        <span id="comments_{.dataCollectionId}">{.comments}</span>
+                    </td>
                     <td>
                         {#.onlineresults[0]} 
                             {>"sm.completeness.autoproc.mxdatacollectiongrid.template"  /}

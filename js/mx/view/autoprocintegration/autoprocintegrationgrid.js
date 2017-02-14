@@ -201,7 +201,7 @@ AutoProcIntegrationGrid.prototype.getStatistics = function(data) {
 
 AutoProcIntegrationGrid.prototype.getPanel = function() {
 	var _this = this;
-
+    
 	this.store = Ext.create('Ext.data.Store', {
 		
 		fields : [ 'autoProcId',

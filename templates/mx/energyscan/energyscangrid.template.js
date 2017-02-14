@@ -67,7 +67,7 @@
                                 </tr>
                                 <tr>
                                     <td>Exposure Time</td>
-                                    <td class='column_parameter_value'>{.exposureTime} sec</td>
+                                    <td class='column_parameter_value'>{@decimal key="exposureTime" decimals=3 /} sec</td>
                                 </tr>
                                 <tr>
                                     <td>Filename</td>
@@ -81,25 +81,25 @@
                             <table class="table table-condensed">
                                 <tr>
                                     <td >Peak Energy</td>
-                                    <td class='column_parameter_value'>{.peakEnergy} kev</td>
+                                    <td class='column_parameter_value'>{@decimal key="peakEnergy" decimals=3 /} keV</td>
                                 </tr>
                                 <tr>
                                     <td >Pk f'</td>
-                                    <td class='column_parameter_value'>{.peakFPrime} e–</td>
+                                    <td class='column_parameter_value'>{@decimal key="peakFPrime" decimals=2 /} &#275;</td>
                                 </tr>
 
                                 <tr>
                                     <td >Pk f''</td>
-                                    <td class='column_parameter_value'>{.peakFDoublePrime} e–</td>
+                                    <td class='column_parameter_value'>{@decimal key="peakFDoublePrime" decimals=2 /} &#275;</td>
                                 </tr>
 
                                 <tr>
                                     <td >Inflection Energy</td>
-                                    <td class='column_parameter_value'>{.inflectionEnergy} kev</td>
+                                    <td class='column_parameter_value'>{@decimal key="inflectionEnergy" decimals=2 /} kev</td>
                                 </tr>
                                 <tr>
                                     <td >Ip f'</td>
-                                    <td class='column_parameter_value'>{.inflectionFPrime} e– </td>
+                                    <td class='column_parameter_value'>{@decimal key="inflectionFPrime" decimals=2 /} &#275; </td>
 
 
                                 </tr>
@@ -108,7 +108,7 @@
 
                                 <tr>
                                     <td >Ip f''</td>
-                                    <td class='column_parameter_value'>{.inflectionFDoublePrime} e– </td>
+                                    <td class='column_parameter_value'>{@decimal key="inflectionFDoublePrime" decimals=2 /} &#275; </td>
                                 </tr>
 
 

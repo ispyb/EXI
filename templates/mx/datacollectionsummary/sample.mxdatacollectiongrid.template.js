@@ -18,7 +18,7 @@
     </tr> 
      <tr>
         <td> Container / Position </td>
-        <td  class='column_parameter_value'> {.Container_containerType} / {.BLSample_location} </td>
+        <td  class='column_parameter_value'> {.Container_containerCode} / {.BLSample_location} </td>
     </tr> 
      <tr>
         <td> Sample barcode</td>

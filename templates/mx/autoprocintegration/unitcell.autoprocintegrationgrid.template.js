@@ -1,6 +1,4 @@
-
-
-   <table class='table table-striped'>
+   <table class='table table-striped align-middle-header align-middle-rows'>
                 <thead>   
                 <tr>
                     <th  style='padding:0 15px 0 15px;'>Cell A</th>

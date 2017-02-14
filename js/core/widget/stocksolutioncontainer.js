@@ -12,7 +12,8 @@ function StockSolutionContainer(args) {
 							stockId			: 0,
 							enableMainClick : false,
 							enableClick : false,
-                            code            : ""
+                            code            : "",
+							minimized : false
                         };
 
 	this.stockSolutionId = 0;
@@ -53,6 +54,10 @@ function StockSolutionContainer(args) {
         }
 	}
 
+	if (this.templateData.height < 45) {
+        this.templateData.minimized = true;
+    }
+
 	this.onClick = new Event(this);
 	this.onMouseOver = new Event(this);
 	this.onMouseOut = new Event(this);
@@ -61,6 +66,8 @@ function StockSolutionContainer(args) {
 StockSolutionContainer.prototype.getPanel = function () {
 	
 	var _this = this;
+
+	var cls = (this.templateData.minimized) ? "border-grid" : "";
 	
 	this.panel =  Ext.create('Ext.panel.Panel', {
             id: this.id + "-container",
@@ -68,7 +75,7 @@ StockSolutionContainer.prototype.getPanel = function () {
 		    y: this.templateData.yMargin,
 		    width : this.templateData.width + 1,
 		    height : this.templateData.height + 1,
-		   cls:'border-grid',
+			cls : cls,
 		    frame: false,
 			border: false,
 			bodyStyle: 'background:transparent;',

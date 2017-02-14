@@ -4,7 +4,7 @@
          <div class="pull-left">
               <span style='font-size:12px;color:blue;' >
                      <kbd style='background-color:#CCCCCC;color:blue;'>
-                        Run #{.DataCollection_dataCollectionNumber} {.DataCollectionGroup_experimentType}
+                        {.DataCollectionGroup_experimentType}
                      </kbd> 
                       <span style='color:blue;'>
                      {.DataCollectionGroup_startTime}
@@ -115,13 +115,13 @@
                   </div>
                 
                </div>
-               
-              
-               <div class="container-fluid">
+
+               <div class="container-fluid" style="padding-bottom: 10px;">
                    <div class="col-xs-12 col-md-12">
-                        {?DataCollectionGroup_comments}
-                                    <b>{@dataCollectionComment key="DataCollectionGroup_comments" /}</b>
-                        {/DataCollectionGroup_comments}
+                        <a class="btn btn-xs">
+                            <span id="{.DataCollectionGroup_dataCollectionGroupId}-edit-comments" class="glyphicon glyphicon-edit dataCollectionGroup-edit"></span>
+                        </a>
+                        Comments:<b><div id="comments_{.DataCollectionGroup_dataCollectionGroupId}" class="wordwrap">{@trim key="DataCollectionGroup_comments" /}</div></b>
                         {?SpaceGroupModelResolvedByPhasing}
                             <div class="alert alert-success" style='font-size:14px;'>
                                 Automatic SAD appears to have worked with the space group {.SpaceGroupModelResolvedByPhasing} 
@@ -140,21 +140,14 @@
                       {>"beamline.mxdatacollectiongrid.template"  /}                             
                   </div>
                   <div class="col-xs-4 col-md-2">
+                     {>"synchrotron.mxdatacollectiongrid.template"  /}                             
+                  </div>
+                  <div class="col-xs-4 col-md-2">
+                     {>"beam.mxdatacollectiongrid.template"  /}                             
+                  </div>
+                  <div class="col-xs-4 col-md-2">
                      {>"detector.mxdatacollectiongrid.template"  /}                             
                   </div>
-
-                <div class="col-xs-4 col-md-2">
-                    <table class="table">                    
-                        <tr>
-                            <td>Synchrotron Current</td>
-                            <td  class='column_parameter_value'> 
-                                {.synchrotronCurrent}
-                            </td>
-                        </tr>                                               
-                    </table>  
-                </div>
-                  
-
                </div>
             </div>
          </div>

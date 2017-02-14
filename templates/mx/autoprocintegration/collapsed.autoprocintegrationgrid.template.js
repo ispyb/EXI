@@ -6,8 +6,8 @@
             <tbody>
                <tr>
                   <th class='innershell' >InnerShell</th>
-                  <th class='overallshell' >Overall</th>
                   <th class='outershell' >OuterShell</th>
+                  <th class='overallshell' >Overall</th>
                </tr>
             </tbody>
          </table>
@@ -20,22 +20,23 @@
                   <th  ></th>
                   <th  >Pipeline</th>
                   <th  >SpaceGroup</th>
-                  <th  >A</th>
-                  <th > B</th>
-                  <th > C</th>
-                  <th  >&#x3B1;</th>
-                  <th >&beta;</th>
-                  <th >&gamma;</th>
-                  <th >Resolution</th>
+                  <th  >a (&#197;)</th>
+                  <th > b (&#197;)</th>
+                  <th > c (&#197;)</th>
+                  <th  >&#x3B1; (&deg)</th>
+                  <th >&beta; (&deg)</th>
+                  <th >&gamma; (&deg)</th>
+                  <th >Resolution (&#197;)</th>
                   <th >Multiplicity</th>
-                  <th >Completeness</th>
-                  <th >I/Sigma</th>
+                  <th >Completeness %</th>
+                  <th >&#60;I/Sigma&#62;</th>
                   <th >Rmeas</th> 
                   <th >Rmerge</th>
                   <th >Rpim</th>
                   <th >cc(1/2)</th>
                   <th >ccAno</th>
                   <th >sigAno</th>
+                  <th >ISA</th>
                   <th >Download</th>
                </tr>
             </thead>
@@ -70,76 +71,80 @@
                {:else}
                     <td  >{.rank}</td>
                {/label}
-               <td  ><a target="_blank" href='#/autoprocintegration/datacollection/{.AutoProcIntegration_dataCollectionId}/main'>{.v_datacollection_processingPrograms}</a></td>
-               <td  >{.v_datacollection_summary_phasing_autoproc_space_group}</td>
+               <td ><a target="_blank" href='#/autoprocintegration/datacollection/{.AutoProcIntegration_dataCollectionId}/autoprocIntegration/{.AutoProcIntegration_autoProcIntegrationId}/main'>{.v_datacollection_processingPrograms}</a></td>
+               <td >{.v_datacollection_summary_phasing_autoproc_space_group}</td>
               
-               <td  >{@decimal key="v_datacollection_summary_phasing_cell_a" decimals=1}{/decimal}</td>
+               <td >{@decimal key="v_datacollection_summary_phasing_cell_a" decimals=1}{/decimal}</td>
                <td >{@decimal key="v_datacollection_summary_phasing_cell_b" decimals=1}{/decimal}</td>
                <td >{@decimal key="v_datacollection_summary_phasing_cell_c" decimals=1}{/decimal}</td>
-               <td  >{@decimal key="v_datacollection_summary_phasing_cell_alpha" decimals=1}{/decimal}</td>
+               <td >{@decimal key="v_datacollection_summary_phasing_cell_alpha" decimals=1}{/decimal}</td>
                <td >{@decimal key="v_datacollection_summary_phasing_cell_beta" decimals=1}{/decimal}</td>
                <td >{@decimal key="v_datacollection_summary_phasing_cell_gamma" decimals=1}{/decimal}</td>
                <td >
                   <span class='innershell'>{.innerShell.resolutionLimitLow}-{.innerShell.resolutionLimitHigh} </span><br />
-                  <span class='overallshell'>{.overall.resolutionLimitLow}-{.overall.resolutionLimitHigh} </span> <br />
-                  <span class='outershell'>{.outerShell.resolutionLimitLow}-{.outerShell.resolutionLimitHigh}</span>
+                  <span class='outershell'>{.outerShell.resolutionLimitLow}-{.outerShell.resolutionLimitHigh}</span> <br />
+                  <span class='overallshell'>{.overall.resolutionLimitLow}-{.overall.resolutionLimitHigh} </span>
                </td>
                <td >               
                   <span class='innershell'>{.innerShell.multiplicity} </span><br />
-                  <span class='overallshell'>{.overall.multiplicity}</span> <br />
-                  <span class='outershell'>{.outerShell.multiplicity}</span>
+                  <span class='outershell'>{.outerShell.multiplicity}</span> <br />
+                  <span class='overallshell'>{.overall.multiplicity}</span>
                </td>
                <td > 
                   <span class='innershell'>{.innerShell.completeness} </span><br />
-                  <span class='overallshell'>{.overall.completeness}</span><br />
-                  <span class='outershell'>{.outerShell.completeness}</span></td>
+                  <span class='outershell'>{.outerShell.completeness}</span><br />
+                  <span class='overallshell'>{.overall.completeness}</span>
+                </td>
                <td >
                     <span class='innershell'>{.innerShell.meanIOverSigI} </span><br />
-                    <span class='overallshell'>{.overall.meanIOverSigI}</span><br />
-                    <span class='outershell'>{.outerShell.meanIOverSigI}</span></td>
+                    <span class='outershell'>{.outerShell.meanIOverSigI}</span><br />
+                    <span class='overallshell'>{.overall.meanIOverSigI}</span>
+                </td>
                <td >
                     <span class='innershell'>{.innerShell.rMeasAllIPlusIMinus} </span><br />
-                    <span class='overallshell'>{.overall.rMeasAllIPlusIMinus}</span><br />
-                    <span class='outershell'>{.outerShell.rMeasAllIPlusIMinus}</span></td>
+                    <span class='outershell'>{.outerShell.rMeasAllIPlusIMinus}</span><br />
+                    <span class='overallshell'>{.overall.rMeasAllIPlusIMinus}</span>
+                </td>
                <td >
-               {@lt key=innerShell.rMerge value=10}
-                    <span class='innershell'>{.innerShell.rMerge} </span>
-                {:else}
-                    <span class='innershell' style='font-weight:700;color:red;'>{.innerShell.rMerge} </span>
-                {/lt}
-               <span class='overallshell'>{.overall.rMerge}</span> <span class='outershell'>{.outerShell.rMerge}</span></td>
+                    {@lt key=innerShell.rMerge value=10}
+                        <span class='innershell'>{.innerShell.rMerge} </span><br />
+                    {:else}
+                        <span class='innershell' style='font-weight:700;color:red;'>{.innerShell.rMerge} </span><br />
+                    {/lt}
+                    <span class='outershell'>{.outerShell.rMerge}</span> <br />
+                    <span class='overallshell'>{.overall.rMerge}</span>
+               </td>
                <td >
                     <span class='innershell'>{.innerShell.rPimWithinIPlusIMinus} </span><br />
-                    <span class='overallshell'>{.overall.rPimWithinIPlusIMinus}</span> <br />
-                    <span class='outershell'>{.outerShell.rPimWithinIPlusIMinus}</span>
+                    <span class='outershell'>{.outerShell.rPimWithinIPlusIMinus}</span><br />
+                    <span class='overallshell'>{.overall.rPimWithinIPlusIMinus}</span>
                 </td>
                <td >
                     {?innerShell.ccHalf}
-                        <span class='innershell'>{@math key=100 method="multiply" operand=innerShell.ccHalf/}%  </span><br />
+                        <span class='innershell'>{@math key=100 method="multiply" operand=innerShell.ccHalf/}  </span><br />
                     {/innerShell.ccHalf}
+
+                    {?outerShell.ccHalf}
+                        <span class='outershell'>{@math key=100 method="multiply" operand=outerShell.ccHalf/}  </span><br />
+                    {/outerShell.ccHalf}
                     
                      {?overall.ccHalf}
-                        <span class='overallshell'>{@math key=100 method="multiply" operand=overall.ccHalf/}%  </span><br />
+                        <span class='overallshell'>{@math key=100 method="multiply" operand=overall.ccHalf/}  </span><br />
                     {/overall.ccHalf}
-                    
-                     {?outerShell.ccHalf}
-                        <span class='outershell'>{@math key=100 method="multiply" operand=outerShell.ccHalf/}%  </span><br />
-                    {/outerShell.ccHalf}
                    
                </td>
                
                <td>
                     <span class='innershell'>{.innerShell.ccAno} </span><br />
-                    <span class='overallshell'>{.overall.ccAno}</span> <br />
                     <span class='outershell'>{.outerShell.ccAno}</span><br />
+                    <span class='overallshell'>{.overall.ccAno}</span> <br />
                </td>
                <td>
                     <span class='innershell'>{.innerShell.sigAno} </span><br />
-                    <span class='overallshell'>{.overall.sigAno}</span> <br />
-                    <span class='outershell'>{.outerShell.sigAno}</span>                                       
-                    
-               
+                    <span class='outershell'>{.outerShell.sigAno}</span><br />    
+                    <span class='overallshell'>{.overall.sigAno}</span>
                </td>
+                <td  >{.isa}</td>
                <td ><a href='{.downloadFilesUrl}' ><span style='font-size: 1.5em;' class="glyphicon glyphicon-download " ></span></a></td>
             </tr>
             {/.}

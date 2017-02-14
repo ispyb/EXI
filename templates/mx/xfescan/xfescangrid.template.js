@@ -39,11 +39,11 @@
                                 
                                 <tr>
                                     <td >Fluorescence Detector</td>
-                                    <td class='column_parameter_value'>To be added to DB</td>
+                                    <td class='column_parameter_value'></td>
                                 </tr>
                                 <tr>
                                     <td >Energy</td>
-                                    <td class='column_parameter_value'> {.energy} kev</td>
+                                    <td class='column_parameter_value'> {.energy} keV</td>
 
                                 </tr>
                                 
@@ -54,17 +54,17 @@
                                 
                                 <tr>      
                                     <td >Transmission</td>
-                                    <td class='column_parameter_value'>{.beamTransmission}%</td>
+                                    <td class='column_parameter_value'>{@decimal key="beamTransmission" decimals=2 /} %</td>
                                 </tr>
                                 
                                 <tr>       
                                     <td style='width:150px;' >Beam Size Hor</td>
-                                    <td class='column_parameter_value'>{.beamSizeHorizontal} micrometer</td>
+                                    <td class='column_parameter_value'>{.beamSizeHorizontal} &#956;m</td>
                                 </tr>
                                                                
                                 <tr>                            
                                     <td >Beam Size Vert</td>
-                                    <td class='column_parameter_value'>{.beamSizeVertical} micrometer</td>
+                                    <td class='column_parameter_value'>{.beamSizeVertical} &#956;m</td>
                                 </tr>
 
                                 <tr>                                

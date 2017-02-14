@@ -43,6 +43,7 @@ RoboDiffWidget.prototype.enableAllPucks = SampleChangerWidget.prototype.enableAl
 RoboDiffWidget.prototype.disablePuck = SampleChangerWidget.prototype.disablePuck;
 RoboDiffWidget.prototype.enablePuck = SampleChangerWidget.prototype.enablePuck;
 RoboDiffWidget.prototype.removeClassToAllPucks = SampleChangerWidget.prototype.removeClassToAllPucks;
+RoboDiffWidget.prototype.addClassToPuck = SampleChangerWidget.prototype.addClassToPuck;
 
 /**
 * Creates the particular structure of the FlexHCD

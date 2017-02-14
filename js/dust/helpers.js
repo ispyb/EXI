@@ -36,12 +36,12 @@ dust.helpers.decimal = function(chunk, context, bodies, params) {
     return chunk;
 };
 
-dust.helpers.dataCollectionComment = function (chunk, context, bodies, params) {
+dust.helpers.trim = function (chunk, context, bodies, params) {
     if (params.key) {
         var value = context.current()[params.key];
         if (value){
             if (value.trim() != "") {
-                chunk.write('Comment: ' + value);
+                chunk.write(value);
             }
         }
     }
@@ -159,6 +159,19 @@ dust.helpers.formatDate = function (chunk, context, bodies, params) {
                 chunk.write(params.date);
             }
         }
+    }
+    return chunk;
+}
+
+dust.helpers.uppercase = function (chunk, context, bodies, params) {
+    if (params.key) {
+        var value = context.current()[params.key];
+        if (value){
+            chunk.write(value.toUpperCase());
+        }
+    }
+    else{
+        chunk.write('WARN: NO KEY SET');
     }
     return chunk;
 }

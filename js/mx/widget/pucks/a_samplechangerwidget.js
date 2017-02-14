@@ -116,6 +116,10 @@ SampleChangerWidget.prototype.getPanel = function () {
 			
 	});
 
+	if (this.onRender) {
+		this.panel.on('boxready',function() {_this.onRender()});
+	}
+
 	for (puckType in this.pucks) {
 		for (puck in this.pucks[puckType]){
 			var puck = this.pucks[puckType][puck];
@@ -272,7 +276,7 @@ SampleChangerWidget.prototype.setClickListeners = function () {
 		var puck = allPucks[puckIndex];
 		$("#" + puck.puckWidget.id).css('cursor','pointer');
 		$("#" + puck.puckWidget.id).unbind('click').click(function(sender){
-			if (!sender.target.classList.contains('puck-disabled')){
+			if (!sender.target.classList.contains('puck-disabled') && !sender.target.classList.contains('puck-always-disabled')){
 				_this.onPuckSelected.notify(_this.findPuckById(sender.target.id));
 			}
 		});
@@ -305,6 +309,17 @@ SampleChangerWidget.prototype.disablePucksOfDifferentCapacity = function (capaci
 SampleChangerWidget.prototype.disablePuck = function (puck) {
 	$("#" + puck.id).addClass("puck-disabled");
 	puck.disableAllCells();
+};
+
+/**
+* Adds the class to the puck
+*
+* @method addClassToPuck
+* @param puck The puck to have the class added
+* @param cls The class to add
+*/
+SampleChangerWidget.prototype.addClassToPuck = function (puck,cls) {
+	$("#" + puck.id).addClass(cls);
 };
 
 /**

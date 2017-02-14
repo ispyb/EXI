@@ -36,12 +36,12 @@ dust.helpers.decimal = function(chunk, context, bodies, params) {
     return chunk;
 };
 
-dust.helpers.dataCollectionComment = function (chunk, context, bodies, params) {
+dust.helpers.trim = function (chunk, context, bodies, params) {
     if (params.key) {
         var value = context.current()[params.key];
         if (value){
             if (value.trim() != "") {
-                chunk.write('Comment: ' + value);
+                chunk.write(value);
             }
         }
     }
@@ -159,6 +159,19 @@ dust.helpers.formatDate = function (chunk, context, bodies, params) {
                 chunk.write(params.date);
             }
         }
+    }
+    return chunk;
+}
+
+dust.helpers.uppercase = function (chunk, context, bodies, params) {
+    if (params.key) {
+        var value = context.current()[params.key];
+        if (value){
+            chunk.write(value.toUpperCase());
+        }
+    }
+    else{
+        chunk.write('WARN: NO KEY SET');
     }
     return chunk;
 }
@@ -2905,15 +2918,16 @@ ShippingListView.prototype.getColumns = ListView.prototype.getColumns;
 ShippingListView.prototype.getStatsByShippingId = function(shippingId){
 	if (this.dewars){
 		var _this = this;
-		var containers = _.filter(this.dewars, function(e){return e.shippingId == shippingId;});
+		var dewars = _.filter(this.dewars, function(e){return e.shippingId == shippingId;});
 		var sampleCount = 0;
-		_(containers).forEach(function(value) {
+		_(dewars).forEach(function(value) {
 			sampleCount = sampleCount + value.sampleCount;
-		});      
+		});
+		
 		return {
 					samples     : sampleCount,
-					dewars      : Object.keys(_.groupBy(containers, "dewarId")).length,
-					containers   : containers.length
+					dewars      : Object.keys(_.groupBy(dewars, "dewarId")).length,
+					containers   : dewars.length
 			
 		};
 	} else {
@@ -4173,8 +4187,17 @@ ScatteringForm.prototype.load = function(data) {
 		this.data.chunkedKeys = _.chunk(this.data.keys,Math.ceil(this.data.keys.length/3.0));
 	}
 
-	this.data.today = moment().format("YYYY-MM-DD");
-	this.data.tenDaysAgo = moment().subtract(10,'d').format("YYYY-MM-DD");
+	if (!this.data.types){
+		this.data.types = [
+								{display : "Overall", value : "overall"},
+								{display : "InnerShell", value : "innerShell"},
+								{display : "OutShell", value : "outShell"}
+							]
+	}
+
+	if (!this.data.beamlines) {
+		this.data.beamlines = EXI.credentialManager.getBeamlinesByTechnique("MX");
+	}
 
     var html = "";
     dust.render("scattering.form.template", this.data, function (err, out) {
@@ -4183,27 +4206,34 @@ ScatteringForm.prototype.load = function(data) {
 
 	$('#' + this.id).hide().html(html).fadeIn('fast');
 	this.panel.doLayout();
+
+	$('#' + this.id + '-datepicker').datepicker({
+		defaultDate : new Date(),
+		format : "DD/MM/YYYY"
+	});
 }
 
 ScatteringForm.prototype.plot = function() {
-	var startDate= $("#" + this.id + "-startDate").val();
-	var endDate = $("#" + this.id + "-endDate").val();
+	var endDate= $("#" + this.id + "-date").val();
 	var checkedValues = [];
 	$('.scattering-checkbox:checked').each(function(i){
 		checkedValues.push($(this).val());
 	});
-
-	if (startDate != "" && endDate != "" && checkedValues.length > 0) {
-		var diffDays = moment(endDate,"YYYY-MM-DD").diff(moment(startDate,"YYYY-MM-DD"), 'days');
-		if (diffDays <= 10){
-			var url = EXI.getDataAdapter().mx.stats.getStatisticsByDate(startDate,endDate);
-			var urlParams = "url=" + url + "&/&title=" + this.data.title + "&/&y=" + checkedValues.toString() + "&/&x=recordTimeStamp&";
-			window.open("../viewer/scatter/index.html?" + urlParams,"_blank");
+	var type = $("#" + this.id + "-type").val();
+	var beamline = $("#" + this.id + "-beamline").val();
+	
+	if (endDate != "" && checkedValues.length > 0) {
+		var startDate = moment(endDate,"YYYY-MM-DD").subtract(7,'d').format("YYYY-MM-DD");
+		url = "";
+		if (beamline != ""){
+			url = EXI.getDataAdapter().mx.stats.getStatisticsByDateAndBeamline(type,startDate,endDate,beamline);
 		} else {
-			$("#" + this.id + "-dates").notify("Date interval must be 10 days or lower.", "error");
+			url = EXI.getDataAdapter().mx.stats.getStatisticsByDate(type,startDate,endDate);
 		}
+		var urlParams = "url=" + url + "&/&title=" + this.data.title + "&/&y=" + checkedValues.toString() + "&/&x=recordTimeStamp&";
+		window.open("../viewer/scatter/index.html?" + urlParams,"_blank");
 	} else {
-		$("#" + this.id + "-notifications").notify("Set the dates correctly and select the values to plot.", "error");
+		$("#" + this.id + "-checkox-div").notify("Set the dates correctly and select the values to plot.", { className : "error",elementPosition: 'top left'});
 	}
 }
 function SessionMainView(args) {
@@ -5545,6 +5575,118 @@ CrystalFormView.prototype.load = function(containerId, sampleId, shippingId){
 
 	EXI.getDataAdapter({onSuccess : onSuccess}).proposal.shipping.getContainerById(this.containerId,this.containerId,this.containerId);
 };
+function DewarTrackingGrid(args) {
+	this.id = BUI.id();
+
+	this.templateData = {id : this.id};
+
+    this.onLoaded = new Event(this);
+}
+
+DewarTrackingGrid.prototype.getPanel = function () {
+
+    var html = '';
+    dust.render('dewar.tracking.grid.template',this.templateData,function (err,out) {
+        html = out;
+    });
+
+    return '<div id="' + this.id + '">' + html + '</div>';
+
+}
+
+DewarTrackingGrid.prototype.load = function (dewars) {
+    if (dewars){
+        this.templateData.dewars = dewars;
+        var html = "";
+        dust.render('dewar.tracking.grid.template',this.templateData,function (err,out) {
+            html = out;
+        });
+        $("#" + this.id).html(html);
+    } else {
+        $("#" + this.id).html("");
+    }
+    this.onLoaded.notify();
+}
+function DewarTrackingView(args) {
+	this.id = BUI.id();
+	this.width = 600;
+
+	this.templateData = {id : this.id};
+
+	if (args != null) {
+		if (args.width != null) {
+			this.width = args.width;
+		}
+	}
+
+	var _this = this;
+
+	this.dewarTrackingGrid = new DewarTrackingGrid();
+	this.dewarTrackingGrid.onLoaded.attach(function(sender) {
+		_this.onLoaded.notify();
+	});
+
+	this.onLoaded = new Event(this);
+	
+}
+
+DewarTrackingView.prototype.getPanel = function () {
+
+    var html = '';
+    dust.render('dewar.tracking.view.template',[],function (err,out) {
+        html = out;
+    });
+
+    return '<div id="' + this.id + '">' + html + '</div>';
+
+}
+
+DewarTrackingView.prototype.load = function (shipment) {
+	var _this = this;
+	this.templateData.shipment = shipment;
+
+    var html = '';
+    dust.render('dewar.tracking.view.template',this.templateData,function (err,out) {
+        html = out;
+    });
+
+	$("#" + this.id).html(html);
+	$("#" + this.id + "-dewars").multiselect({
+													enableFiltering: true,
+													enableCaseInsensitiveFiltering: true,
+													includeSelectAllOption: true,
+													onChange: function(option, checked, select) {
+														_this.loadGrid(_this.getSelectedDewarIds());
+													}
+												});
+	$("#" + this.id + "-tracking-grid").html(this.dewarTrackingGrid.getPanel());
+
+	this.loadGrid(this.getSelectedDewarIds());
+}
+
+DewarTrackingView.prototype.getSelectedDewarIds = function() {
+	return multiselect = $("#" + this.id + "-dewars").val();
+}
+
+DewarTrackingView.prototype.loadGrid = function(dewarIds) {
+	var _this = this;
+	if (dewarIds && dewarIds.length > 0) {
+		var onSuccess = function (sender, tracking) {
+			var grouped = _.groupBy(_.filter(tracking, function (o) {return dewarIds.indexOf(o.Dewar_dewarId.toString()) >= 0}),"Dewar_dewarId");
+			var filteredDewars = _.filter(_this.templateData.shipment.dewarVOs,function (o) {return dewarIds.indexOf(o.dewarId.toString()) >= 0});
+			_.map(filteredDewars,function (d) {
+				d.trackingData = grouped[d.dewarId];
+				d.nTracking = grouped[d.dewarId].length + 1;
+				d.returnCourier = grouped[d.dewarId][0].Shipping_returnCourier;
+			});
+			_this.dewarTrackingGrid.load(filteredDewars);
+		}
+
+		EXI.getDataAdapter({onSuccess : onSuccess}).proposal.shipping.getDewarTrackingHistory(this.templateData.shipment.shippingId);
+	} else {
+		this.dewarTrackingGrid.load();
+	}
+}
 function EditCrystalFormView (args) {
     this.id = BUI.id();
 
@@ -6089,8 +6231,11 @@ function ParcelGrid(args) {
 		}
 	}
 
-	this.shipment = "";
+	this.shipment = null;
 	this.dewars = {};
+	this.parcelPanels = {};
+	this.samples = [];
+	this.withoutCollection = [];
 
 	/** Events **/
 	this.onSuccess = new Event(this);
@@ -6112,63 +6257,81 @@ ParcelGrid.prototype._getTopButtons = function() {
 	}));
 };
 
-ParcelGrid.prototype.load = function(shipment,hasExportedData) {
+ParcelGrid.prototype.load = function(shipment,hasExportedData,samples,withoutCollection) {
 	var _this = this;
 	this.shipment = shipment;
 	this.dewars = shipment.dewarVOs;
 	this.hasExportedData = hasExportedData;
-
-	$("#" + this.id + "-content").html("");
+	nSamples = 0;
+	nMeasured = 0;
+	if (samples) {
+		nSamples = samples.length;
+		nMeasured = nSamples - withoutCollection.length;
+		this.samples = _.groupBy(samples,"Dewar_dewarId");
+		this.withoutCollection = _.groupBy(withoutCollection,"Dewar_dewarId");
+	}
 
 	this.dewars.sort(function(a, b) {
 		return a.dewarId - b.dewarId;
 	});
 
-    function onSaved(sender, dewar) {
+	
+	$("#" + this.id + "-label").html("Content (" + this.dewars.length + " Parcels - " + nSamples + " Samples - " + nMeasured + " Measured)");
+	$("#" + this.id + "-add-button").removeClass("disabled");
+	$("#" + this.id + "-add-button").unbind('click').click(function(sender){
+		_this.edit();
+	});
+
+	this.fillTab("content", this.dewars);
+
+	this.attachCallBackAfterRender();
+};
+
+ParcelGrid.prototype.fillTab = function (tabName, dewars) {
+	var _this = this;
+	$("#" + tabName + "-" + this.id).html("");
+	this.parcelPanels[tabName] = Ext.create('Ext.panel.Panel', {
+															// cls 		: 'border-grid',
+															// width 		: this.width,
+															autoScroll	:true,
+															autoHeight 	:true,
+															maxHeight	: this.height,
+															renderTo	: tabName + "-" + this.id
+														});
+
+	function onSaved(sender, dewar) {
 			_this.panel.setLoading();
 			dewar["sessionId"] = dewar.firstExperimentId;
 			dewar["shippingId"] = _this.shipment.shippingId;
 			
 			var onSuccess = function(sender, shipment) {				
 				_this.panel.setLoading(false);
+				_this.panel.doLayout();
 			};			
 			EXI.getDataAdapter({onSuccess : onSuccess}).proposal.dewar.saveDewar(_this.shipment.shippingId, dewar);
     }
-	
-	$("#" + this.id + "-label").html("Content (" + this.dewars.length + " Parcels)");
-	$("#" + this.id + "-add-button").removeClass("disabled");
-	$("#" + this.id + "-add-button").unbind('click').click(function(sender){
-		_this.edit();
-	});
 
-	this.parcelPanels = Ext.create('Ext.panel.Panel', {
-															// cls 		: 'border-grid',
-															// width 		: this.width,
-															autoScroll	:true,
-															autoHeight 	:true,
-															maxHeight	: this.height,
-															renderTo	: this.id + "-content"
-														});
-	for ( var i in this.dewars) {
+	for ( var i in dewars) {
 		var parcelPanel = new ParcelPanel({
 			height : 90,
 			width : this.width - 60,
 			shippingId : this.shipment.shippingId,
 			shippingStatus : this.shipment.shippingStatus,
-			index : Number(i)+1
+			index : Number(i)+1,
+			currentTab : tabName
 		});
-		this.parcelPanels.insert(parcelPanel.getPanel());
-		parcelPanel.load(this.dewars[i],this.shipment);
+		this.parcelPanels[tabName].insert(parcelPanel.getPanel());
+		parcelPanel.load(this.dewars[i],this.shipment,this.samples[this.dewars[i].dewarId],this.withoutCollection[this.dewars[i].dewarId]);
 		parcelPanel.onSavedClick.attach(onSaved);
 	}
-	this.parcelPanels.doLayout();
+	this.parcelPanels[tabName].doLayout();
 	this.panel.doLayout();
-};
+}
 
 ParcelGrid.prototype.edit = function(dewar) {
 	var _this = this;
 	var caseForm = new CaseForm();
-
+	debugger
 	var window = Ext.create('Ext.window.Window', {
 		title : 'Parcel',
 		height : 450,
@@ -6220,16 +6383,16 @@ ParcelGrid.prototype.getPanel = function() {
 	})
 
 	this.panel =  Ext.create('Ext.panel.Panel', {
-
-			items : {
-						// cls	: 'border-grid',
-						html : '<div id="' + this.id + '">' + html + '</div>',
-						width : this.width,
-						autoScroll:false,
-						autoHeight :true,
-						// maxHeight: this.height,
-						padding : this.padding
-					}
+		// cls	: 'overflowed',
+		items : {
+					// cls	: 'border-grid',
+					html : '<div id="' + this.id + '">' + html + '</div>',
+					width : this.width,
+					autoScroll:false,
+					autoHeight :true,
+					// maxHeight: this.height,
+					padding : this.padding
+				}
 	});
 
 	return this.panel;
@@ -6241,6 +6404,13 @@ ParcelGrid.prototype.attachCallBackAfterRender = function () {
 	var tabsEvents = function(grid) {
 		this.grid = grid;
 		$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+			var target = $(e.target).attr("href");
+			if (target.startsWith("#co")){
+				_this.fillTab("content",_this.dewars);
+			}
+			if (target.startsWith("#st")){
+				_this.fillTab("statistics",_this.dewars);
+			}
 			_this.panel.doLayout();
 		});
     };
@@ -6410,6 +6580,10 @@ PuckFormView.prototype.getPanel = function() {
                                          // this.puckLayout.getPanel()
 							         ]
 		         },
+				 {
+					 html : "<div class='container-fluid'><span style='font-size: 12px;color: #666;'>Special characters are not allowed for the sample name field</span></div>"
+				 }
+				 ,
 		         this.containerSpreadSheet.getPanel(),
                 
 	         ] 
@@ -6512,23 +6686,37 @@ PuckFormView.prototype.save = function(returnToShipment) {
 	puck.code = Ext.getCmp(_this.id + 'puck_name').getValue();
 	puck.capacity = _this.capacityCombo.getSelectedCapacity();
 	puck.containerType = _this.capacityCombo.getSelectedType();
-	
-    var onError = function(sender, error){
-		_this.panel.setLoading(false);
-		EXI.setError(error.responseText);
-	};
-    
-	var onSuccess = function(sender, puck){
-		_this.unsavedChanges = false;
-		_this.panel.setLoading(false);
-		if (returnToShipment){
-			location.href = "#/shipping/" + _this.shippingId + "/main";
-		} else {
-			_this.load(_this.containerId, _this.shippingId);
+
+	// Check if sample names have special characters
+	var hasSpecialCharacter = false;
+	var format = /[ ~`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+	for (var i = 0 ; i < puck.sampleVOs.length ; i++) {
+		if(format.test(puck.sampleVOs[i].name)) {
+			hasSpecialCharacter = true
+			break;
 		}
-	};
-	this.panel.setLoading("Saving Puck");
-	EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.shipping.saveContainer(this.containerId, this.containerId, this.containerId, puck);
+	}
+
+	if (!hasSpecialCharacter) {
+		var onError = function(sender, error){
+			_this.panel.setLoading(false);
+			EXI.setError(error.responseText);
+		};
+		
+		var onSuccess = function(sender, puck){
+			_this.unsavedChanges = false;
+			_this.panel.setLoading(false);
+			if (returnToShipment){
+				location.href = "#/shipping/" + _this.shippingId + "/main";
+			} else {
+				_this.load(_this.containerId, _this.shippingId);
+			}
+		};
+		this.panel.setLoading("Saving Puck");
+		EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.shipping.saveContainer(this.containerId, this.containerId, this.containerId, puck);
+	} else {
+		$.notify("There are special characters in some of the sample names","error");
+	}
 };
 
 /**
@@ -6590,6 +6778,64 @@ PuckFormView.prototype.showReturnWarning = function() {
 	});
 	window.show();
 }		
+function SendShipmentForm(args) {
+    this.id = BUI.id();
+
+    this.onSend = new Event(this);
+}
+
+SendShipmentForm.prototype.show = function(){
+    var _this = this;
+    
+    var html = "";
+    dust.render("send.shipment.form.template", {id : this.id, shipment : this.shipment}, function(err,out){
+        html = out;
+    });
+
+    $("body").append(html);
+    
+    $("#" + this.id + "-modal").modal();
+    $("#" + this.id + "-modal").on('hidden.bs.modal', function(){
+        $(this).remove();
+    });
+
+    $("#" + this.id + "-save").unbind('click').click(function(sender){
+        _this.save();
+    });
+
+    var today = new Date();
+    $("#" + this.id + "-date").datetimepicker({
+        defaultDate: today,
+        format: "DD-MM-YYYY",
+    });
+
+};
+
+SendShipmentForm.prototype.load = function (shipment) {
+    this.shipment = shipment;
+}
+
+SendShipmentForm.prototype.save = function(){
+    var _this = this;
+    var trackingNumber = $("#" + this.id + "-tracking-number").val();
+    var date = moment($("#" + this.id + "-date").val(),"DD-MM-YYYY");
+
+    if (trackingNumber != "" && date.toDate() != "Invalid Date") {
+        for (var i = 0 ; i < this.shipment.dewarVOs.length ; i++) {
+            this.shipment.dewarVOs[i].trackingNumberToSynchrotron = trackingNumber;
+        }
+        this.shipment.deliveryAgentShippingDate = moment().toDate();
+        this.shipment.deliveryAgentDeliveryDate = date.toDate();
+        this.shipment.shippingStatus = "sent to ESRF";
+        var onSuccess = function (sender) {
+            _this.onSend.notify();
+            $("#" + _this.id + "-modal").modal('hide');
+        }
+        EXI.getDataAdapter({onSuccess : onSuccess}).proposal.shipping.saveShipment(this.shipment);
+    } else {
+        $("#" + this.id + "-modal-body").notify("Fill the required fields.",{ className : "error"});
+    }
+}
 function ShipmentEditForm(args) {
     this.id = BUI.id();
 
@@ -6765,15 +7011,21 @@ function ShipmentForm(args) {
 			this.width = args.width;
 		}
 	}
+
+	var _this = this;
+
+	this.dewarTrackingView = new DewarTrackingView();
+	this.dewarTrackingView.onLoaded.attach(function(sender){
+		_this.panel.doLayout();
+	});
 	
 	this.onSaved = new Event(this);
 }
 
 ShipmentForm.prototype.load = function(shipment,hasExportedData) {
+	var _this = this;
 	this.shipment = shipment;
 	this.hasExportedData = hasExportedData;
-	var _this = this;
-	
 	var toData = EXI.proposalManager.getLabcontacts();
 	var fromData = $.extend(EXI.proposalManager.getLabcontacts(), [{ cardName : 'Same as for shipping to beamline', labContactId : -1}, { cardName : 'No return requested', labContactId : 0}]);
 
@@ -6797,13 +7049,27 @@ ShipmentForm.prototype.load = function(shipment,hasExportedData) {
 		$("#" + _this.id + "-edit-button").unbind('click').click(function(sender){
 			_this.edit();
 		});
-		if (!this.hasExportedData){
-			$("#" + _this.id + "-remove-button").removeClass('disabled');
-			$("#" + _this.id + "-remove-button").unbind('click').click(function(sender){
-				alert("Not implemented");
-			});
-		}
+		// if (!this.hasExportedData){
+		// 	$("#" + _this.id + "-remove-button").removeClass('disabled');
+		// 	$("#" + _this.id + "-remove-button").unbind('click').click(function(sender){
+		// 		alert("Not implemented");
+		// 	});
+		// }
 	}
+
+	// if (shipment.shippingStatus == "opened" && shipment.dewarVOs.length > 0) {
+	// 	$("#" + _this.id + "-send-button").removeClass('disabled');
+	// 	$("#" + _this.id + "-send-button").unbind('click').click(function(sender){
+	// 		var sendShipmentForm = new SendShipmentForm();
+	// 		sendShipmentForm.onSend.attach(function(sender) {
+	// 			_this.load(_this.shipment);
+	// 		});
+	// 		sendShipmentForm.load(_this.shipment);
+	// 		sendShipmentForm.show();
+	// 	});
+	// }
+
+	$("#transport-history-" + this.id).html(this.dewarTrackingView.getPanel());
 
 	this.panel.doLayout();
 
@@ -6815,8 +7081,9 @@ ShipmentForm.prototype.getPanel = function() {
 
 	this.panel = Ext.create("Ext.panel.Panel",{
 		layout : 'fit',
+		cls	: 'overflowed overflowed-cascade',
+
 		items :	[{
-					// cls	: 'border-grid',
                     html : '<div id="' + this.id + '"></div>',
                     autoScroll : false,
 					// margin : 10,
@@ -6870,6 +7137,10 @@ ShipmentForm.prototype.attachCallBackAfterRender = function () {
 	var tabsEvents = function(grid) {
 		this.grid = grid;
 		$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+			var target = $(e.target).attr("href");
+			if (target.startsWith("#tr")){
+				_this.dewarTrackingView.load(_this.shipment);
+			}
 			_this.panel.doLayout();
 		});
     };
@@ -6951,7 +7222,7 @@ ShippingMainView.prototype.load = function(shippingId) {
 					}
 
 					_this.shipmentForm.load(shipment,hasExportedData);
-					_this.parcelGrid.load(shipment,hasExportedData);
+					_this.parcelGrid.load(shipment,hasExportedData,samples,withoutCollection);
 					_this.panel.setLoading(false);
 
 				}
@@ -7409,7 +7680,8 @@ function ContainerParcelPanel(args) {
                 enableMainClick : true,
                 enableMainMouseOver : true,
                 containerId : 0,
-                capacity : 10
+                capacity : 10,
+                showCode : true
     };
     this.width = 2*this.data.mainRadius + 20;
     this.container = new ContainerWidget(this.data);
@@ -7444,7 +7716,14 @@ function ContainerParcelPanel(args) {
         if (args.capacity != null) {
 			this.data.capacity = args.capacity;
 		}
+        if (args.showCode != null) {
+			this.data.showCode = args.showCode;
+		}
 	}
+
+    if (this.height < 45) {
+        this.data.showCode = false;
+    }
     
     this.onContainerRemoved = new Event(this);
 	
@@ -7483,7 +7762,7 @@ ContainerParcelPanel.prototype.getPanel = function () {
                 ]
 	});
     
-    if (this.height >= 45) {
+    if (this.data.showCode) {
         this.panel.insert({
                     html : "<div class='container-fluid' align='center'><span id='" + this.id + "-name' style='font-size:" + this.height*0.15 + "px;'>" + this.data.code + "</span></div>",
                     height : this.height*0.25,
@@ -7501,26 +7780,28 @@ ContainerParcelPanel.prototype.getPanel = function () {
 * @return
 */
 ContainerParcelPanel.prototype.load = function (samples) {
-    if (this.data.puckType == "Puck") {
-        _.map(samples,function (s) {s.location = parseInt(s.BLSample_location)});
-        if (_.maxBy(samples,"location").location > 10) {
-            this.data.puckType = "Unipuck";
-            this.container = this.createContainer(this.data);
+    if (samples != null && samples.length > 0){
+        if (this.data.puckType == "Puck") {
+            _.map(samples,function (s) {s.location = parseInt(s.BLSample_location)});
+            if (_.maxBy(samples,"location").location > 10) {
+                this.data.puckType = "Unipuck";
+                this.container = this.createContainer(this.data);
+            }
         }
-    }
-    this.containerPanel.removeAll();
-    this.containerPanel.add(this.container.getPanel());
-    if (samples.length > 0){
-        this.container.loadSamples(samples);
-        if (!this.container.containerId) {
-            this.container.containerId = this.containerId;
+        this.containerPanel.removeAll();
+        this.containerPanel.add(this.container.getPanel());
+        if (samples.length > 0){
+            this.container.loadSamples(samples);
+            if (!this.container.containerId) {
+                this.container.containerId = this.containerId;
+            }
+            // this.shippingId = samples[0].Shipping_shippingId;
         }
-        // this.shippingId = samples[0].Shipping_shippingId;
-    }
-    
-    var withoutCollection = _.filter(samples,{DataCollectionGroup_dataCollectionGroupId : null});
-    if (withoutCollection.length < samples.length) {
-        this.withoutCollection = false;
+        
+        var withoutCollection = _.filter(samples,{DataCollectionGroup_dataCollectionGroupId : null});
+        if (withoutCollection.length < samples.length) {
+            this.withoutCollection = false;
+        }
     }
 };
 
@@ -7603,6 +7884,8 @@ ContainerParcelPanel.prototype.createContainer = function (data) {
     } else if (data.puckType == "StockSolution") {
         data.stockSolutionId = this.containerId;
         container= new StockSolutionContainer(data);
+    } else if (data.puckType == "StatisticsPuck") {
+        container= new PuckStatisticsContainer(data);
     }
 
     container.onClick.attach(function (sender, id) {
@@ -8228,6 +8511,7 @@ function ParcelPanel(args) {
 	this.shippingId = 0;
 	this.shippingStatus = "";
 	this.containersPanel = null;
+	this.currentTab = "content";
 
 	this.isSaveButtonHidden = false;
 	this.isHidden = false;
@@ -8251,13 +8535,16 @@ function ParcelPanel(args) {
 		if (args.shippingStatus != null) {
 			this.shippingStatus = args.shippingStatus;
 		}
+		if (args.currentTab != null) {
+			this.currentTab = args.currentTab;
+		}
 	}
 	
 	this.onSavedClick = new Event(this);
 
 }
 
-ParcelPanel.prototype.load = function(dewar, shipment) {
+ParcelPanel.prototype.load = function(dewar, shipment, samples, withoutCollection) {
 	var _this = this;
 	this.dewar = dewar;
 	this.dewar.index = this.index;
@@ -8267,6 +8554,8 @@ ParcelPanel.prototype.load = function(dewar, shipment) {
 			this.dewar.beamlineName = shipment.sessions[0].beamlineName;
 		}
 	}
+	this.samples = samples;
+	this.withoutCollection = withoutCollection;
 	
 	/** Loading the template **/
 	var html = "";
@@ -8310,31 +8599,59 @@ ParcelPanel.prototype.load = function(dewar, shipment) {
 	});
 
 	/** Set parameters **/
-	this.renderShipmentParameters(dewar);
+	if (this.currentTab == "content"){
+		this.renderDewarParameters(dewar);
+	} else {
+		this.renderDewarStatistics(dewar);
+	}
+	this.renderDewarComments(dewar);
 
 	/** Rendering pucks **/
 	this.renderPucks(dewar);
 };
 
-ParcelPanel.prototype.renderShipmentParameters = function (dewar) {
+ParcelPanel.prototype.renderDewarParameters = function (dewar) {
 	var html = "";
 	dust.render("parcel.panel.parameter.table.template", {id : this.id, dewar : dewar, height : this.height}, function(err, out){
 		html = out;
 	});
-
 	$('#' + this.id + "-parameters-div").hide().html(html).fadeIn("fast");
+};
+
+ParcelPanel.prototype.renderDewarStatistics = function (dewar) {
+	var html = "";
+	var nContainers = 0;
+	if (dewar.containerVOs) {
+		nContainers = dewar.containerVOs.length;
+	}
+	var nSamples = 0;
+	var nMeasured = 0;
+	if (this.samples) {
+		nSamples = this.samples.length;
+	}
+	var nMeasured = nSamples;
+	if (this.withoutCollection) {
+		nMeasured = nSamples - this.withoutCollection.length;
+	}
+	dust.render("parcel.panel.statistics.template", {id : this.id,height : this.height, dewar : dewar, nContainers : nContainers, nSamples : nSamples, nMeasured : nMeasured}, function(err, out){
+		html = out;
+	});
+	$('#' + this.id + "-parameters-div").hide().html(html).fadeIn("fast");
+}
+
+ParcelPanel.prototype.renderDewarComments = function (dewar) {
 	if (dewar.comments != "" && dewar.comments != null) {
 		$('#' + this.id + "-comments").hide().html("Comments: " + dewar.comments).fadeIn("fast");
 		$('#' + this.id + "-index-td").attr('rowspan',2);
 		$('#' + this.id + "-buttons-td").attr('rowspan',2);
 		this.panel.setHeight(this.height + 25);
 	} else {
-		this.panel.setHeight(this.height);
+		$('#' + this.id + "-comments").hide().html("").fadeIn("fast");
 		$('#' + this.id + "-index-td").attr('rowspan',1);
 		$('#' + this.id + "-buttons-td").attr('rowspan',1);
+		this.panel.setHeight(this.height);
 	}
-	this.panel.doLayout();
-};
+}
 
 ParcelPanel.prototype.renderPucks = function (dewar) {
 	var _this = this;
@@ -8370,26 +8687,51 @@ ParcelPanel.prototype.renderPucks = function (dewar) {
 			
 			/** Sorting container by id **/
 			dewar.containerVOs.sort(function(a, b){return a.containerId - b.containerId;});
-			var containerPanelsMap = {};
+			// var containerPanelsMap = {};
 			var containerIds = [];
 			
 			for (var i = 0; i< dewar.containerVOs.length; i++){
 				var container = dewar.containerVOs[i];
-				var containerParcelPanel = new ContainerParcelPanel({type : container.containerType, height : this.containersPanelHeight/rows, width : this.containersParcelWidth,containerId : container.containerId, shippingId : this.shippingId, shippingStatus : this.shippingStatus, capacity : container.capacity, code : container.code});
+				var type = container.containerType;
+				var showCode = true;
+				if (this.currentTab == "statistics") {
+					type = "StatisticsPuck";
+					showCode = false;
+				}
+				var containerParcelPanel = new ContainerParcelPanel({
+																	type : type, 
+																	height : this.containersPanelHeight/rows, 
+																	width : this.containersParcelWidth,
+																	containerId : container.containerId, 
+																	shippingId : this.shippingId, 
+																	shippingStatus : this.shippingStatus, 
+																	capacity : container.capacity, 
+																	code : container.code,
+																	showCode : showCode
+																});
 				containerParcelPanel.onContainerRemoved.attach(function (sender, containerId) {
 					_.remove(_this.dewar.containerVOs, {containerId: containerId});
 					_this.renderPucks(_this.dewar);
 				});
-				containerPanelsMap[container.containerId] = containerParcelPanel;
+				// containerPanelsMap[container.containerId] = containerParcelPanel;
 				containerIds.push(container.containerId);
-				
 				containerRows[Math.floor(i/maxNumberForRow)].insert(containerParcelPanel.getPanel());
+				containerParcelPanel.load(_.filter(this.samples,{"BLSample_containerId":container.containerId}));
 			}
 			
 			for (var i = 0; i< stockSolutions.length; i++){
 				$('#hoveringTooltipDiv-' + stockSolutions[i].stockSolutionId).remove();
-				var containerParcelPanel = new ContainerParcelPanel({type : "StockSolution", height : this.containersPanelHeight/rows, width : this.containersParcelWidth,containerId : stockSolutions[i].stockSolutionId, shippingId : this.shippingId, shippingStatus : this.shippingStatus, code : stockSolutions[i].name});	
-				containerPanelsMap[stockSolutions[i].boxId] = containerParcelPanel;
+				var containerParcelPanel = new ContainerParcelPanel(
+																		{type : "StockSolution", 
+																		height : this.containersPanelHeight/rows, 
+																		width : this.containersParcelWidth,
+																		containerId : stockSolutions[i].stockSolutionId, 
+																		shippingId : this.shippingId, 
+																		shippingStatus : this.shippingStatus, 
+																		code : stockSolutions[i].name,
+																		showCode : false
+																	});	
+				// containerPanelsMap[stockSolutions[i].boxId] = containerParcelPanel;
 				containerIds.push(stockSolutions[i].boxId);
 				containerParcelPanel.onContainerRemoved.attach(function (sender, stockSolutionId) {
 					var stockSolution = EXI.proposalManager.getStockSolutionById(stockSolutionId);
@@ -8404,28 +8746,6 @@ ParcelPanel.prototype.renderPucks = function (dewar) {
 				});
 				
 				containerRows[Math.floor((i + dewar.containerVOs.length)/maxNumberForRow)].insert(containerParcelPanel.getPanel());
-			}
-
-			if (!_.isEmpty(containerPanelsMap)) {
-				
-				var onSuccess = function (sender, samples) {
-					if (samples) {
-						var samplesMap = {};
-						for (var i = 0 ; i < samples.length ; i++) {
-							var sample = samples[i];
-							if (samplesMap[sample.Container_containerId]){
-								samplesMap[sample.Container_containerId].push(sample);
-							} else {
-								samplesMap[sample.Container_containerId] = [sample];
-							}
-						}
-						_.each(samplesMap, function(samples, containerId) {
-							containerPanelsMap[containerId].load(samples);
-						});
-					}
-				}
-
-				EXI.getDataAdapter({onSuccess : onSuccess}).mx.sample.getSamplesByContainerId(containerIds);
 			}
 		}
 	}
@@ -8498,19 +8818,16 @@ ParcelPanel.prototype.showCaseForm = function() {
 	    items: [
 	            	caseForm.getPanel(_this.dewar)
 	    ],
-	    // listeners : {
-		// 	afterrender : function(component, eOpts) {
-		// 		if (_this.puck != null){
-		// 			_this.load(_this.puck);
-		// 		}
-		// 	}
-	    // },
 	    buttons : [ {
 						text : 'Save',
 						handler : function() {
 							_this.onSavedClick.notify(caseForm.getDewar());
 							window.close();
-                            _this.renderShipmentParameters(_this.dewar);
+							if (_this.currentTab == "content") {
+                            	_this.renderDewarParameters(_this.dewar);
+							}
+							_this.renderDewarComments(_this.dewar);
+							_this.panel.doLayout();
 						}
 					}, {
 						text : 'Cancel',
@@ -8714,6 +9031,176 @@ ProposalGrid.prototype.getPanel = function() {
 
 
 
+function PuckStatisticsContainer(args) {
+    this.id = BUI.id();
+	
+    this.templateData = {
+                            id          	: this.id,
+                            xmargin     	: 0,
+                            ymargin     	: 0,
+                            mainRadius  	: 50,
+                            width       	: 100,
+                            height      	: 100,
+							margin			: 15,
+							// rInner			: 10,
+							enableMainClick : false,
+							enableClick : false,
+                            code            : "",
+							enableMainMouseOver : false,
+							nSamples : 0,
+							nMeasured : 0,
+							minimized : false
+                        };
+
+    this.samples = null;
+	this.code = "";
+
+	if (args){
+		if (args.code){
+			this.code = args.code;
+		}
+		if (args.xMargin){
+			this.templateData.xMargin = args.xMargin;
+		}
+		if (args.yMargin){
+			this.templateData.yMargin = args.yMargin;
+		}
+		if (args.enableMainClick != null){
+			this.templateData.enableMainClick = args.enableMainClick;
+		}
+		if (args.enableClick != null){
+			this.templateData.enableClick = args.enableClick;
+		}
+        if (args.mainRadius){
+			this.templateData.mainRadius = args.mainRadius;
+			this.templateData.width = 2*args.mainRadius;
+			this.templateData.height = 2*args.mainRadius;
+			this.templateData.margin = (this.templateData.width - this.templateData.imgW)*0.5;
+		}
+        if (args.code) {
+            this.templateData.code = args.code;
+        }
+	}
+
+	if (this.templateData.height < 45) {
+        this.templateData.minimized = true;
+    }
+
+	this.onClick = new Event(this);
+	this.onMouseOver = new Event(this);
+	this.onMouseOut = new Event(this);
+};
+
+PuckStatisticsContainer.prototype.getPanel = function () {
+	
+	var _this = this;
+
+	var cls = (this.templateData.minimized) ? "border-grid" : "";
+	
+	this.panel =  Ext.create('Ext.panel.Panel', {
+            id: this.id + "-container",
+		    x: this.templateData.xMargin,
+		    y: this.templateData.yMargin,
+		    width : this.templateData.width + 1,
+		    height : this.templateData.height + 1,
+		   	cls : cls,
+		    frame: false,
+			border: false,
+			bodyStyle: 'background:transparent;',
+		    
+            items : [
+						{
+							html : this.getHTML(),
+							width : this.templateData.width + 1,
+							height : this.templateData.height + 1
+						}
+			],
+			
+	});
+
+	this.panel.on('boxready', function() {
+        if(_this.templateData.enableMainClick) {
+			$("#" + _this.id).unbind('click').click(function(sender){
+				_this.onClick.notify(sender.target.id);
+			});
+		}
+		_this.setOnMouseOverEvent();
+    });
+	
+	return this.panel;
+	
+};
+
+PuckStatisticsContainer.prototype.loadSamples = function (samples) {
+    this.samples = samples;
+    if (samples && samples.length > 0){
+		this.templateData.nSamples = samples.length;
+		this.templateData.nMeasured = samples.length;
+		var withoutCollection = _.filter(samples,{DataCollectionGroup_dataCollectionGroupId : null});
+		if (withoutCollection) {
+			this.templateData.nMeasured = samples.length - withoutCollection.length;
+		}
+		$("#" + this.id + "-samples").html(this.templateData.nSamples);
+		$("#" + this.id + "-measured").html(this.templateData.nMeasured);
+	}
+};
+
+PuckStatisticsContainer.prototype.getHTML = function (samples) {
+	var html = "";
+	if (this.templateData.height < 40) {
+		this.templateData.fillPanel = false;
+	} else {
+		this.templateData.fillPanel = true;
+	}
+	dust.render("puck.statistics.container.template", this.templateData, function(err, out){
+		html = out;
+	});
+	
+	return html;
+};
+
+PuckStatisticsContainer.prototype.setOnMouseOverEvent = function () {
+	var _this = this;
+	
+	$("#" + this.id).unbind('mouseover').mouseover(function(sender){
+		_this.onMouseOver.notify(_this);
+		if (_this.templateData.height < 40){
+			var id = sender.currentTarget.id;
+			$("#" + id).addClass("stock-solution-focus");
+			
+			// TOOLTIP
+			var tooltipHtml = "";
+			dust.render("puck.statistics.tooltip.template", _this.templateData, function(err, out) {
+				tooltipHtml = out;
+			});
+			$('body').append(tooltipHtml);
+			$('#hoveringTooltipDiv-' + _this.id).css({
+				"top" : $(this).offset().top,
+				"left" : $(this).offset().left + _this.templateData.width
+			});
+		}
+	});
+	
+	$("#" + this.id).unbind('mouseout').mouseout(function(sender){
+		_this.onMouseOut.notify(_this);
+		if (_this.templateData.height < 40){
+			var stockId = sender.currentTarget.id;
+			$("#" + stockId).removeClass("stock-solution-focus");
+
+			// TOOLTIP
+			$('#hoveringTooltipDiv-' + _this.id).remove();
+		}
+	});
+
+}
+
+PuckStatisticsContainer.prototype.focus = function (bool) {
+	if (bool){
+		$("#" + this.id + "-container").addClass("stock-solution-selected");		
+	} else {
+		$("#" + this.id + "-container").removeClass("stock-solution-selected");	
+	}
+};
 function SessionGrid(args) {
 	this.height = 500;
 	this.tbar = false;
@@ -9059,15 +9546,12 @@ function StockSolutionContainer(args) {
                             mainRadius  	: 50,
                             width       	: 100,
                             height      	: 100,
-                            imgH			: 42,
-                            imgW			: 42,
 							margin			: 15,
 							stockId			: 0,
-							// rInner			: 10,
 							enableMainClick : false,
+							enableClick : false,
                             code            : "",
-                            enableClick     : false,
-							enableMainMouseOver : false
+							minimized : false
                         };
 
 	this.stockSolutionId = 0;
@@ -9087,22 +9571,17 @@ function StockSolutionContainer(args) {
 		if (args.enableMainClick != null){
 			this.templateData.enableMainClick = args.enableMainClick;
 		}
-		if (args.enableMainClick != null){
-			this.templateData.enableMainClick = args.enableMainClick;
+		if (args.enableClick != null){
+			this.templateData.enableClick = args.enableClick;
 		}
         if (args.mainRadius){
 			this.templateData.mainRadius = args.mainRadius;
 			this.templateData.width = 2*args.mainRadius;
 			this.templateData.height = 2*args.mainRadius;
-			this.templateData.imgH = this.templateData.height*0.7;
-			this.templateData.imgW = this.templateData.width*0.7;
 			this.templateData.margin = (this.templateData.width - this.templateData.imgW)*0.5;
 		}
         if (args.code) {
             this.templateData.code = args.code;
-        }
-        if (args.enableClick != null) {
-            this.templateData.enableClick = args.enableClick;
         }
         if (args.stockSolutionId) {
             this.stockSolutionId = args.stockSolutionId;
@@ -9113,6 +9592,10 @@ function StockSolutionContainer(args) {
         }
 	}
 
+	if (this.templateData.height < 45) {
+        this.templateData.minimized = true;
+    }
+
 	this.onClick = new Event(this);
 	this.onMouseOver = new Event(this);
 	this.onMouseOut = new Event(this);
@@ -9121,6 +9604,8 @@ function StockSolutionContainer(args) {
 StockSolutionContainer.prototype.getPanel = function () {
 	
 	var _this = this;
+
+	var cls = (this.templateData.minimized) ? "border-grid" : "";
 	
 	this.panel =  Ext.create('Ext.panel.Panel', {
             id: this.id + "-container",
@@ -9128,7 +9613,7 @@ StockSolutionContainer.prototype.getPanel = function () {
 		    y: this.templateData.yMargin,
 		    width : this.templateData.width + 1,
 		    height : this.templateData.height + 1,
-		   cls:'border-grid',
+			cls : cls,
 		    frame: false,
 			border: false,
 			bodyStyle: 'background:transparent;',

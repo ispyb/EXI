@@ -27,6 +27,7 @@ SpinePuckWidget.prototype.emptyAll = PuckWidget.prototype.emptyAll;
 SpinePuckWidget.prototype.disableAllCells = PuckWidget.prototype.disableAllCells;
 SpinePuckWidget.prototype.allowAllCells = PuckWidget.prototype.allowAllCells;
 SpinePuckWidget.prototype.blink = PuckWidget.prototype.blink;
+SpinePuckWidget.prototype.addClassToCells = PuckWidget.prototype.addClassToCells;
 
 /**
 * Parses the data

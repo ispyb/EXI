@@ -1,5 +1,8 @@
-
-<table class="table">                    
+<table class="table">  
+    <tr>
+        <td>Beamline name</td>
+        <td  class='column_parameter_value'>{.Container_beamlineLocation}</td>
+    </tr>                  
     <tr>
         <td>Number of passes</td>
         <td  class='column_parameter_value'> 

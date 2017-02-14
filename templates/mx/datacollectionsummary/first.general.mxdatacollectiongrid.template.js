@@ -24,16 +24,16 @@
       <td class='column_parameter_value'>{.DataCollection_imagePrefix}</td>
    </tr>
    <tr>
+      <td>Run #</td>
+      <td class='column_parameter_value'>{.DataCollection_dataCollectionNumber}</td>
+   </tr>
+   <tr>
       <td>Images</td>
       <td class='column_parameter_value'>{.totalNumberOfImages}</td>
    </tr>
    <tr>
       <td>Transmission</td>
       <td class='column_parameter_value'>{@decimal key="transmission" decimals=1 /} %</td>
-   </tr>
-   <tr>
-      <td>Flux start</td>
-      <td class='column_parameter_value'>{.DataCollection_flux} ph/sec</td>
    </tr>
 </table>
 

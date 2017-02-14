@@ -5,7 +5,7 @@
 * @constructor
 */
 function ContainersDataCollectionGrid(args) {
-    this.legend = new PuckLegend({width : 300, height : 50, cy : "12.5%", tOffset : 30});
+    this.legend = new PuckLegend({width : 300, height : 50, cy : "12.5%", tOffset : "17%"});
 }
 
 ContainersDataCollectionGrid.prototype.getPanel = function (dataCollectionGroup) {
@@ -77,20 +77,6 @@ ContainersDataCollectionGrid.prototype.getColumns = function() {
                                 }
                             }
                             dataCollectionIdsPerContainer[data.containerIds[i]] = dataCollectionIds;
-                            // var attributesContainerWidget = {mainRadius :  pucksPanelHeight/4, 
-                            //                                 enableMouseOver : true, 
-                            //                                 enableClick : true, 
-                            //                                 containerId : containerIdNumber, 
-                            //                                 dataCollectionId : containers.DataCollection_dataCollectionId, 
-                            //                                 initSelected : data.selected[containerIdNumber],
-                            //                                 dataCollectionIds : dataCollectionIds
-                            //                             }
-                            // pucks[containerIdNumber] = new UniPuckWidget(attributesContainerWidget);
-                            // if (containers[0].Container_capacity == 10){
-                            //     pucks[containerIdNumber] = new SpinePuckWidget(attributesContainerWidget);
-                            // }
-
-                            // tree.find("#puck-panel-" + data.containerIds[i]).html(pucks[containerIdNumber].getPanel().html);
                         }
                     }
 

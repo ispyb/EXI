@@ -10,7 +10,7 @@ function LoadSampleChangerView (args) {
     this.showTip = true;
     this.height = 600;
     this.width = 600;
-    this.widgetRadius = 185;
+    this.widgetRadius = 170;
     if (args != null){
         if (args.height){
             this.height = args.height;
@@ -25,6 +25,14 @@ function LoadSampleChangerView (args) {
         isLoading : false
     };
     this.sampleChangerWidget = new FlexHCDWidget(data);
+    this.legend = new PuckLegend({
+                                    width       : 60, 
+                                    height      : 300, 
+                                    cy          : "50%", 
+                                    tOffset     : 30,
+                                    style       : "vertical",
+                                    fontSize    : "0.45vw"
+                                });
 
     this.selectedRowItem = null;
     this.selectedContainerId = null;
@@ -270,6 +278,7 @@ LoadSampleChangerView.prototype.changeSampleChangerWidgetByBeamline = function (
     this.widgetContainer.removeAll();
     this.load(this.containers);
     this.widgetContainer.insert(this.sampleChangerWidget.getPanel());
+    this.widgetContainer.insert(this.legend.getPanel());
     this.reloadSampleChangerWidget();
     this.sampleChangerWidget.blink();
     this.returnToSelectionStatus();
@@ -342,19 +351,21 @@ LoadSampleChangerView.prototype.getPanel = function () {
             type: 'hbox',
             pack: 'center'
         },  
-        items : [this.sampleChangerWidget.getPanel()]
+        items : [this.sampleChangerWidget.getPanel(),
+                this.legend.getPanel()]
     });
 
     this.verticalPanel = Ext.create('Ext.panel.Panel', {
         // layout : 'hbox',
-            layout: {
-                type: 'vbox',
-                align: 'center',
-                pack: 'center'
-            },
-            items : [{html : "<div id='" + this.id + "-notifications' class='container-fluid' align='center' ><div class='row' style='width:370px;'><div class='col-md-9'><span id='" + this.id + "-scw-label' class='" + this.id + "-lab' style='width:500px;font-size:20px;font-weight:100;'></span></div><div class='col-md-2'><button id='" + this.id + "-unloadSC-button' type='button' class='btn btn-default btn-xs' style='background:rgb(68, 68, 68);color: #ffffff;'><b>Unload SC</b></button></div></div></div>"},
-                        this.widgetContainer    
-            ]
+        margin : 10,
+        layout: {
+            type: 'vbox',
+            align: 'center',
+            pack: 'center'
+        },
+        items : [{html : "<div id='" + this.id + "-notifications' class='container-fluid' align='center' ><div class='row' style='width:370px;'><div class='col-md-9'><span id='" + this.id + "-scw-label' class='" + this.id + "-lab' style='width:500px;font-size:20px;font-weight:100;'></span></div><div class='col-md-2'><button id='" + this.id + "-unloadSC-button' type='button' class='btn btn-default btn-xs' style='background:rgb(68, 68, 68);color: #ffffff;'><b>Unload SC</b></button></div></div></div>"},
+                    this.widgetContainer    
+        ]
     });
 
     this.panel = Ext.create('Ext.panel.Panel', {

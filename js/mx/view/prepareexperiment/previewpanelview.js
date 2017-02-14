@@ -78,7 +78,7 @@ PreviewPanelView.prototype.getPanel = function () {
     });
 
     this.panel = Ext.create('Ext.panel.Panel', {
-        margin : 5,
+        margins : {top : 25},
         cls : 'border-grid',
         layout : 'hbox',
         width : this.width,

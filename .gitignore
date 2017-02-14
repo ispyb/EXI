@@ -44,3 +44,6 @@ local.properties
 
 # TeXlipse plugin
 .texlipse
+
+# development
+mx/config-localhost.js

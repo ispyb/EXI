@@ -1,6 +1,6 @@
 var ExtISPyB ={
-   version : 'alpha',
-   release_date : '2017/01/27',
+   version : 'alpha-u1',
+   release_date : '2017/02/07',
 
    sites:[
       {

@@ -102,7 +102,6 @@ PrimaryDataMainView.prototype.load = function(dataCollectionId) {
 							/** Identify discarded frames */
 							for (var i in allFrames){
 								var frame = allFrames[i];
-								debugger
 								if (_.find(_.concat(frameFromSampleAveraged, frameFromBufferAveraged), {filePath : frame.filePath})){
 									frame.discarded = false;
 								}

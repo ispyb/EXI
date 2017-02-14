@@ -162,6 +162,10 @@ PuckFormView.prototype.getPanel = function() {
                                          // this.puckLayout.getPanel()
 							         ]
 		         },
+				 {
+					 html : "<div class='container-fluid'><span style='font-size: 12px;color: #666;'>Special characters are not allowed for the sample name field</span></div>"
+				 }
+				 ,
 		         this.containerSpreadSheet.getPanel(),
                 
 	         ] 
@@ -264,23 +268,37 @@ PuckFormView.prototype.save = function(returnToShipment) {
 	puck.code = Ext.getCmp(_this.id + 'puck_name').getValue();
 	puck.capacity = _this.capacityCombo.getSelectedCapacity();
 	puck.containerType = _this.capacityCombo.getSelectedType();
-	
-    var onError = function(sender, error){
-		_this.panel.setLoading(false);
-		EXI.setError(error.responseText);
-	};
-    
-	var onSuccess = function(sender, puck){
-		_this.unsavedChanges = false;
-		_this.panel.setLoading(false);
-		if (returnToShipment){
-			location.href = "#/shipping/" + _this.shippingId + "/main";
-		} else {
-			_this.load(_this.containerId, _this.shippingId);
+
+	// Check if sample names have special characters
+	var hasSpecialCharacter = false;
+	var format = /[ ~`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+	for (var i = 0 ; i < puck.sampleVOs.length ; i++) {
+		if(format.test(puck.sampleVOs[i].name)) {
+			hasSpecialCharacter = true
+			break;
 		}
-	};
-	this.panel.setLoading("Saving Puck");
-	EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.shipping.saveContainer(this.containerId, this.containerId, this.containerId, puck);
+	}
+
+	if (!hasSpecialCharacter) {
+		var onError = function(sender, error){
+			_this.panel.setLoading(false);
+			EXI.setError(error.responseText);
+		};
+		
+		var onSuccess = function(sender, puck){
+			_this.unsavedChanges = false;
+			_this.panel.setLoading(false);
+			if (returnToShipment){
+				location.href = "#/shipping/" + _this.shippingId + "/main";
+			} else {
+				_this.load(_this.containerId, _this.shippingId);
+			}
+		};
+		this.panel.setLoading("Saving Puck");
+		EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.shipping.saveContainer(this.containerId, this.containerId, this.containerId, puck);
+	} else {
+		$.notify("There are special characters in some of the sample names","error");
+	}
 };
 
 /**

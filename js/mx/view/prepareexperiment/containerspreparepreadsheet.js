@@ -6,6 +6,8 @@
 function ContainerPrepareSpreadSheet(args){
     this.id = BUI.id();
 
+    this.preselectedRowContainerId = null;
+
     this.height = 600;
     this.width = 600;
     if (args != null){
@@ -51,11 +53,13 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function() {
                                     background: '#444444',
                                 },
                                 handler : function(){
+                                    // EXI.getDataAdapter().proposal.dewar.updateSampleLocation(_.map(_this.containers,"containerId"), ["null"], [""]);
+
                                     var onSuccess = function (sender,c) {
                                         _this.onUnloadAllButtonClicked.notify();
                                         _this.loadProcessingDewars(_this.sampleChangerWidget);
                                     }
-                                    EXI.getDataAdapter({onSuccess:onSuccess}).proposal.dewar.emptySampleLocation(_.map(_this.dewars,"containerId"));
+                                    EXI.getDataAdapter({onSuccess:onSuccess}).proposal.dewar.emptySampleLocation(_.map(_this.containers,"containerId"));
                                 }
                             }
         ],
@@ -147,7 +151,7 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function() {
                              case "Spinepuck":
                                 return "<kbd style='color:black;font-size:11px;background-color:#CCCCCC;'>SPINEPUCK</kbd>";  
                             default:
-                               return record.data.containerType;
+                               return "<kbd style='color:white;font-size:11px;background-color:#000000;'>" + record.data.containerType + "</kbd>";
                         }
                 }
             },
@@ -201,11 +205,14 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function() {
         ],
         viewConfig: {
             getRowClass: function(record, index, rowParams, store) {
+                if (record.get('containerType') != "Unipuck" && record.get('containerType') != "Spinepuck"){
+                    return "disabled-row";
+                }
                 if (record.get('sampleChangerLocation') == "" || record.get('sampleChangerLocation') == " " || record.get('sampleChangerLocation') == null ) {
                     return "warning-row";
                 }
-                for (var i = 0 ; i < _this.dewars.length ; i++){
-                    var dewar = _this.dewars[i];
+                for (var i = 0 ; i < _this.containers.length ; i++){
+                    var dewar = _this.containers[i];
                     if (record.get('containerId') != dewar.containerId && dewar.beamlineLocation == record.get('beamlineName')) {
                         if (record.get('sampleChangerLocation') == dewar.sampleChangerLocation){
                             return "puck-error";
@@ -226,8 +233,10 @@ ContainerPrepareSpreadSheet.prototype.getPanel = function() {
         },
         listeners: {
             itemclick: function(grid, record, item, index, e) {
-                if (e.target.tagName != "SELECT"){
-                    _this.onSelectRow.notify({record : record, item : item});          
+                if (record.data.containerType == "Unipuck" || record.data.containerType == "Spinepuck"){
+                    if (e.target.tagName != "SELECT"){
+                        _this.onSelectRow.notify({record : record, item : item});          
+                    }
                 }
             }
            
@@ -259,9 +268,41 @@ ContainerPrepareSpreadSheet.prototype.loadProcessingDewars = function (sampleCha
     this.panel.setLoading();
     var onSuccessProposal = function(sender, containers) {
         var processingContainers = _.filter(containers, function(e){return e.shippingStatus == "processing";});
-        _this.load(processingContainers,sampleChangerWidget);
-        _this.panel.setLoading(false);
-        _this.onLoaded.notify(processingContainers);
+        //Check if some of the containers have the old value Puck for containerType, in which case, we need to use the sample locations to specify the type
+        var containersFromISPyB = _.filter(processingContainers,{"containerType":"Puck"});
+        if (containersFromISPyB.length > 0) {
+            var onSampleSuccess = function (sender, samples) {
+                if (samples && samples.length > 0) {
+                    _.map(samples,function (s) {s.location = parseInt(s.BLSample_location)});
+                    var groupedByContainer = _.groupBy(samples,"Container_containerId");
+                    _.forEach(groupedByContainer,function(smpls, containerId){
+                                                                var type = "Spinepuck";
+                                                                if (_.maxBy(smpls,"location") > 10) {
+                                                                    type = "Unipuck";  
+                                                                }
+                                                                _.map(processingContainers,function (c) {
+                                                                    if (c.containerId == containerId) {
+                                                                        c.containerType = type;
+                                                                        if (type == "Spinepuck") {
+                                                                            c.capacity = 10;
+                                                                        } else if (type == "Unipuck") {
+                                                                            c.capacity = 16;
+                                                                        }
+                                                                    }
+                                                                });
+                                                            }
+                    );
+                }
+                _this.load(processingContainers,sampleChangerWidget);
+                _this.panel.setLoading(false);
+                _this.onLoaded.notify(processingContainers);
+            }
+            EXI.getDataAdapter({onSuccess : onSampleSuccess}).mx.sample.getSamplesByContainerId(_.map(containersFromISPyB,"containerId"));
+        } else {
+            _this.load(processingContainers,sampleChangerWidget);
+            _this.panel.setLoading(false);
+            _this.onLoaded.notify(processingContainers);
+        }
     };
     var onError = function(sender, error) {        
         EXI.setError("Ops, there was an error");
@@ -277,37 +318,36 @@ ContainerPrepareSpreadSheet.prototype.loadProcessingDewars = function (sampleCha
 * @param dewars
 * @return
 */
-ContainerPrepareSpreadSheet.prototype.load = function(dewars, sampleChangerWidget) {
+ContainerPrepareSpreadSheet.prototype.load = function(containers, sampleChangerWidget) {
     var _this = this;
-    this.dewars = dewars;
+    this.containers = containers;
     if (sampleChangerWidget){
         this.sampleChangerWidget = sampleChangerWidget;
     }
     var data = [];
     var error = false;
     //Parse data
-    for (var i = 0 ; i < dewars.length ; i++) {
-        var dewar = dewars[i];
-        if (dewar.containerId){
-            var containerType = "Unipuck";
-            if (dewar.capacity){
-                if (dewar.capacity == 10) {
-                    containerType = "Spinepuck";
-                }
+    for (var i = 0 ; i < containers.length ; i++) {
+        var container = containers[i];
+        if (container.containerId){
+            var containerType = container.containerType;
+            if (containerType == "Puck") {
+                containerType = "Spinepuck";
+                container.capacity = 10;
             }
             data.push({
-                shippingName : dewar.shippingName,
-                shippingId : dewar.shippingId,
-                parcelName : dewar.dewarCode,
-                barCode : dewar.barCode,
-                containerCode : dewar.containerCode,
+                shippingName : container.shippingName,
+                shippingId : container.shippingId,
+                parcelName : container.containerCode,
+                barCode : container.barCode,
+                containerCode : container.containerCode,
                 containerType : containerType,
-                sampleCount : dewar.sampleCount,
-                beamlineName : dewar.beamlineLocation,
-                sampleChangerLocation : dewar.sampleChangerLocation,
-                dewarId : dewar.dewarId,
-                containerId : dewar.containerId,
-                capacity : dewar.capacity
+                sampleCount : container.sampleCount,
+                beamlineName : container.beamlineLocation,
+                sampleChangerLocation : container.sampleChangerLocation,
+                dewarId : container.dewarId,
+                containerId : container.containerId,
+                capacity : container.capacity
             });
         } else {
             error = true;
@@ -315,7 +355,7 @@ ContainerPrepareSpreadSheet.prototype.load = function(dewars, sampleChangerWidge
     }
 
     if (error){
-        $.notify("Error: error loading the dewars", "error");
+        $.notify("Error: error loading the containers", "error");
     }
 
     this.store.loadData(data);
@@ -326,6 +366,14 @@ ContainerPrepareSpreadSheet.prototype.load = function(dewars, sampleChangerWidge
         _this.updateBeamlineName(containerId,beamline);
         _this.onBeamlineChanged.notify(beamline);
     });
+    //Check if any row should be selected
+    if (this.preselectedRowContainerId) {
+        var row = _.filter(this.panel.getStore().data.items,function (o) {return o.data.containerId == parseInt(_this.preselectedRowContainerId);});
+        if (row && row.length > 0) {
+            this.onSelectRow.notify({record : row[0]});
+            this.preselectedRowContainerId = null;
+        }
+    }
 };
 
 /**
@@ -365,6 +413,7 @@ ContainerPrepareSpreadSheet.prototype.updateBeamlineName = function (containerId
     var _this = this;
 
     var onSuccess = function(sender, containers) {
+        _this.preselectedRowContainerId = containerId
         _this.loadProcessingDewars();
     };
     var onError = function(sender, error) {        

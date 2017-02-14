@@ -10,6 +10,10 @@ ShippingListView.prototype.getFilter = ListView.prototype.getFilter;
 ShippingListView.prototype.getFields = ListView.prototype.getFields;
 ShippingListView.prototype.getColumns = ListView.prototype.getColumns;
 
+ShippingListView.prototype.loadDewars = function (dewars) {
+	this.dewars = dewars;
+};
+
 /**
 * Return the number of containers and samples for a given shipment 
 *
@@ -17,23 +21,28 @@ ShippingListView.prototype.getColumns = ListView.prototype.getColumns;
 * @param {Integer} shippingId ShippingId
 */
 ShippingListView.prototype.getStatsByShippingId = function(shippingId){
+	var _this = this;
 	if (this.dewars){
 		var _this = this;
-		var containers = _.filter(this.dewars, function(e){return e.shippingId == shippingId;});
-		var sampleCount = 0;
-		_(containers).forEach(function(value) {
-			sampleCount = sampleCount + value.sampleCount;
-		});      
-		return {
-					samples     : sampleCount,
-					dewars      : Object.keys(_.groupBy(containers, "dewarId")).length,
-					containers   : containers.length
-			
-		};
+		var dewars = _.filter(this.dewars, function(e){return e.shippingId == shippingId;});
+		return this.getStatsFromDewars(dewars);
 	} else {
 		return null;
 	}
 };
+
+ShippingListView.prototype.getStatsFromDewars = function (dewars) {
+	var sampleCount = 0;
+	_(dewars).forEach(function(value) {
+		sampleCount = sampleCount + value.sampleCount;
+	});
+	return {
+				samples     : sampleCount,
+				dewars      : Object.keys(_.groupBy(dewars, "dewarId")).length,
+				containers   : dewars.length
+		
+	};
+}
 
 /**
 * Calls to the dust template in order to render to puck in HTML
@@ -43,13 +52,21 @@ ShippingListView.prototype.getStatsByShippingId = function(shippingId){
 */
 ShippingListView.prototype.getRow = function(record){
 	var html = "";
-    
+
 	record.data.formattedCreationDate = moment(new Date(record.data.Shipping_creationDate)).format("DD-MM-YYYY");
-	record.data.stats = this.getStatsByShippingId(record.data.Shipping_shippingId);
+	if (record.data.Container_beamlineLocation){ //Has session attached
+		record.data.stats = this.getStatsByShippingId(record.data.Shipping_shippingId);
+	} else {
+		record.data.stats = {
+										samples     : "?",
+										dewars      : "?",
+										containers   : "?"
+							};
+	}
 
 	dust.render("shipping.listview", record.data, function(err, out){
-        	html = out;
-     	});
+		html = out;
+	});
 	return html;
 };
 

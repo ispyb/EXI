@@ -19,8 +19,7 @@ AutoProcIntegrationListView.prototype.getColumns = ListView.prototype.getColumns
 AutoProcIntegrationListView.prototype.getRow = function(record){
 	var html = "";
 	dust.render("autoprocintegration.listview", record.data, function(err, out){
-        
-        	html = out;
+		html = out;
     });
 	return html;
 };

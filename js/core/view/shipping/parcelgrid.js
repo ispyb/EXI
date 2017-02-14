@@ -34,6 +34,8 @@ function ParcelGrid(args) {
 	this.shipment = null;
 	this.dewars = {};
 	this.parcelPanels = {};
+	this.samples = [];
+	this.withoutCollection = [];
 
 	/** Events **/
 	this.onSuccess = new Event(this);
@@ -60,14 +62,21 @@ ParcelGrid.prototype.load = function(shipment,hasExportedData,samples,withoutCol
 	this.shipment = shipment;
 	this.dewars = shipment.dewarVOs;
 	this.hasExportedData = hasExportedData;
-	this.samples = _.groupBy(samples,"Dewar_dewarId");
-	this.withoutCollection = _.groupBy(withoutCollection,"Dewar_dewarId");
+	nSamples = 0;
+	nMeasured = 0;
+	if (samples) {
+		nSamples = samples.length;
+		nMeasured = nSamples - withoutCollection.length;
+		this.samples = _.groupBy(samples,"Dewar_dewarId");
+		this.withoutCollection = _.groupBy(withoutCollection,"Dewar_dewarId");
+	}
 
 	this.dewars.sort(function(a, b) {
 		return a.dewarId - b.dewarId;
 	});
+
 	
-	$("#" + this.id + "-label").html("Content (" + this.dewars.length + " Parcels)");
+	$("#" + this.id + "-label").html("Content (" + this.dewars.length + " Parcels - " + nSamples + " Samples - " + nMeasured + " Measured)");
 	$("#" + this.id + "-add-button").removeClass("disabled");
 	$("#" + this.id + "-add-button").unbind('click').click(function(sender){
 		_this.edit();
@@ -122,7 +131,7 @@ ParcelGrid.prototype.fillTab = function (tabName, dewars) {
 ParcelGrid.prototype.edit = function(dewar) {
 	var _this = this;
 	var caseForm = new CaseForm();
-
+	debugger
 	var window = Ext.create('Ext.window.Window', {
 		title : 'Parcel',
 		height : 450,
@@ -174,16 +183,16 @@ ParcelGrid.prototype.getPanel = function() {
 	})
 
 	this.panel =  Ext.create('Ext.panel.Panel', {
-
-			items : {
-						// cls	: 'border-grid',
-						html : '<div id="' + this.id + '">' + html + '</div>',
-						width : this.width,
-						autoScroll:false,
-						autoHeight :true,
-						// maxHeight: this.height,
-						padding : this.padding
-					}
+		// cls	: 'overflowed',
+		items : {
+					// cls	: 'border-grid',
+					html : '<div id="' + this.id + '">' + html + '</div>',
+					width : this.width,
+					autoScroll:false,
+					autoHeight :true,
+					// maxHeight: this.height,
+					padding : this.padding
+				}
 	});
 
 	return this.panel;

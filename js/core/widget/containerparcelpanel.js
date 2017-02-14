@@ -21,7 +21,8 @@ function ContainerParcelPanel(args) {
                 enableMainClick : true,
                 enableMainMouseOver : true,
                 containerId : 0,
-                capacity : 10
+                capacity : 10,
+                showCode : true
     };
     this.width = 2*this.data.mainRadius + 20;
     this.container = new ContainerWidget(this.data);
@@ -56,7 +57,14 @@ function ContainerParcelPanel(args) {
         if (args.capacity != null) {
 			this.data.capacity = args.capacity;
 		}
+        if (args.showCode != null) {
+			this.data.showCode = args.showCode;
+		}
 	}
+
+    if (this.height < 45) {
+        this.data.showCode = false;
+    }
     
     this.onContainerRemoved = new Event(this);
 	
@@ -95,7 +103,7 @@ ContainerParcelPanel.prototype.getPanel = function () {
                 ]
 	});
     
-    if (this.height >= 45) {
+    if (this.data.showCode) {
         this.panel.insert({
                     html : "<div class='container-fluid' align='center'><span id='" + this.id + "-name' style='font-size:" + this.height*0.15 + "px;'>" + this.data.code + "</span></div>",
                     height : this.height*0.25,

@@ -365,6 +365,20 @@ PuckWidget.prototype.findCellIndexById = function (id) {
 };
 
 /**
+* Adds the class to each cell
+*
+* @method addClassToCells
+* @param cls The class to add
+* @return
+*/
+PuckWidget.prototype.addClassToCells = function (cls) {
+	for (var i = 0 ; i < this.data.cells.length ; i++) {
+		var cell = this.data.cells[i];
+		$("#" + cell.id).addClass(cls);
+	}
+};
+
+/**
 * Adds the disabled class to each cell
 *
 * @method disableAllCells

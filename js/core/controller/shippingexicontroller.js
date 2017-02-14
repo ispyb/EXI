@@ -25,7 +25,7 @@ ShippingExiController.prototype.loadShipmentsNavigationPanel = function(listView
 		curated.sort(function(a,b){return b.Shipping_shippingId - a.Shipping_shippingId;});
 
 		var onSuccessProposal = function (sender,dewars) {
-			listView.dewars = dewars;
+			listView.loadDewars(dewars);
 			/** Load panel * */
 			EXI.addNavigationPanel(listView);
 			/** Load data * */

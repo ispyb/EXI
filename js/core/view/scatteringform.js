@@ -47,8 +47,6 @@ ScatteringForm.prototype.load = function(data) {
 		this.data.chunkedKeys = _.chunk(this.data.keys,Math.ceil(this.data.keys.length/3.0));
 	}
 
-	this.data.today = moment().format("YYYY-MM-DD");
-
 	if (!this.data.types){
 		this.data.types = [
 								{display : "Overall", value : "overall"},
@@ -68,10 +66,15 @@ ScatteringForm.prototype.load = function(data) {
 
 	$('#' + this.id).hide().html(html).fadeIn('fast');
 	this.panel.doLayout();
+
+	$('#' + this.id + '-datepicker').datetimepicker({
+		defaultDate : new Date(),
+		format : "DD-MM-YYYY"
+	});
 }
 
 ScatteringForm.prototype.plot = function() {
-	var endDate= $("#" + this.id + "-date").val();
+	var endDate= moment($("#" + this.id + "-date").val(),"DD-MM-YYYY").format("YYYY-MM-DD");
 	var checkedValues = [];
 	$('.scattering-checkbox:checked').each(function(i){
 		checkedValues.push($(this).val());
@@ -79,7 +82,7 @@ ScatteringForm.prototype.plot = function() {
 	var type = $("#" + this.id + "-type").val();
 	var beamline = $("#" + this.id + "-beamline").val();
 	
-	if (endDate != "" && checkedValues.length > 0) {
+	if (endDate != "Invalid date" && checkedValues.length > 0) {
 		var startDate = moment(endDate,"YYYY-MM-DD").subtract(7,'d').format("YYYY-MM-DD");
 		url = "";
 		if (beamline != ""){

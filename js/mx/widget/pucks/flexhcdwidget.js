@@ -45,6 +45,7 @@ FlexHCDWidget.prototype.enableAllPucks = SampleChangerWidget.prototype.enableAll
 FlexHCDWidget.prototype.disablePuck = SampleChangerWidget.prototype.disablePuck;
 FlexHCDWidget.prototype.enablePuck = SampleChangerWidget.prototype.enablePuck;
 FlexHCDWidget.prototype.removeClassToAllPucks = SampleChangerWidget.prototype.removeClassToAllPucks;
+FlexHCDWidget.prototype.addClassToPuck = SampleChangerWidget.prototype.addClassToPuck;
 
 /**
 * Creates the particular structure of the FlexHCD
@@ -125,3 +126,10 @@ FlexHCDWidget.prototype.convertSampleChangerLocationToId = function (sampleChang
 		return null;
 	}
 };
+
+FlexHCDWidget.prototype.onRender = function () {
+	//Disable the 24th puck
+	var puck24 = this.findPuckById(this.id + "-8-3");
+	this.addClassToPuck(puck24,"puck-always-disabled");
+	puck24.addClassToCells("cell-always-disabled");
+}

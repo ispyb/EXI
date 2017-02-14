@@ -43,6 +43,7 @@ SC3Widget.prototype.enableAllPucks = SampleChangerWidget.prototype.enableAllPuck
 SC3Widget.prototype.disablePuck = SampleChangerWidget.prototype.disablePuck;
 SC3Widget.prototype.enablePuck = SampleChangerWidget.prototype.enablePuck;
 SC3Widget.prototype.removeClassToAllPucks = SampleChangerWidget.prototype.removeClassToAllPucks;
+SC3Widget.prototype.addClassToPuck = SampleChangerWidget.prototype.addClassToPuck;
 
 /**
 * Creates the particular structure of the SC3
