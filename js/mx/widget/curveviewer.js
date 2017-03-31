@@ -2,6 +2,14 @@ function CurveViewer(args) {
     this.id = BUI.id();
 
     this.templateData = {id : this.id};
+
+    this.valueRange = null;
+
+    if (args) {
+        if (args.valueRange) {
+            this.valueRange = args.valueRange;
+        }
+    }
 };
 
 CurveViewer.prototype.show = function(){
@@ -23,11 +31,16 @@ CurveViewer.prototype.show = function(){
 
 CurveViewer.prototype.load = function (autoProcIntegrationId, url, title,labels) {
     this.autoProcIntegrationId = autoProcIntegrationId;
-    $("#" + this.id + "-title").html(title);
+    // $("#" + this.id + "-title").html(title);
+    
     this.curvePlotter = new AutoProcIntegrationCurvePlotter({
                                                                 height : 600,
                                                                 targetId : this.id + "-plot",
-                                                                labels : labels
+                                                                labels : labels,
+                                                                valueRange : this.valueRange,
+                                                                labelsSeparateLines : true,
+                                                                useHighlightCallback : true,
+                                                                title : title,
                                                             });
     this.curvePlotter.loadUrl(url);
 

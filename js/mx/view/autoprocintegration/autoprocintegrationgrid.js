@@ -225,7 +225,7 @@ AutoProcIntegrationGrid.prototype.getPanel = function() {
         //tbar: this.getToolBar(),
         margin : 10,
 		//cls : 'border-grid',
-        height : this.height,
+        // height : this.height,
         layout : 'fit',
 		columns : [             
                     {
@@ -256,7 +256,6 @@ AutoProcIntegrationGrid.prototype.getPanel = function() {
                                     html = html + out;
                                 
                                 });
-                                
                             }
                             return html;
                         }
@@ -275,31 +274,6 @@ AutoProcIntegrationGrid.prototype.getPanel = function() {
 	return this.panel;
 };
 
-
-/*
-AutoProcIntegrationGrid.prototype.getToolBar = function() {
-    var _this = this;
-    return Ext.create('Ext.toolbar.Toolbar', {
-        width: 500,
-        items: [
-            {
-                xtype: 'checkboxfield',
-                boxLabel: 'Summary',
-                checked : true,
-                id: this.id + "_collapse",
-                listeners: {
-                    change: function(field, e) {
-                        _this.collapsed = e;
-                        _this.load(_this.data);
-                        _this.attachCallBackAfterRender();
-                     
-                    }
-                }
-            }
-          
-        ]
-    });
-};*/
 /**
 * Attaches the events to lazy load to the images. Images concerned are with the class img-responsive and smalllazy
 *

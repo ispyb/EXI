@@ -7,6 +7,13 @@
       </div>
       <div class="modal-body">
         <div id="{id}-plot" style="margin:20px">
+          <div class="container-fluid">
+            <div class="row" style='height:600px;'>
+                  <div class="col-xs-12 col-md-12" id="__mr_{.DataCollection_dataCollectionGroupId}">
+                          <img style='display:block;margin-left: auto;margin-right: auto;height:150px;width:150px;'src='../images/loading-animation.gif' />                                           
+                  </div>
+              </div>
+          </div>
         </div>
       </div>
       <div class="modal-footer">

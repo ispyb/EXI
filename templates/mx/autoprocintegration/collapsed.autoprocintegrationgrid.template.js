@@ -1,4 +1,4 @@
-<div class="container-fluid containerWithScroll">
+<div class="container-fluid">
    <div class="row">
       <div class="col-xs-12 col-md-2">
 

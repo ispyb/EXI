@@ -38,8 +38,7 @@ AutoprocIntegrationController.prototype.init = function() {
         var listPanel = new AutoProcIntegrationListView();        
         EXI.addNavigationPanel(listPanel);
         
-        listPanel.onSelect.attach(function(sender, selected){
-			console.log(selected[0].AutoProcIntegration_autoProcIntegrationId);       
+        listPanel.onSelect.attach(function(sender, selected){       
             mainView.load(selected);            
         });
          /** Load view for autoprocessing */
@@ -49,6 +48,7 @@ AutoprocIntegrationController.prototype.init = function() {
             // Get the data sorted as in the AutoProcIntegrationGrid
             var sortedData = mainView.autoProcIntegrationGrid.panel.getStore().data.items[0].data.items;
             listPanel.load(sortedData);
+            listPanel.panel.getSelectionModel().selectAll();
         };
         EXI.getDataAdapter({onSuccess : onSuccess2}).mx.autoproc.getViewByDataCollectionId(this.params['datacollectionId']);
 	}).enter(this.setPageBackground);
@@ -72,14 +72,13 @@ AutoprocIntegrationController.prototype.init = function() {
         var listPanel = new AutoProcIntegrationListView();        
         EXI.addNavigationPanel(listPanel);
         
-        listPanel.onSelect.attach(function(sender, selected){
-			console.log(selected[0].AutoProcIntegration_autoProcIntegrationId);       
+        listPanel.onSelect.attach(function(sender, selected){      
             mainView.load(selected);            
         });
          /** Load view for autoprocessing */
         var onSuccess2 = function(sender, data){
 			results = _.filter(data[0],function (r) {return r.AutoProcIntegration_autoProcIntegrationId == _this.params['autoprocIntegrationId']})
-            mainView.load(results);
+            // mainView.load(results);
             mainView.panel.setLoading(false);            
             listPanel.load((new AutoProcIntegrationGrid).parseData(data[0]));
             listPanel.selectRow("AutoProcIntegration_autoProcIntegrationId",_this.params['autoprocIntegrationId']);

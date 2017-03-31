@@ -121,6 +121,8 @@ function AutoProcIntegrationCurvePlotter(args) {
     this.title = "";
     this.labelsDiv = null;
     this.strokeWidth = 1.0;
+    this.labelsSeparateLines = false;
+    this.useHighlightCallback = false;
 
     this.data = {
         labels: [], // labels = [{name: 'axisX', x: true, y, false},{name: 'axisXY', x: false, y, true}] 
@@ -147,6 +149,12 @@ function AutoProcIntegrationCurvePlotter(args) {
         }
         if (args.strokeWidth) {
             this.strokeWidth = args.strokeWidth;
+        }
+        if (args.labelsSeparateLines != null) {
+            this.labelsSeparateLines = args.labelsSeparateLines;
+        }
+        if (args.useHighlightCallback != null) {
+            this.useHighlightCallback = args.useHighlightCallback;
         }
     }
 
@@ -178,7 +186,26 @@ AutoProcIntegrationCurvePlotter.prototype.toCSV = function(labels, data) {
 */
 AutoProcIntegrationCurvePlotter.prototype.render = function(labels, data) {
     var _this = this;
-    
+    var colors = ["#008800","#000088","#880000","#DD8800","#AA00AA","#FF3300","#6600FF","#880088","#88808","#808080","#008A0A","#F0880F","#0088FF","#FF00FF","#000000","#0AAAA0"];
+    var highlightCallback = null;
+    if (this.useHighlightCallback) {
+        highlightCallback = function(event, x, points, row, seriesName) {
+            var html = "";
+            for (var i = 1 ; i < _this.data.labels.length ; i++) {
+                html += '<span style="font-weight: bold; font-size:8pt; color: ' + colors[i-1] + ';">';
+                html += '<div style="display: inline-block; position: relative; bottom: .5ex; padding-left: 1em; height: 1px; border-bottom: 2px solid ' + colors[i-1] + ';"></div> ';
+                html += _this.data.labels[i] + "</span><br/>";
+            }
+            html += "<hr style='margin:5px;border-color:#000000' />";
+            html += "Resolution " + Number(_this.xRange[0] + _this.xRange[1] - x).toFixed(2) + "<br/>";
+            var yLabel = _this.title.split(" vs ")[0];
+            for (var i = 0 ; i < points.length ; i++) {
+                html += "<span style='font-weight: bold;color: " + colors[_this.data.labels.indexOf(points[i].name)-1] + "'>" + yLabel + " " + points[i].yval + "</span><br/>";
+            }
+            $(".dygraph-legend").html(html);
+        } 
+    }
+
     /** Plotting */
     var g = new Dygraph(
         document.getElementById(this.targetId),
@@ -189,11 +216,13 @@ AutoProcIntegrationCurvePlotter.prototype.render = function(labels, data) {
             legend : 'always',
             height: this.height - 100,
             hideOverlayOnMouseOut :true,
-            labelsSeparateLines: true,
+            labelsSeparateLines: this.labelsSeparateLines,
             labelsDiv : this.labelsDiv,
             labelsDivStyles : " { 'fontSize': 6 } ",
             strokeWidth : this.strokeWidth,
             valueRange : this.valueRange,
+            highlightCallback : highlightCallback,
+            colors : colors,
             
             connectSeparatedPoints: true,
             pointClickCallback: function(e, p) {
@@ -201,13 +230,18 @@ AutoProcIntegrationCurvePlotter.prototype.render = function(labels, data) {
             },
             axes : {
                 x: {
-                    axisLabelFormatter: function (x) {
-                        return x;
+                    axisLabelFormatter: function(d, gran, opts) {
+                        return Number(_this.xRange[0] + _this.xRange[1] - d).toFixed(2);                        
                     },
-                    valueFormatter: function (y) {
-                        return '<span style="font-weight: bold; color: rgb(0,128,128);">' + labels[0] + "</span> " + y; //Hide legend label
+                    valueFormatter: function (x, opts, seriesName, g, row, col) {
+                        return seriesName + " " + Number(_this.xRange[0] + _this.xRange[1] - x).toFixed(2);
                     }
                 },
+                y : {
+                    valueFormatter: function (y, opts, seriesName, g, row, col) {
+                        return y;
+                    }
+                }
             }
         }
 
@@ -284,8 +318,9 @@ AutoProcIntegrationCurvePlotter.prototype.loadUrl = function(url) {
                     
                 var convertToNumber = function (element) {
                     var noError = [];
-                    var elements = element.split(',');                                       
-                    elements = _.map(elements, toNumber);                 
+                    var index = lines.indexOf(element);
+                    var elements = element.split(',');                                  
+                    elements = _.map(elements, toNumber);               
                     // noError.push(index);
                     noError.push(elements[0]);
                     _this.xLabels.push(elements[0]);
@@ -299,14 +334,26 @@ AutoProcIntegrationCurvePlotter.prototype.loadUrl = function(url) {
                     index = index + 1;
                     return noError;
                 };
+
                 lines = lines.reverse();
                 /** Parsing data it means remove labels, split by , and convert to number */
                 this.data.data = _.map(_.slice(lines, 1, lines.length - 1), convertToNumber);
-
-
+                this.xRange = [_.min(this.xLabels),_.max(this.xLabels)];
+                // Mirror the x-axis
+                for (var i = 0 ; i < this.data.data.length ; i++) {
+                    var data = this.data.data[i];
+                    data[0] = Number(_this.xRange[0] + _this.xRange[1] - data[0]).toFixed(2);
+                }
                 try {
-
-                    this.render(this.data.labels, this.data.data);
+                    if (this.data.data.length > 0){
+                        // Manage the case when there are more values than labels
+                        if (this.data.labels.length < this.data.data[0].length) {
+                            _.map(this.data.data,function(d){
+                                _this.data.data[_this.data.data.indexOf(d)] = d.slice(0,_this.data.labels.length);
+                            });
+                        }
+                        this.render(this.data.labels, this.data.data);
+                    }
                 }
                 catch (e) {
                     EXI.setError(e.message);
