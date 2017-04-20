@@ -7,7 +7,7 @@ function AuthenticationForm(){
 AuthenticationForm.prototype.show = function(){
 	this.window = Ext.create('Ext.window.Window', {
 	    title: 'Login',
-	    height: 250,
+	    height: 280,
 	    closable :  false,
 	    width: 480,
 	    modal : true,
@@ -31,17 +31,22 @@ AuthenticationForm.prototype.getAuthenticationForm = function(){
                         xtype: 'container',
                         layout: 'vbox',
                         items: [
-                        {
+ 						{
                             xtype: 'textfield',
-                            fieldLabel: 'User',
+                            fieldLabel: 'Login',
                             name: 'user',
                             margin : '10 0 0 10',
                             allowBlank: false
                         }, 
                         {
+                            xtype: 'displayfield',
+							value: '-> If you are a User, please use the beamline proposal login',
+							fieldStyle: 'color: #999999 ; font-size: 12px ' 
+                        }, 
+						{
                             xtype: 'textfield',
                             fieldLabel: 'Password',
-                            margin : '10 0 0 10',
+                            margin : '5 0 0 10',
                             name: 'password',
                             allowBlank: false,
                             inputType : 'password'
@@ -70,7 +75,7 @@ AuthenticationForm.prototype.getAuthenticationForm = function(){
                     xtype: 'textfield',
                     fieldLabel: 'User',
                     name: 'user',
-                    margin : '30 0 0 10',
+                    margin : '10 0 0 10',
                     allowBlank: false
                 }, 
                 {
@@ -134,7 +139,6 @@ AuthenticationForm.prototype.getPanel = function(){
                         }                                           
         ],
 	    buttons: [ 
-		'If you are a User, please use the beamline proposal login.',
                 {
 	        text: 'Login',
 	        formBind: true,
