@@ -81,9 +81,9 @@ DataCollectionMxMainView.prototype.getContainer = function() {
 DataCollectionMxMainView.prototype.loadEnergyScans = function(data) {
     if (data){
         if (data.length > 0){
-        Ext.getCmp(this.id + "_energyTab").setTitle(data.length + " Energy Scans");  
-        this.energyScanGrid.load(data);
-        return;
+            Ext.getCmp(this.id + "_energyTab").setTitle(data.length + " Energy Scans");              
+            this.energyScanGrid.load(data.reverse());
+            return;
         }
     }
     
@@ -94,7 +94,7 @@ DataCollectionMxMainView.prototype.loadFXEScans = function(data) {
     if (data){
         if (data.length > 0){
             Ext.getCmp(this.id + "_xfeTab").setTitle(data.length + " Fluorescence Spectra");  
-            this.xfeScanGrid.load(data);
+            this.xfeScanGrid.load(data.reverse());
             return;
             }
         }
@@ -128,7 +128,7 @@ DataCollectionMxMainView.prototype.loadCollections = function(dataCollections) {
                                
                 /** Axis  **/
                 if (data[i].DataCollection_axisEnd != null){
-                    if (data[i].DataCollection_axisStart != null){
+                    if (data[i].DataCollection_axisStart != null){                        
                         data[i].DataCollection_axisTotal = _.ceil(data[i].DataCollection_axisEnd - data[i].DataCollection_axisStart, 2);
                     }
                 }

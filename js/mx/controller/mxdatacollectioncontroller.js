@@ -49,8 +49,7 @@ MxDataCollectionController.prototype.init = function() {
 		EXI.getDataAdapter({onSuccess : onSuccessProposal}).proposal.proposal.getProposalBySessionId(this.params['sessionId']);
 
 
-		var onSuccess = function(sender, data){
-			
+		var onSuccess = function(sender, data){			
 		    mainView.loadCollections(data);
 		    EXI.setLoadingMainPanel(false);
 		};

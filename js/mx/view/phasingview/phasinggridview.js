@@ -21,55 +21,66 @@ PhasingGridView.prototype.load = function(dataCollectionGroupId, PhasingStep_met
 
 PhasingGridView.prototype.printHTML = function(target) {
     var _this = this;
-
-    var onSuccess = function(sender, data){
-        /** Parsing data */
+    
+    var onSuccess = function(sender, data){        
+        /** It filters all phasing step which method is _this.PhasingStep_method: [SAD | MR]  */
        data[0] = _.filter(data[0], {PhasingStep_method : _this.PhasingStep_method})
+    
+       /** It gets all space groups */
        var spaceGroups = _.keyBy(data[0], "SpaceGroup_spaceGroupShortName");
        
        var parsed = [];
-       for(var spaceGroup in spaceGroups){
-           
-           if (spaceGroup != "null"){               
+
+       /** Loop by space group in order to make a summary */
+       for(var spaceGroup in spaceGroups){           
+           if (spaceGroup != "null"){
+
+               /** It gets all steps for the same space group */
                var stepsBySpaceGroup = _.filter(data[0],{"SpaceGroup_spaceGroupShortName": spaceGroup});
+
                function getStepId(stepsBySpaceGroup){
                    return _.keys(_.keyBy(stepsBySpaceGroup, "PhasingStep_phasingStepId")).toString();
                }
+
                function getCSV(stepsBySpaceGroup){
                    var keys = _.keys(_.keyBy(stepsBySpaceGroup, "csv"));
                    return _.filter(keys, function(e){return e!= "null";});
                }
            
+               /** node contains all steps for the same space group organized by step type */
                var node = {};
                
+               /** Node to be displayed for MR. It has got two steps: [PHASING, REFINEMENT]*/
                if (_this.PhasingStep_method == "MR"){
-                node = ({
-                    spaceGroup       : spaceGroup,
-                                
-                    phasing          : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "PHASING"}) != null,
-                    refinement       : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "REFINEMENT"}) != null,                
-                    downloadCSV      : EXI.getDataAdapter().mx.phasing.getCSVPhasingFilesByPhasingAttachmentIdURL(getCSV(stepsBySpaceGroup)),
-                    downloadFilesUrl : EXI.getDataAdapter().mx.phasing.getDownloadFilesByPhasingStepIdURL(getStepId(stepsBySpaceGroup))
-                    
-                });
+                    node = ({
+                        spaceGroup       : spaceGroup,                                    
+                        hasPhasing          : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "PHASING"}) != null,
+                        hasRefinement       : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "REFINEMENT"}) != null,                
+                        downloadCSV      : EXI.getDataAdapter().mx.phasing.getCSVPhasingFilesByPhasingAttachmentIdURL(getCSV(stepsBySpaceGroup)),
+                        downloadFilesUrl : EXI.getDataAdapter().mx.phasing.getDownloadFilesByPhasingStepIdURL(getStepId(stepsBySpaceGroup))
+                        
+                    });
 
                }
                else{
-                node = ({
-                    spaceGroup       : spaceGroup,
-                    prepare          : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "PREPARE"}) != null,
-                    sub              : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "SUBSTRUCTUREDETERMINATION"}) != null,
-                    phasing          : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "PHASING"}) != null,
-                
-                    model            : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "MODELBUILDING"}) != null,
-                    downloadCSV      : EXI.getDataAdapter().mx.phasing.getCSVPhasingFilesByPhasingAttachmentIdURL(getCSV(stepsBySpaceGroup)),
-                    downloadFilesUrl : EXI.getDataAdapter().mx.phasing.getDownloadFilesByPhasingStepIdURL(getStepId(stepsBySpaceGroup))
-                    
-                });
+                    /** Node to be displayed for Phasing that contains several steps: [PREPARE, SUBSTRUCTUREDETERMINATION, PHASING, MODELBUILDING] */
+                    node = ({
+                        spaceGroup          : spaceGroup,
+                        hasPrepare          : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "PREPARE"}) != null,
+                        hasSub              : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "SUBSTRUCTUREDETERMINATION"}) != null,
+                        hasPhasing          : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "PHASING"}) != null,                    
+                        hasModel            : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "MODELBUILDING"}) != null,
+                        downloadCSV         : EXI.getDataAdapter().mx.phasing.getCSVPhasingFilesByPhasingAttachmentIdURL(getCSV(stepsBySpaceGroup)),
+                        downloadFilesUrl    : EXI.getDataAdapter().mx.phasing.getDownloadFilesByPhasingStepIdURL(getStepId(stepsBySpaceGroup))
+                        
+                    });
                }
                
-               function getMetrics(phasingStep){     
-                                                    
+
+               /**
+                * This funcitons adds the metrics into the dicctionary and also the PNG
+                */
+               function getMetrics(phasingStep){                                                         
                     if (phasingStep.metric){                        
                             var singleMetric = phasingStep.metric.split(",");
                             var values = phasingStep.statisticsValue.split(",");                            
@@ -80,27 +91,59 @@ PhasingGridView.prototype.printHTML = function(target) {
                     } 
                     if (phasingStep.png){                        
                         /** It might happens that there are two PDB like:"159386,159388" */
-                        phasingStep.png = phasingStep.png.split(",")[0];
-                        
+                        phasingStep.png = phasingStep.png.split(",")[0];                        
                         phasingStep.pngURL = EXI.getDataAdapter().mx.phasing.getPhasingFilesByPhasingProgramAttachmentIdAsImage(phasingStep.png);
-                    }
-                    
-                    
+                    }                                        
                     phasingStep.spaceGroup = phasingStep.SpaceGroup_spaceGroupShortName; 
                     return (phasingStep);                     
                }
-               
-               function getNodeByPhasingStep(node, stepsBySpaceGroup, step){
-                   
-                   var modelBuildingSteps = _.filter(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : step});
+                              
+
+               /**
+                * This functions add to toBepush the URL for every fileType found
+                    fileTypesField = CCALL_CCWEAK,OCCUPANCY_SITENUMBER
+                    phasingProgramAttachmentFields = XXXX, YYYYY
+
+                */
+               function parseFilteTypes(fileTypesField, phasingProgramAttachmentFields, toBePushed){
+                        if (fileTypesField != null){                                
+                            var types = fileTypesField.split(",");
+                            var ids = phasingProgramAttachmentFields.split(",");                                                        
+                            for (var r = 0; r < types.length; r++) {
+                                toBePushed[types[r]] = EXI.getDataAdapter().mx.phasing.getPhasingFilesByPhasingProgramAttachmentIdAsImage(ids[r]);
+                            }                                                            
+                        }
+               }
+
+                function parseDownloadAttachments(leaf){
+                       var fileAttachmentsId = [];
+                       while (leaf != null){                             
+                                fileAttachmentsId.push(leaf.PhasingStep_phasingStepId);
+                                leaf = _.find(stepsBySpaceGroup, {'PhasingStep_phasingStepId':leaf.PhasingStep_previousPhasingStepId});
+                       }
+                       return fileAttachmentsId;
+               }
+
+               function getNodeByPhasingStep(node, stepsBySpaceGroup, step){                                      
+                   var steps = _.filter(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : step});
                    node["metrics"] = [];
-                   if (modelBuildingSteps){
-                       var metrics = _.map(modelBuildingSteps, "metric");
-                       var statisticsValues = _.map(modelBuildingSteps, "statisticsValue");
-                       for (var z=0; z < modelBuildingSteps.length; z++){   
-                            var toBePushed =  modelBuildingSteps[z];                          
-                            if (modelBuildingSteps[z].metric){                                                        
-                                toBePushed = getMetrics(modelBuildingSteps[z]);
+                   if (steps){                       
+                       var metrics = _.map(steps, "metric");
+                       var statisticsValues = _.map(steps, "statisticsValue");
+                       for (var z=0; z < steps.length; z++){   
+                            var toBePushed =  steps[z];
+                            
+                            /**
+                             * This adds the phasing plots into the dictionary looking for them from the previous steps
+                             */
+                            var leaf = steps[z];                           
+                            while (leaf != null){                             
+                                parseFilteTypes(leaf.fileType, leaf.phasingProgramAttachmentId, toBePushed);
+                                leaf = _.find(stepsBySpaceGroup, {'PhasingStep_phasingStepId':leaf.PhasingStep_previousPhasingStepId});
+                            }
+                            
+                            if (steps[z].metric){                                                        
+                                toBePushed = getMetrics(steps[z]);
                             }  
                             
                             /* Opening uglymol with:
@@ -108,31 +151,30 @@ PhasingGridView.prototype.printHTML = function(target) {
                                     2) map1 as first map file
                                     3) map2 as second map file
                                     */           
-                            var pdbUrl = EXI.getDataAdapter().mx.phasing.downloadPhasingFilesByPhasingAttachmentId( modelBuildingSteps[z].pdb);
-                            if ( modelBuildingSteps[0].map != null){
-                                var mapsArr = modelBuildingSteps[z].map.split(",");
+                            var pdbUrl = EXI.getDataAdapter().mx.phasing.downloadPhasingFilesByPhasingAttachmentId( steps[z].pdb);                            
+                           
+                            if ( steps[0].map != null){
+                                var mapsArr = steps[z].map.split(",");
                                 if (mapsArr.length == 2){
                                     var mapUrl1 = EXI.getDataAdapter().mx.phasing.downloadPhasingFilesByPhasingAttachmentId( mapsArr[0]);
                                     var mapUrl2 = EXI.getDataAdapter().mx.phasing.downloadPhasingFilesByPhasingAttachmentId( mapsArr[1]);                                
                                     toBePushed["uglymol"] = '../viewer/uglymol/index.html?pdb=' + pdbUrl + '&map1=' + mapUrl1 + '&map2=' + mapUrl2;
                                 }
                             }  
-                            toBePushed["downloadFilesUrl"] = node.downloadFilesUrl;                                                                            
+                            /** It will add only the files coming from these steps */
+                            toBePushed["downloadFilesUrl"] = EXI.getDataAdapter().mx.phasing.getDownloadFilesByPhasingStepIdURL(parseDownloadAttachments(steps[z]));                                                                            
                             node["metrics"].push(toBePushed);                         
                        }                                            
                    }     
-                   node["phasingStepId"] = modelBuildingSteps[0].PhasingStep_phasingStepId;
+                   node["phasingStepId"] = steps[0].PhasingStep_phasingStepId;
                    return node;         
                }
                
                /**
-                * 
                 StepS for Phasing are: PREPARE,  SUBSTRUCTUREDETERMINATION, PHASING AND MODELBUILDING
-                StepS for Molecular replacement are: PHASING AND REFINEMENT
+                StepS for Molecular replacement are: PHASING AND REFINEMENT */
 
-                */
-
-               /** Filling the model if any */
+               /** If there is model building then we will display modelbuilding */
                if (_.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "MODELBUILDING"}) != null){
                         node = getNodeByPhasingStep(node, stepsBySpaceGroup, "MODELBUILDING");
                }
@@ -145,11 +187,9 @@ PhasingGridView.prototype.printHTML = function(target) {
                         if (_.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "SUBSTRUCTUREDETERMINATION"}) != null){ 
                             node = getNodeByPhasingStep(node, stepsBySpaceGroup, "SUBSTRUCTUREDETERMINATION"); 
                         }
-                        else{
-                            
+                        else{                            
                              if (_.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "REFINEMENT"}) != null){                                  
-                                 node = getNodeByPhasingStep(node, stepsBySpaceGroup, "REFINEMENT"); 
-                                 
+                                 node = getNodeByPhasingStep(node, stepsBySpaceGroup, "REFINEMENT");                                  
                              }
                              else{
                                  node = getNodeByPhasingStep(node, stepsBySpaceGroup, "PREPARE");        
@@ -160,19 +200,19 @@ PhasingGridView.prototype.printHTML = function(target) {
                
                /** This will be used to sort */
                var count = 0;
-               if (node.prepare){
+               if (node.hasPrepare){
                    count = count + 1;
                }
-               if (node.sub){
+               if (node.hasSub){
                    count = count + 1;
                }
-               if (node.phasing){
+               if (node.hasPhasing){
                    count = count + 1;
                }
-               if (node.model){
+               if (node.hasModel){
                    count = count + 1;
                }
-                if (node.refinement){
+                if (node.hasRefinement){
                    count = count + 1;
                }
                
@@ -182,15 +222,15 @@ PhasingGridView.prototype.printHTML = function(target) {
        }
        
         parsed.sort(function(a,b){return a.count < b.count;});
-        /** Parsing the metrics */
+        /** Parsing the metrics */    
         for(var i =0; i< parsed.length; i++){
             if (parsed[i]){
                 if (parsed[i].metrics){
                     parsed[i].metrics.sort(function(a,b){   
-                        try{                                             
-                            return parseFloat(a._CC_of_partial_model) < parseFloat(b._CC_of_partial_model);
+                        try{                                      
+                            return  parseFloat(b._CC_of_partial_model) - parseFloat(a._CC_of_partial_model);
                         }
-                        catch(e){
+                        catch(e){                            
                             return false;
                         }
                     });
@@ -199,7 +239,7 @@ PhasingGridView.prototype.printHTML = function(target) {
         }
         
         var html = "";
-        
+       
         if (_this.PhasingStep_method == "MR"){
             
             dust.render("mr.mxdatacollectiongrid.template",  {parsed : parsed, hasScroll : _this.hasScroll}, function(err, out) {

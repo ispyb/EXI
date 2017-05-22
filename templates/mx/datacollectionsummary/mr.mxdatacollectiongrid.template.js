@@ -34,7 +34,7 @@
                                        
                                         <td> 
                                             {@eq key=$idx value=0}
-                                                {@eq key=phasing type="boolean" value="true"}
+                                                {@eq key=hasPhasing type="boolean" value="true"}
                                                     <span style='color:green;' class="glyphicon glyphicon-ok"></span>
                                                 {:else}
                                                     <span style='color:red;' class="glyphicon glyphicon-remove"></span>
@@ -44,7 +44,7 @@
                                       
                                          <td> 
                                             {@eq key=$idx value=0}
-                                                {@eq key=refinement type="boolean" value="true"}                           
+                                                {@eq key=hasRefinement type="boolean" value="true"}                           
                                                     <span style='color:green;' class="glyphicon glyphicon-ok"></span>                          
                                                 {:else}
                                                     <span style='color:red;' class="glyphicon glyphicon-remove"></span>

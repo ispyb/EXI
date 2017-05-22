@@ -1,11 +1,11 @@
 <table class="table">                    
     <tr>
         <td>Res. (corner)</td>
-        <td  class='column_parameter_value'>{.DataCollection_resolution} &#8491; ({.DataCollection_resolutionAtCorner} &#8491;)</td>
+        <td  class='column_parameter_value'>{@decimal key="DataCollection_resolution" decimals=2 /} &#8491; ({@decimal key="DataCollection_resolutionAtCorner" decimals=2 /} &#8491;)</td>
     </tr>
     <tr>
         <td>En. (Wave.)</td>
-        <td  class='column_parameter_value'>{@wavelengthToEnergy key="DataCollection_wavelength" /} keV ({.DataCollection_wavelength} &#8491;)</td>
+        <td  class='column_parameter_value'>{@wavelengthToEnergy key="DataCollection_wavelength" /} keV ({@decimal key="DataCollection_wavelength" decimals=4 /} &#8491;)</td>
     </tr>
     <tr>
         <td>{.DataCollection_rotationAxis} range</td>
@@ -13,8 +13,18 @@
     </tr>
     
     <tr>
-        <td>{.DataCollection_rotationAxis} start (total)</td>                                                           
-        <td  class='column_parameter_value'>{.DataCollection_axisStart} &deg; ({.DataCollection_axisTotal}&deg;)</td>
+        <td>{.DataCollection_rotationAxis} start 
+        
+            {@ne key=DataCollectionGroup_experimentType value="Characterization"}                
+                (total)
+            {/ne}
+        </td>                                                           
+        <td  class='column_parameter_value'>{@decimal key="DataCollection_axisStart" decimals=2 /} &deg; 
+        
+            {@ne key=DataCollectionGroup_experimentType value="Characterization"}                
+                ({@decimal key="DataCollection_axisTotal" decimals=0 /}&deg;)
+            {/ne}
+         </td>
     </tr>
     <tr>
         <td>Exposure Time</td>

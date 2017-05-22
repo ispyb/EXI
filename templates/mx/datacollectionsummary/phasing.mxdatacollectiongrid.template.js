@@ -5,13 +5,19 @@
                 <thead>   
                             <tr> 
                                 <th>Phasing</th>
-                                <th><abbr title="Prepare Step">PREPARE</abbr></th>
-                                <th><abbr title="Substructure Determination Step">SUBSTRUCTURE</abbr></th>
-                                <th><abbr title="Phasing Step">PHASING</abbr></th>
-                                <th><abbr title="Model Building Step">MODEL</abbr></th>
+                                <th style='width:15px;'><abbr title="Prepare Step">PR</abbr></th>
+                                <th style='width:15px;'><abbr title="Substructure Determination Step">SU</abbr></th>
+                                <th  style='width:15px;'><abbr title="Phasing Step">PH</abbr></th>
+                                <th  style='width:15px;'><abbr title="Model Building Step">MO</abbr></th>
+
+                                <th style='width:20px;'><abbr title="DSIGMA_RESOLUTION"><span style='font-size:8px;'>DSIGMA<br />RESOLUCION</span></abbr></th>
+                                <th style='width:20px;'> <abbr title="CCALL_CCWEAK"><span style='font-size:8px;'>CCALL <br /> CCWEAK</span></abbr></th>
+                                <th style='width:20px;'><abbr title="OCCUPANCY_SITENUMBER"><span style='font-size:8px;'>OCCUPANCY <br />  SITENUMBER</span></abbr></th>                                
+                                 <th style='width:20px;'><abbr title="OCCUPANCY_SITENUMBER"><span style='font-size:8px;'>CONTRAST <br />  CYCLE</span></abbr></th>
+                               
+                               
     
-                                <th>Download</th>       
-                                <th style='color:gray'></th>                                                       
+                                                                               
                                 <th style='color:gray'>Program</th>
                                 <th style='color:gray'>Method</th>
                                 <th style='color:gray'>Resolution</th>
@@ -27,68 +33,90 @@
                 <tbody>
                 
                             {#.parsed}
-                                {#metrics}                                 
+                                {#metrics}                                                                 
                                  {@eq key=$idx value=0}
                                         <tr style='background-color:#e6ffe6;'>                                 
                                  {:else}
                                         <tr> 
-                                 {/eq}                                                                   
+                                 {/eq}                                                                                                      
                                         <td>
                                             {@eq key=$idx value=0}
-                                                <a href='#/phasing/autoprocintegrationId/{.autoProcIntegrationId}/main'> {.SpaceGroup_spaceGroupShortName}</a>
+                                                
+                                                {.SpaceGroup_spaceGroupShortName}<br /> <kbd style="background-color:green">BEST</kbd>
+                                            {:else}
+                                                 <span style='color:gray'>{.SpaceGroup_spaceGroupShortName}</span>
                                             {/eq}                                        
                                         </td>
-                                        <td>
-                                            {@eq key=$idx value=0}
-                                                {@eq key=prepare type="boolean" value="true"}
+
+                                         <td  style='width:15px;'>
+                                           {@eq key=hasPrepare type="boolean" value="true"}
                                                     <span style='color:green;' class="glyphicon glyphicon-ok"></span>
                                                 {:else}
                                                     <span style='color:red;' class="glyphicon glyphicon-remove"></span>
-                                                {/eq}
-                                            {/eq} 
-                                        </td>
-                                        <td>
-                                            {@eq key=$idx value=0}
-                                                {@eq key=sub type="boolean" value="true"}
+                                                {/eq}                                                                                             
+                                        </td>    
+                                        <td  style='width:15px;'>
+                                            {@eq key=hasSub type="boolean" value="true"}
                                                     <span style='color:green;' class="glyphicon glyphicon-ok"></span>
                                                 {:else}
                                                     <span style='color:red;' class="glyphicon glyphicon-remove"></span>
-                                                {/eq} 
-                                            {/eq}
-                                        </td>  
-                                        <td> 
-                                            {@eq key=$idx value=0}
-                                                {@eq key=phasing type="boolean" value="true"}
+                                                {/eq}                                                                                       
+                                        </td> 
+                                          <td  style='width:15px;'>
+                                           {@eq key=hasPhasing type="boolean" value="true"}
                                                     <span style='color:green;' class="glyphicon glyphicon-ok"></span>
                                                 {:else}
                                                     <span style='color:red;' class="glyphicon glyphicon-remove"></span>
-                                                {/eq}
-                                            {/eq}
-                                        </td>
-                                        <td> 
-                                            {@eq key=$idx value=0}
-                                                {@eq key=model type="boolean" value="true"}                           
+                                                {/eq}                                                                                        
+                                        </td> 
+                                          <td  style='width:15px;'>
+                                             {@eq key=hasModel type="boolean" value="true"}                           
                                                     <span style='color:green;' class="glyphicon glyphicon-ok"></span>                          
                                                 {:else}
                                                     <span style='color:red;' class="glyphicon glyphicon-remove"></span>
-                                                {/eq}
-                                            {/eq}
+                                                {/eq}                                                                                           
+                                        </td>  
+
+                                        <td>
+                                            
+                                            {?DSIGMA_RESOLUTION}
+                                                    <a href={.DSIGMA_RESOLUTION} data-lightbox={.DSIGMA_RESOLUTION} >
+                                                    <img src={.DSIGMA_RESOLUTION} height="50px" width="50px"/></a>
+                                            {/DSIGMA_RESOLUTION}
+
                                         </td>
+                                        <td>
                                          
-                                        <td >   
-                                            {@eq key=$idx value=0}                     
-                                                <a href='{.downloadFilesUrl}' ><span style='font-size: 1.5em;' class="glyphicon glyphicon-download " ></span></a>
-                                             {/eq}                                                                                                                
-                                        </td>                                                                 
+                                             {?CCALL_CCWEAK}
+                                                    <a href={.CCALL_CCWEAK} data-lightbox={.CCALL_CCWEAK} >
+                                                    <img src={.CCALL_CCWEAK} height="50px" width="50px"/></a>
+                                                {/CCALL_CCWEAK}
+                                              
+
+                                        </td>  
+                                        <td>                                                                                   
+                                                {?OCCUPANCY_SITENUMBER}
+                                                    <a href={.OCCUPANCY_SITENUMBER} data-lightbox={.OCCUPANCY_SITENUMBER} >
+                                                    <img src={.OCCUPANCY_SITENUMBER} height="50px" width="50px"/></a>
+                                                {/OCCUPANCY_SITENUMBER}
+                                        </td>  
+                                       
+                                        <td>                                            
+                                            {?CONTRAST_CYCLE}
+                                                <a href={.CONTRAST_CYCLE} data-lightbox={.CONTRAST_CYCLE} >
+                                                <img src={.CONTRAST_CYCLE} height="50px" width="50px"/></a>
+                                            {/CONTRAST_CYCLE}
+
+                                        </td>
+                                                                                                      
                                     
                            
-                                        <td>
-                                            {@eq key=$idx value=0}
-                                                <kbd style="background-color:green">BEST</kbd>
-                                            {/eq}  
-                                        </td>
+                                      
                             
-                                        <td>{.PhasingProgramRun_phasingPrograms} </td>
+                                        <td>{.PhasingProgramRun_phasingPrograms}  
+                                                                                          
+                                                <br /><a href='{.downloadFilesUrl}' ><span style='font-size: 1.5em;' class="glyphicon glyphicon-download " ></span></a>                                         
+                                        </td>
                                         <td>{.PhasingStep_method} </td>
                                         <td>{.PhasingStep_highRes} - {.PhasingStep_lowRes} </td>
                                         <td>{.PhasingStep_solventContent} </td>                                                               

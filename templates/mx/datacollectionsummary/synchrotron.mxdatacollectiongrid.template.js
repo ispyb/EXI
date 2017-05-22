@@ -9,7 +9,15 @@
     </tr>
     <tr>
         <td>Synchrotron Current</td>
-        <td  class='column_parameter_value'>{@decimal key="synchrotronCurrent" decimals=1 /} mA</td>
+        <td  class='column_parameter_value'>
+            {?synchrotronCurrent} 
+                
+                
+                    {@getIndexByCommaSeparator key="synchrotronCurrent" index=0 decimals=1 /} mA 
+                    
+                
+            {/synchrotronCurrent}
+        </td>
     </tr>   
     <tr>
         <td>Undulator types</td>

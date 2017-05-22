@@ -11,7 +11,7 @@
                      </span>                                   
                 </span>
              <p><b>{.DataCollection_imageDirectory}</b></p>      
-         </div>
+         </div> 
          <div class="pull-right">
             <ul class="nav nav-tabs" id="myTabs">
                <li class="active"><a data-toggle="tab" href="#datacollection_{.DataCollection_dataCollectionId}"> Summary</a></li>

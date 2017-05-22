@@ -14,7 +14,8 @@
     <tr>
         <td>Beam size at Sample Hor (Vert)</td>
         <td  class='column_parameter_value'>
-                                            {?beamSizeAtSampleX}{beamSizeAtSampleX} ({beamSizeAtSampleY}) &mu;m{/beamSizeAtSampleX}
+                                            {?beamSizeAtSampleX}
+                                            {@multiply key="beamSizeAtSampleX" parameter=1000 /} ({@multiply key="beamSizeAtSampleY" parameter=1000 /}) &mu;m{/beamSizeAtSampleX}
         </td>
     </tr>
      <tr>
@@ -23,6 +24,6 @@
     </tr>
     <tr>
         <td>Polarisation</td>
-        <td  class='column_parameter_value'>{BeamLineSetup_polarisation} &deg;</td>
+        <td  class='column_parameter_value'>{BeamLineSetup_polarisation}</td>
     </tr>
 </table>    

@@ -1,11 +1,12 @@
-dust.helpers.decimal = function(chunk, context, bodies, params) {
+dust.helpers.decimal = function(chunk, context, bodies, params) {   
     if (params.key){
         var value = context.current()[params.key];
         if (params.key.split(".").length > 1) {
             var keys = params.key.split(".");
             value = context.current()[keys[0]][keys[1]];
         }
-        if (value){
+        
+        if (value != null){
             if (params.decimals != null){
                 try{
                         if (params.intIfPossible){
@@ -35,6 +36,46 @@ dust.helpers.decimal = function(chunk, context, bodies, params) {
     }
     return chunk;
 };
+
+dust.helpers.multiply = function(chunk, context, bodies, params) {
+    if (params.key){
+        
+        var value = context.current()[params.key];
+        if (params.key.split(".").length > 1) {
+            var keys = params.key.split(".");
+            value = context.current()[keys[0]][keys[1]];
+        }
+        if (value){
+            if (params.parameter != null){
+                try{
+                        if (params.intIfPossible){
+                            if (parseInt(Number(value)) == Number(value)) {
+                                chunk.write(parseInt(Number(value)*params.parameter));
+                            } else {
+                                chunk.write(Number(value)*params.parameter);
+                            }
+                        } else {
+                            chunk.write(Number(value)*params.parameter);
+                        }
+                }
+                catch(e){
+                    
+                    /** There was an error, we leave same value */
+                    chunk.write(context.current()[params.key]);    
+                }
+            }
+            else{
+                /** No decimals then same value */
+                chunk.write(context.current()[params.key]);
+            }
+        }
+    }
+    else{
+        chunk.write('WARN: NO KEY SET');
+    }
+    return chunk;
+};
+
 
 dust.helpers.trim = function (chunk, context, bodies, params) {
     if (params.key) {
@@ -181,6 +222,28 @@ dust.helpers.wavelengthToEnergy = function (chunk, context, bodies, params) {
         var value = context.current()[params.key];
         if (value){
             chunk.write((Number(12.398/value).toFixed(3))); 
+        }
+        else{
+            chunk.write('NA');    
+        }
+    }
+    else{
+        chunk.write('NA');
+    }
+    return chunk;
+}
+
+
+dust.helpers.getIndexByCommaSeparator = function (chunk, context, bodies, params) {
+    if (params.key) {        
+        var value = context.current()[params.key];
+        if (value){
+            if (params.decimals){
+                chunk.write(Number(value.split(",")[params.index]).toFixed(params.decimals));
+            }
+            else{
+                chunk.write(value.split(",")[params.index]); 
+            }
         }
         else{
             chunk.write('NA');    

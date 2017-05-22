@@ -1,7 +1,7 @@
 <table class="table">  
     <tr>
         <td>Beamline name</td>
-        <td  class='column_parameter_value'>{.Container_beamlineLocation}</td>
+        <td  class='column_parameter_value'>{.BLSession_beamLineName}</td>
     </tr>                  
     {!<tr>
         <td>Number of passes</td>
@@ -25,22 +25,13 @@
      <tr>
         <td>Kappa</td>
         <td  class='column_parameter_value'>
-            {.DataCollection_kappaStart}
-            {!{@eq key=DataCollection_kappaStart type="number" value=-9999}
-                N/A
-            {:else}
-                {.DataCollection_kappaStart}
-            {/eq}!}
+            {@decimal key="DataCollection_kappaStart" decimals=2 /}                      
         </td>
     </tr>
      <tr>
         <td>Phi</td>
         <td  class='column_parameter_value'>
-            {@eq key=DataCollection_phiStart type="number" value=-9999}
-                N/A
-            {:else}
-                {.DataCollection_phiStart}
-            {/eq}
+         {@decimal key="DataCollection_phiStart" decimals=2 /}     
         </td>
     </tr>
 </table>       

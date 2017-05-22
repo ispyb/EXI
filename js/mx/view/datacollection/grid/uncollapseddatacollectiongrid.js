@@ -208,7 +208,7 @@ UncollapsedDataCollectionGrid.prototype.displayWorkflowsTab = function(target, d
 * @method displayWorkflowsTab
 */
 UncollapsedDataCollectionGrid.prototype.displayPhasingTab = function(target, dataCollectionGroupId, PhasingStep_method) {
-    var phasingGridView = new PhasingGridView();
+    var phasingGridView = new PhasingGridView();    
     phasingGridView.load(dataCollectionGroupId,PhasingStep_method);
     phasingGridView.printHTML(target);
 
