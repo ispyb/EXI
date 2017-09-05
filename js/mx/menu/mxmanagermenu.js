@@ -60,8 +60,8 @@ MXManagerMenu.prototype.getMenuItems = function() {
 					EXI.setLoadingMainPanel(false);
 				}
 				var onError = function(sender,data){	
-					debugger
-					EXI.setError("There was an error with the Synchonization")
+					
+					//EXI.setError("There was an error with the Synchonization")
 					EXI.setLoadingMainPanel(false);
 				}
 				

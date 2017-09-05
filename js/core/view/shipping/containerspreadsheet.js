@@ -229,7 +229,7 @@ ContainerSpreadSheet.prototype.getHeader = function() {
                                                                         source: function(query, process) {
                                                                             var colIndex = _this.getColumnIndex("Protein Acronym");
                                                                             var protein = EXI.proposalManager.getProteinByAcronym(this.instance.getDataAtCell(this.row,colIndex));
-                                                                            if (protein.length > 0){
+                                                                            if (protein.length > 0){																				
                                                                                 process(_this.getCrystalInfoByProtein(protein[0]));
                                                                             } else {
                                                                                 process([]);
@@ -246,13 +246,13 @@ ContainerSpreadSheet.prototype.getHeader = function() {
             { text :'Pin <br />BarCode', id : 'Pin BarCode', column : {width : 60}},  
             { text :'Pre-observed <br />resolution', id : 'Pre-observed resolution', column : {width : 80}}, 
             { text :'Needed<br /> resolution',  id :'Needed resolution', column : {width : 60}}, 
-            { text :'Pref. <br />Diameter', id :'Pref. Diameter',column : {width : 60}}, 
+            { text :'Beam <br />Diameter', id :'Pref. Diameter',column : {width : 60}}, 
             { text :'Number of<br /> positions', id :'Number Of positions', column : {width : 80}}, 
             { text :'Radiation<br /> Sensitivity', id :'Radiation Sensitivity', column : {width : 80}}, 
-            { text :'Required<br /> multiplicity', id :'Required multiplicity', column : {width : 60}}, 
+            { text :'Required<br /> Multiplicity', id :'Required multiplicity', column : {width : 60}}, 
             { text :'Required<br /> Completeness', id :'Required Completeness', column : {width : 80}}, 
             // { text :'Unit Cell', id :'Unit cell', column : {width : 150, renderer: disabledRenderer, editor : false, readOnly: true}}, 
-            { text :'Space <br /> Group', id :'Space Group', column : {width : 55, renderer: disabledRenderer, editor : false, readOnly: true}}, 
+            { text :'Force<br />SG', id :'Space Group', column : {width : 55, renderer: disabledRenderer, editor : false, readOnly: true}}, 
             { text :'Smiles', id :'Smiles', column : {width : 140}}, 
             { text :'Comments', id :'Comments', column : {width : 200}}
             ];
