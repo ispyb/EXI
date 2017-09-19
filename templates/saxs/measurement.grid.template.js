@@ -92,7 +92,7 @@
             </div> 
            
             <div class="col-sm-6 ">
-                <span style='font-weight: bold;'>{.Merge_averageFilePath}</span>
+                <span style='font-weight: bold;'>{.Measurement_imageDirectory}</span>
             </div>
             
            
