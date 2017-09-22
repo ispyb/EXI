@@ -244,7 +244,7 @@ ContainerSpreadSheet.prototype.getHeader = function() {
             { text :'Exp.<br /> Type', id : 'Experiment Type', column : {
                                                                         width : 80,  
                                                                         type: 'dropdown',
-                                                                        source: [ "Default", "MXPressE", "MXPressO", "MXPressI", "MXPressE_SAD", "MXScore", "MXPressM" ]
+                                                                        source: [ "Default", "MXPressE", "MXPressO", "MXPressI", "MXPressE_SAD", "MXScore", "MXPressM", "MXPressP", "MXPressP_SAD" ]
                                                                     }
             }, 
             { text :'Pin <br />BarCode', id : 'Pin BarCode', column : {width : 60}},  
