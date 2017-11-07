@@ -175,10 +175,10 @@ ManagerWelcomeMainView.prototype.displaySessions = function(sessions, title) {
     this.container.insert(this.sessionGrid.getPanel());
 
     /** Handling onSelected **/
-    this.sessionGrid.onSelected.attach(function(sender, args){
+   /* this.sessionGrid.onSelected.attach(function(sender, args){
         EXI.proposalManager.clear();
         _this.activeProposal(args.proposalCode + args.proposalNumber);
-    });
+    });*/
     
     this.sessionGrid.load(this.filterSessions(sessions),title);
 };

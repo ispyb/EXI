@@ -1,3 +1,65 @@
+
+tbody.table-fixed{
+    display:block;
+    height:400px;
+    overflow:auto;
+	
+	
+}
+thead.table-fixed {
+    display:table;
+    width:100%;
+    table-layout:fixed;
+	
+}
+
+tbody.table-fixed tr {
+    display:table;
+    width:100%;
+    table-layout:fixed; 
+	border : 1px solid white;
+
+}
+
+thead.table-fixed {
+    width: calc( 100% - 2em );
+
+}
+
+/** Session grid headers **/
+.mxsessiongridheader{
+	font-weight:bold;	
+}
+
+.sessiogridtechnique{
+     border:1px dotted gray;
+}
+.sessiongrid-no-data-collections{
+    color:gray !important;
+	background-color:#F8F9F9;
+   
+}
+
+.saxssessiongridheader{
+  
+	font-weight:bold;
+}
+
+.emsessiongridheader{
+	font-weight:bold;
+}
+.mxsessiongridcell{
+    border-left:1px dotted gray;
+}
+.saxssessiongridcell{
+	border-left:1px dotted gray;
+}
+.emsessiongridcell{
+	border:1px dotted gray;
+}
+
+
+
 .wordwrap { 
    white-space: pre-wrap;      /* CSS3 */   
    white-space: -moz-pre-wrap; /* Firefox */    

@@ -187,8 +187,7 @@ dust.helpers.fileName = function (chunk, context, bodies, params) {
 }
 
 dust.helpers.formatDate = function (chunk, context, bodies, params) {
-    if (params.date) {
-        if (params.date){
+    if (params.date) {       
             if (params.format != null) {
                 try {
                     formatted = moment(new Date(params.date)).format(params.format);
@@ -199,7 +198,7 @@ dust.helpers.formatDate = function (chunk, context, bodies, params) {
             } else {
                 chunk.write(params.date);
             }
-        }
+        
     }
     return chunk;
 }
@@ -248,6 +247,22 @@ dust.helpers.getIndexByCommaSeparator = function (chunk, context, bodies, params
         else{
             chunk.write('NA');    
         }
+    }
+    else{
+        chunk.write('NA');
+    }
+    return chunk;
+}
+
+
+dust.helpers.getFileName = function (chunk, context, bodies, params) {
+    
+    if (params.key) {        
+        var value = context.current()[params.key];
+        if (value){           
+           chunk.write(value.replace(/^.*[\\\/]/, ''));            
+        }
+       
     }
     else{
         chunk.write('NA');

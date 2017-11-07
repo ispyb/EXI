@@ -34,6 +34,7 @@ DataCollectionGrid.prototype.loadMagnifiers = function(dataCollectionGroup){
 */
 DataCollectionGrid.prototype.load = function(dataCollectionGroup){
     try{        
+        
         this.store.loadData(dataCollectionGroup);
         this.loadMagnifiers(dataCollectionGroup);
     }
@@ -156,6 +157,10 @@ DataCollectionGrid.prototype.getColumns = function() {
 
                 var data = record.data;                              
                 var html = "";                               
+xx
+                /** DataCollectionGroup */
+                debugger
+                //data.xtalShapShot = EXI.getDataAdapter().mx.dataCollectionGroup.getXtalThumbnail(data.DataCollectionGroup_dataCollectionGroupId);
 
                 /** For thumbnail */
                 data.urlThumbnail = EXI.getDataAdapter().mx.dataCollection.getThumbNailById(data.lastImageId);
@@ -182,6 +187,7 @@ DataCollectionGrid.prototype.getColumns = function() {
                 data.xtal2 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 2);
                 data.xtal3 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 3);
                 data.xtal4 = EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(record.data.DataCollection_dataCollectionId, 4);
+
 
                 /** Image quality indicator **/
                 data.indicator = EXI.getDataAdapter().mx.dataCollection.getQualityIndicatorPlot(record.data.DataCollection_dataCollectionId);                              
@@ -233,7 +239,9 @@ DataCollectionGrid.prototype.getColumns = function() {
                     data.workflows = [];
                 }
                 
-                
+                /** EM technique */
+                data = _this.parseEMData(record.data);
+
                 dust.render(_this.template, data, function(err, out) {                                                                       
                     html = html + out;
                 });
@@ -260,4 +268,45 @@ DataCollectionGrid.prototype.getColumns = function() {
     ];
 
     return columns;
+};
+
+DataCollectionGrid.prototype.parseEMData =  function(data){
+   var gridSquares = [];
+   if (data.DataCollectionGroup_experimentType == 'EM'){
+        try{
+            var moviesCount = [];
+            var motionCorrectionsCount = [];
+            var ctfsCount = [];
+            
+            if (data.movieCount){
+                moviesCount = data.movieCount.split(",");
+            }
+             if (data.motionCorrectionCount){
+                motionCorrectionsCount = data.motionCorrectionCount.split(",");
+            }
+            if (data.CTFCount){
+                ctfsCount = data.CTFCount.split(",");
+            }
+           
+
+            
+             /** Parsing grid squares */
+            for (var i = 0; i < parseFloat(data.numberOfGridSquares); i++){
+                gridSquares.push({
+                    name : i,
+                    movieCount : moviesCount[i],
+                    motionCorrectionCount : motionCorrectionsCount[i],
+                    ctfCount : ctfsCount[i],
+                    DataCollection_dataCollectionId : data.DataCollection_dataCollectionId
+
+                });
+            }
+
+        }
+        catch(e){
+           console.log(e);
+        }
+   }
+   data.gridSquares = gridSquares;   
+   return data;
 };

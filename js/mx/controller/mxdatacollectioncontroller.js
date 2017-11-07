@@ -34,7 +34,7 @@ MxDataCollectionController.prototype.init = function() {
 		EXI.getDataAdapter({onSuccess : onSuccess}).mx.dataCollection.getByAcronymList(this.params['acronmys']);
 	}).enter(this.setPageBackground);
     
-	/** This URL is supposed to be included in automatic emails **/
+	
 	Path.map("#/mx/proposal/:proposal/datacollection/session/:sessionId/main").to(function() {			
 		var redirection = "#/mx/datacollection/session/" + this.params['sessionId'] +"/main";				
 		/** Are we logged in yet? */

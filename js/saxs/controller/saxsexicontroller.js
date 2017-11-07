@@ -356,10 +356,21 @@ SAXSExiController.prototype.init = function() {
 	this.routeDataCollection();
 	this.routePrepare();
 
-	
+	Path.map("#/saxs/proposal/:proposal/session/nav/:sessionId/session").to(function() {					
+		var redirection = "#/session/nav/" + this.params['sessionId'] +"/session";				
+		/** Are we logged in yet? */
+		if (EXI.credentialManager.getConnections().length > 0){			
+			ExiGenericController.prototype.redirect( this.params['proposal'], redirection);
+		}
+		else{			
+			ExiGenericController.prototype.authenticateAndRedirect(this.params['proposal'], redirection);
+		}
+
+	}).enter(this.setPageBackground);
 
     /** Loading a single session on the navigation panel * */
-	Path.map("#/session/nav/:sessionId/session").to(function() {           
+	Path.map("#/session/nav/:sessionId/session").to(function() { 
+		          
         EXI.clearNavigationPanel();
         EXI.setLoadingMainPanel(true);    
 		var listView = new SessionSaxsListView();		

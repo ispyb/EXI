@@ -55,11 +55,17 @@ CredentialManager.prototype.getTechniqueByBeamline = function(beamlineName){
 * @return 
 */
 CredentialManager.prototype.getBeamlineNames = function(){   
+	
 	var connections = this.getConnections();
     var beamlines = [];
-	for (var i = 0; i < connections.length; i++) {
-      beamlines =_.concat(_.keys(_.keyBy(connections[i].beamlines.SAXS, "name")), _.keys(_.keyBy(connections[i].beamlines.MX, "name")))      
-	}
+	for (var i = 0; i < connections.length; i++) {		
+		for (var technique in connections[i].beamlines){			
+			beamlines = _.concat(beamlines,  _.keys(_.keyBy(connections[i].beamlines[technique], "name")));
+
+		}
+      //beamlines =_.concat(_.keys(_.keyBy(connections[i].beamlines.SAXS, "name")), _.keys(_.keyBy(connections[i].beamlines.MX, "name")));
+	  //beamlines =_.concat(beamlines, _.keys(_.keyBy(connections[i].beamlines.EM, "name")));      
+	}	
 	return beamlines;
 };
 
@@ -73,7 +79,8 @@ CredentialManager.prototype.getBeamlines = function(){
 	var connections = this.getConnections();
     var beamlines = [];
 	for (var i = 0; i < connections.length; i++) {
-      beamlines =_.concat(connections[i].beamlines.SAXS, connections[i].beamlines.MX);     
+      beamlines = _.filter(_.concat(connections[i].beamlines.SAXS, connections[i].beamlines.MX, connections[i].beamlines.EM), function(o){return o!=null;});
+	  
 	}
 	return beamlines;
 };
