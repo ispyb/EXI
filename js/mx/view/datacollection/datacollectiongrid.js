@@ -47,8 +47,7 @@ DataCollectionGrid.prototype.getPanel = function (dataCollectionGroup) {
     this.panel = Ext.create('Ext.grid.Panel', {
         border: 1,        
         store: this.store,       
-        disableSelection: true,
-       
+        disableSelection: true,       
         columns: this.getColumns(),
         viewConfig: {
             enableTextSelection: true,

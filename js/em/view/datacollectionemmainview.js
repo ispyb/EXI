@@ -1,4 +1,5 @@
-/**
+
+   /**
 * Landing page for where data collections are shown. It manages the DataCollectionSummaryGrid
 *
 * @class DataCollectionEmMainView
@@ -14,20 +15,28 @@ function DataCollectionEmMainView(args) {
             this.sessionId = args.sessionId;
         }
     }
+
+    this.emDataCollectionGrid = new EMDataCollectionGrid();
+   
+   
 }
+
 DataCollectionEmMainView.prototype.getPanel = MainView.prototype.getPanel;
 
-DataCollectionEmMainView.prototype.getContainer =  function() {
-    var _this = this;
-    
-     this.container = Ext.create('Ext.panel.Panel', {    
-     //minHeight: 900,
-     padding: '5 5 5 5',
-     items: [ 
-        {
-             html : '<div style="overflow: scroll;height:800px" id="' + this.id +'_main"></div>'
-        }
-      ]        
+DataCollectionEmMainView.prototype.getContainer = function() {
+   this.container = Ext.create('Ext.tab.Panel', {   
+    minHeight : 900,    
+    padding : "5 40 0 5",
+    items: [ {
+                    title: 'Grid',
+                    cls : 'border-grid',
+                    id : this.id + "_dataCollectionTab",                        
+                    items:[
+                        
+                        this.emDataCollectionGrid.getPanel()
+                    ]
+            }
+        ]
     });
     return this.container;
 };
@@ -43,39 +52,44 @@ DataCollectionEmMainView.prototype.loadProposal = function (proposal) {
 }
 
 DataCollectionEmMainView.prototype.loadCollections = function(dataCollections) {
-    var _this = this;
-    dataCollections = _.orderBy(dataCollections, ['Movie_movieId'], ['desc']);
-    for(var i = 0; i < dataCollections.length; i++){
-       dataCollections[i].micrographThumbnailURL = EXI.getDataAdapter().em.dataCollection.getMicrographThumbnailURL(dataCollections[i].Movie_dataCollectionId, dataCollections[i].Movie_movieId);
-       dataCollections[i].metadataXMLURL = EXI.getDataAdapter().em.dataCollection.getMovieMetadataXMLURL(dataCollections[i].Movie_dataCollectionId, dataCollections[i].Movie_movieId);
-       dataCollections[i].mrcURL = EXI.getDataAdapter().em.dataCollection.getMRCURL(dataCollections[i].Movie_dataCollectionId, dataCollections[i].Movie_movieId);
-      
-       dataCollections[i].motionCorrectionDriftURL = EXI.getDataAdapter().em.dataCollection.getMotionCorrectionDriftURL(dataCollections[i].Movie_dataCollectionId, dataCollections[i].Movie_movieId);
-       dataCollections[i].motionCorrectionThumbnailURL = EXI.getDataAdapter().em.dataCollection.getMotionCorrectionThumbnailURL(dataCollections[i].Movie_dataCollectionId, dataCollections[i].Movie_movieId);
-       dataCollections[i].ctfSpectraURL = EXI.getDataAdapter().em.dataCollection.geCTFThumbnailURL(dataCollections[i].Movie_dataCollectionId, dataCollections[i].Movie_movieId);       
-       
-    }
-    dust.render("datacollectionemgrid.template", dataCollections,function(err,out){         
-          $('#' + _this.id +'_main').html(out);
+	var data = _.filter(dataCollections, function(u) {
+        return u.DataCollection_dataCollectionId != null;
     });
-    var node = document.getElementById(_this.id +'_main');
-    console.log(node);
-    
-    var lazy = {
-            bind: 'event',
-            /** !!IMPORTANT this is the parent node which contains the scroll **/
-            appendScroll: node,
-            //appendScroll: node,
-            beforeLoad: function(element) {
-                console.log('image "' + (element.data('src')) + '" is about to be loaded');
-               
-            },           
-            onFinishedAll: function() {
-                EXI.mainStatusBar.showReady();
+    if (data){
+        for (var i = 0; i < data.length; i++) {
+            try{
+                if (data[i].DataCollectionGroup_startTime != null){
+                    data[i].time =  moment(data[i].DataCollectionGroup_startTime, "MMMM Do YYYY, h:mm:ss A").format("h:mm:ss A");
+                }
+                
+                if (data[i].DataCollectionGroup_startTime != null){
+                    data[i].date =  moment(data[i].DataCollectionGroup_startTime, "MMMM Do YYYY").format("MMMM Do YYYY");
+                }
+                               
+                /** Axis  **/
+                if (data[i].DataCollection_axisEnd != null){
+                    if (data[i].DataCollection_axisStart != null){                        
+                        data[i].DataCollection_axisTotal = _.ceil(data[i].DataCollection_axisEnd - data[i].DataCollection_axisStart, 2);
+                    }
+                }
+                
+                if (data[i].DataCollection_flux_end != null){
+                    data[i].DataCollection_flux_end = data[i].DataCollection_flux_end.toExponential();
+                }
+                
+                if (data[i].DataCollection_flux != null){
+                    data[i].DataCollection_flux = data[i].DataCollection_flux.toExponential();
+                }
             }
-    };
-
-
-    var timer1 = setTimeout(function() {  $('.img-responsive').lazy(lazy);}, 500);
-    //var timer2 = setTimeout(function() {  $('.smalllazy').lazy(lazy);}, 500);  
+            catch(err) {
+                console.log(error);
+            }
+        }
+       
+	    if (data){            
+            this.emDataCollectionGrid.load(data);
+        }
+        return;	
+    }
+     Ext.getCmp(this.id + "_dataCollectionTab").setDisabled(true);
 };

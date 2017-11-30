@@ -62,7 +62,9 @@ module.exports = function(grunt) {
                 },
                 uglify : {
                     prod : {
-                        options : {},
+                        options : {
+                             drop_debugger:false
+                            },
                         files : {
                             'min/exi.min.js' : [ 'min/exi.js', 'min/exi.mx.js', 'min/exi.saxs.js', 'min/exi.em.js',
                                     'min/exi.test.js',

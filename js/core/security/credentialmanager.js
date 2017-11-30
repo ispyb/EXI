@@ -43,8 +43,11 @@ CredentialManager.prototype.getTechniqueByBeamline = function(beamlineName){
 		if (JSON.stringify(connections[i].beamlines.SAXS).toUpperCase().indexOf(beamlineName.toUpperCase()) != -1){
 			return "SAXS";
 		}
+		if (JSON.stringify(connections[i].beamlines.EM).toUpperCase().indexOf(beamlineName.toUpperCase()) != -1){
+			return "EM";
+		}
 	}
-	return "UNKNOW";
+	return "UNKNOWN";
 
 };
 
