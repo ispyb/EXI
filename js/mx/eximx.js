@@ -1,11 +1,12 @@
 function ExiMX() {
+	
 	 Exi.call(this, {
 		 					menu: new MXMainMenu(),
 							managerMenu : new MXManagerMenu(),
 		 					anonymousMenu: new MainMenu(),
 		 					controllers : [									
-									new SessionController(), 									
 									new OfflineExiController(), 
+									new SessionController(), 									
 									new ProposalExiController(), 
 									new LabContactExiController(),
 									new PuckController(),

@@ -1,3 +1,5 @@
+
+
 <div class="container-fluid">
    <div class="panel with-nav-tabs panel-default">
       <div class="panel-heading clearfix">
@@ -16,7 +18,7 @@
 
          {@eq key=DataCollectionGroup_experimentType value="EM"}
          
-         <div class="pull-right">
+         {!<div class="pull-right">
             <ul class="nav nav-tabs" id="myTabs">
                <li class="active"><a data-toggle="tab" href="#datacollection_{.DataCollection_dataCollectionId}"> Summary</a></li>
             </ul>
@@ -27,15 +29,15 @@
             <div id="datacollection_{.DataCollection_dataCollectionId}" class="tab-pane fade in active">
                <div class="container-fluid">
                   <div class="row">
-                   <br />
+         <br />!}
                      {>"em.general.mxdatacollectiongrid.template"  /}
-                  </div>
+                 {! </div>
                </div>
             </div>
-         </div>
+                 </div>!}
          {/eq}
 
-         {@ne key=DataCollectionGroup_experimentType value="EM"} 
+        
          <div class="pull-right">
             <ul class="nav nav-tabs" id="myTabs">
                <li class="active"><a data-toggle="tab" href="#datacollection_{.DataCollection_dataCollectionId}"> Summary</a></li>
@@ -310,7 +312,7 @@
                Comments:<b id="comments_{.DataCollectionGroup_dataCollectionGroupId}">{@trim key="DataCollectionGroup_comments" /}</b>
             </div>
          </div>
-         {/ne}
+         
       </div>
    </div>
 </div>

@@ -1,5 +1,5 @@
 function Exi(args) {
-	var _this = this;
+	var _this = this;	
 	
 	this.headerCssClass = "titlePanel";
 	

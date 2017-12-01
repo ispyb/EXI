@@ -1,0 +1,3 @@
+
+{>"em.general.mxdatacollectiongrid.template"  /}
+

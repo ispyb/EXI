@@ -47,8 +47,7 @@ DataCollectionGrid.prototype.getPanel = function (dataCollectionGroup) {
     this.panel = Ext.create('Ext.grid.Panel', {
         border: 1,        
         store: this.store,       
-        disableSelection: true,
-       
+        disableSelection: true,       
         columns: this.getColumns(),
         viewConfig: {
             enableTextSelection: true,
@@ -291,6 +290,10 @@ DataCollectionGrid.prototype.parseEMData =  function(data){
             if (data.CTFCount){
                 ctfsCount = data.CTFCount.split(",");
             }
+
+            if (data.dataCollectionIdList){
+                dataCollectionList = data.dataCollectionIdList.split(",");
+            }
            
 
             
@@ -301,8 +304,8 @@ DataCollectionGrid.prototype.parseEMData =  function(data){
                     movieCount : moviesCount[i],
                     motionCorrectionCount : motionCorrectionsCount[i],
                     ctfCount : ctfsCount[i],
-                    DataCollection_dataCollectionId : data.DataCollection_dataCollectionId,
-                    snapshot : EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(data.DataCollection_dataCollectionId, 1)
+                    dataCollectionId : dataCollectionList[i],
+                    snapshot : EXI.getDataAdapter().mx.dataCollection.getCrystalSnapshotByDataCollectionId(dataCollectionList[i], 1)
 
                 });
             }
