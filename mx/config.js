@@ -257,7 +257,7 @@ var ExtISPyB ={
        {
            name:'MAXIV',
            description : 'MAX IV Laboratory',
-           icon : '../images/site/esrf.png',
+           icon : '../images/site/maxiv.png',
            url:'https://ispyb.maxiv.lu.se/ispyb/ispyb-ws/rest',
            exiUrl:'https://ispyb.maxiv.lu.se/ispyb/ispyb-ws/rest',
            siteName:'MAXIV',
@@ -275,7 +275,7 @@ var ExtISPyB ={
        },
        {
            name:'MAXIV TEST',
-           icon : '../images/site/dev.esrf.png',
+           icon : '../images/site/maxiv.png',
            url:'https://ispyb-test.maxiv.lu.se/ispyb/ispyb-ws/rest',
            exiUrl:'https://ispyb-test.maxiv.lu.se/ispyb/ispyb-ws/rest',
            siteName:'MAXIV',
@@ -293,7 +293,7 @@ var ExtISPyB ={
       },
             {
               name:'MAXIV localhost',
-              icon : '../images/site/dev.esrf.png',
+              icon : '../images/site/maxiv.png',
               url:'http://localhost:38080/ispyb/ispyb-ws/rest',
               exiUrl:'http://localhost:38080/ispyb/ispyb-ws/rest',
               siteName:'MAXIV',
