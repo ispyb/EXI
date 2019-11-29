@@ -72,11 +72,16 @@ MainMenu.prototype.getShipmentItem = function() {
 
 	function getLabContactsMenu() {
 		var _this = this;
+		var addNewDisabled = true;
+		if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+				addNewDisabled = false;
+		}
 		function onItemCheck(item, checked) {
 			if (item.text == "Add new") {
 				var addressEditForm = new AddressEditForm();
 	
 				addressEditForm.onSaved.attach(function (sender, address) {
+				debugger;
 					window.close();
 					location.hash = "#/proposal/address/" + address.labContactId + "/main";
 				});
@@ -113,7 +118,7 @@ MainMenu.prototype.getShipmentItem = function() {
 							text : 'Add new',
 							icon : '../images/icon/add.png',
 							handler : onItemCheck,
-							disabled : true
+							disabled : addNewDisabled
 						}, {
 							text : 'List',
 							icon : '../images/icon/ic_list_black_24dp.png',
