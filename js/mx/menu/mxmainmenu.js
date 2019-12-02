@@ -19,7 +19,10 @@ MXMainMenu.prototype.getDataExplorerMenu = MainMenu.prototype.getDataExplorerMen
 
 
 MXMainMenu.prototype.getMenuItems = function() {
-
+    var synchTxt = "SMIS";
+    if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+        synchTxt = "DUO";
+    }
 	return [
 		this.getHomeItem(),
 		this.getShipmentItem(),
@@ -51,7 +54,7 @@ MXMainMenu.prototype.getMenuItems = function() {
 		},
 
 		{
-			text : this._convertToHTMLWhiteSpan("<button type='button' class='btn btn-default'> <span class='glyphicon glyphicon-refresh'></span> SMIS</button>"),
+			text : this._convertToHTMLWhiteSpan("<button type='button' class='btn btn-default'> <span class='glyphicon glyphicon-refresh'></span> " +synchTxt +"</button>"),
 			cls : 'ExiSAXSMenuToolBar',
 			handler : function(){
 				EXI.setLoadingMainPanel("Synch is running");
