@@ -32,7 +32,7 @@ MXManagerMenu.prototype.getMenuItems = function() {
 				}
 		},
 		{
-                text : this._convertToHTMLWhiteSpan("Samples <sub style='font-size:10px;color:orange'>NEW</sub>"),
+                text : this._convertToHTMLWhiteSpan("Proteins & Crystals <sub style='font-size:10px;color:orange'>NEW</sub>"),
                 cls : 'ExiSAXSMenuToolBar',
 				menu : this.getProteinCrystalsMenu()
                 /*handler : function(){
