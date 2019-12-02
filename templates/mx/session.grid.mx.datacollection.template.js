@@ -91,7 +91,8 @@
                             <span class="glyphicon glyphicon-lock" ></span>
                     {/eq}
                </BLSession_protectedData>                              
-               <a href='{.dataCollectionURL}'>{.Proposal_proposalCode}{.Proposal_ProposalNumber}</a>
+               <a href='{.dataCollectionURL}'>
+               {@eq key=showProposalType value=true}{.Proposal_proposalCode}{/eq}{.Proposal_ProposalNumber}</a>
             </td>
             <td class='sessiongrid-a-form-header2' style='color: gray !important;'>
                 <?BLSession_protectedData>

@@ -93,7 +93,12 @@ ProposalGrid.prototype.getPanel = function() {
 			dataIndex : 'Proposal_code',
 			width : 125,
 			renderer : function(grid, a, record){
-				return "<a href='#'>" + record.data.Proposal_proposalCode + record.data.Proposal_proposalNumber + "</a>"; 
+                if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+                    return "<a href='#'>" + record.data.Proposal_proposalNumber + "</a>";
+                } else {
+                    return "<a href='#'>" + record.data.Proposal_proposalCode + record.data.Proposal_proposalNumber + "</a>";
+                }
+
 			}
 		}, 
 		{

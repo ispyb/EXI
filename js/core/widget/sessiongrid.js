@@ -57,9 +57,12 @@ SessionGrid.prototype.renderHTML = function(sessions) {
     var _this = this;
     for(var i=0; i < sessions.length; i++){
         _.merge(sessions[i],{"showAForm" : true});
+        _.merge(sessions[i],{"showProposalType" : true});
         if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+
             sessions[i].Proposal_title = _.truncate(sessions[i].Proposal_title, {'length': 25 });
             sessions[i].showAForm = false;
+            sessions[i].showProposalType = false;
         }
     }
 
