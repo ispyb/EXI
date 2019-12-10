@@ -721,7 +721,7 @@ CSVContainerSpreadSheet.prototype.getHeader = function() {
 			td.innerHTML = value;										
 	}
 
-	if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+	/*if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
         header = [
             // { text :'', id :'crystalId', column : {width : 100}},
             { text : 'Parcel  <br /> Name', 	id: 'parcel', column : {width : 80, renderer: parcelDisplayCell}},
@@ -745,7 +745,7 @@ CSVContainerSpreadSheet.prototype.getHeader = function() {
             { text :'Pin <br />Barcode', id : 'Pin BarCode', column : {width : 60}},
             { text :'Comments', id :'Comments', column : {width : 200}}
             ];
-	} else {
+	} else {*/
 	 
         header = [
             // { text :'', id :'crystalId', column : {width : 100}}, 
@@ -809,7 +809,7 @@ CSVContainerSpreadSheet.prototype.getHeader = function() {
 			{ text :'Observed <br />Resolution', id :'Observed Resolution',column : {width : 60, renderer:numericParameterRenderer}},
             { text :'Comments', id :'Comments', column : {width : 200}}
             ];
-    }
+   /* }*/
 
     
 

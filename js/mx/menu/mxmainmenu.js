@@ -65,7 +65,16 @@ MXMainMenu.prototype.getMenuItems = function() {
 					EXI.setLoadingMainPanel(false);
 				}
 
-				EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.proposal.synchSMIS();
+                if (EXI.credentialManager.hasActiveProposal()) {
+                    EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.proposal.synchSMIS();
+                } else {
+                    if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+                        EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.proposal.synchSMISByUsername();
+                    } else {
+                        EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.proposal.synchSMIS();
+                    }
+                }
+
 
 			}
 		},

@@ -39,7 +39,7 @@
                             </tr>
                             <tr>
                                 <td>
-                                    <a id="{id}-print-button" class="btn btn-xs">                                        
+                                    <a id="{id}-print-button" class="btn btn-xs" target="_blank">
                                         {?dewar.dewarStatus}
                                             <span class="glyphicon glyphicon-print"></span> Print labels
                                         {:else}

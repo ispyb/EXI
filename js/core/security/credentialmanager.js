@@ -110,7 +110,10 @@ CredentialManager.prototype.getDefaultSampleChanger = function(){
 */
 CredentialManager.prototype.getSiteName = function(){
 	var connections = this.getConnections();
-    var siteName = connections[0].site;
+	var siteName = "ESRF";
+	if (connections != null){
+	    siteName = connections[0].site;
+	}
 	return siteName;
 };
 
