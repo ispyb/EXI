@@ -112,7 +112,17 @@ MXManagerMenu.prototype.getManagerMenu = function() {
 
 			scatteringForm.load(scatteringData);
 			scatteringForm.show();
-		}
+		} else if (item.text == "Datacollection Statistics") {
+            var datacollectionForm = new DatacollectionForm();
+
+            var keys = ["Datasets", "Samples"];
+
+            var datacollectionData = {title : "Datacollection", keys : keys};
+
+            datacollectionForm.load(datacollectionData);
+            datacollectionForm.show();
+        }
+
 	}
 
 	return Ext.create('Ext.menu.Menu', {
