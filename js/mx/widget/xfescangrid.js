@@ -94,6 +94,12 @@ XFEScanGrid.prototype.getColumns = function() {
 
                 var html = "";
 
+                //MAXIV doesn't show the PyMCA page
+                var showLink = true;
+                if (!EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+                    showLink = false;
+                }
+                record.data["showLink"] = showLink;
                 record.data["xfeFluorescenceSpectrumId"] = record.data.xfeFluorescenceSpectrumId;
                 record.data["containerId"] = containerId;
                 record.data["url"] = EXI.getDataAdapter().mx.xfescan.getXFEJpegByScanId(record.data.xfeFluorescenceSpectrumId);
