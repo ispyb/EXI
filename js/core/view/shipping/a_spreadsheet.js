@@ -91,6 +91,7 @@ SpreadSheet.prototype.loadData = function(data){
 			colHeaders: this.getHeaderText(),
 			stretchH: 'last',
 			columns: this.getColumns(),
+			licenseKey: 'non-commercial-and-evaluation',
 	});
 };
 
