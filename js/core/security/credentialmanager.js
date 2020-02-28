@@ -149,7 +149,6 @@ CredentialManager.prototype.hasActiveProposal = function(){
 };
 
 CredentialManager.prototype.isUserAllowedAddProtein = function(){
-debugger;
     var connectors = this.getConnections();
     var result = false;
     var cred = this.getCredentials()[0];
