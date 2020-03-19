@@ -29,6 +29,11 @@ function ShipmentForm(args) {
 	
 	this.onSaved = new Event(this);
 	this.refresh = new Event(this);
+	this.openedStatus = "opened";
+	this.sentToUserStatus = "sent to User";
+	this.sentToFacilityStatus = "sent to " +EXI.credentialManager.getSiteName();
+	this.atFacilityStatus = "at " +EXI.credentialManager.getSiteName();
+	this.processingStatus = "processing";
 }
 
 
@@ -68,7 +73,7 @@ ShipmentForm.prototype.load = function(shipment,hasExportedData) {
 	var nbReimbDewars = 0;	
 
 
-	var isSendShipmentActive = !((shipment.dewarVOs.length == 0 || _.filter(shipment.dewarVOs, function(o){return o.dewarStatus == null}).length > 0));
+	var hidePrintLabelWarning = !((shipment.dewarVOs.length == 0 || _.filter(shipment.dewarVOs, function(o){return o.dewarStatus == null}).length > 0));
 	
 	if (shipment){
 		if (shipment.sessions.length > 0){
@@ -86,28 +91,41 @@ ShipmentForm.prototype.load = function(shipment,hasExportedData) {
 	else{
 		$("#" + _this.id + "-send-button").removeClass("disabled");
 	}
-
+	var statusButtonLabel = "Send shipment to the facility";
+    if (EXI.credentialManager.getCredentials()[0].isManager() && shipment != null){
+        if (shipment.shippingStatus == _this.sentToFacilityStatus){
+            statusButtonLabel = "Mark shipment at facility";
+        } else if (shipment.shippingStatus == _this.processingStatus){
+            statusButtonLabel = "Mark shipment at facility";
+        } else if (shipment.shippingStatus == _this.atFacilityStatus){
+            statusButtonLabel = "Send shipment to the user";
+        }
+    }
 
     dust.render("shipping.form.template", {id : this.id, to : toData, 
 		from : fromData, beamlineName : beamlineName, 
 		startDate : startDate, shipment : shipment, 
 		nbReimbDewars : nbReimbDewars, 
 		reimbText : reimbText,
-		isSendShipmentActive : isSendShipmentActive, 
+		hidePrintLabelWarning : hidePrintLabelWarning,
+		statusButtonLabel: statusButtonLabel,
 		fedexCode : fedexCode}, function(err, out){
 		html = out;
 	});
 	
     $('#' + _this.id).hide().html(html).fadeIn('fast');
-	if (shipment == null || shipment.shippingStatus != "processing"){
-		$("#" + _this.id + "-edit-button").prop('disabled',false);
+	if (shipment == null || shipment.shippingStatus != this.processingStatus){
+	    debugger;
+		$("#" + _this.id + "-edit-button").removeClass("disabled");
 		$("#" + _this.id + "-edit-button").unbind('click').click(function(sender){
 			_this.edit();
 		});
-		if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
 
-		    if (!this.hasDataCollections(shipment) && shipment.shippingStatus != "processing"){
-		        $("#" + _this.id + "-delete-button").prop('disabled',false);
+        // Only the manager can delete a shipment if is not processing or has datacollection associated to it
+		$("#" + _this.id + "-delete-button").addClass("disabled");
+		if (EXI.credentialManager.getSiteName().startsWith("MAXIV") && EXI.credentialManager.getCredentials()[0].isManager()){
+		    if (!this.hasDataCollections(shipment) && shipment.shippingStatus != this.processingStatus){
+		        $("#" + _this.id + "-delete-button").removeClass("disabled");
 		    }
 		}
 
@@ -118,20 +136,32 @@ ShipmentForm.prototype.load = function(shipment,hasExportedData) {
 	}
 
 	$("#" + _this.id + "-send-button").unbind('click').click(function(sender){
-	        if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
-			    _this.updateStatus(_this.shipment.shippingId, "Sent_to_MAXIV");
-			} else {
-			    _this.updateStatus(_this.shipment.shippingId, "Sent_to_ESRF");
-			}
+	    debugger;
+        if (_this.shipment != null){
+            if (_this.shipment.shippingStatus == _this.openedStatus){
+                _this.updateStatus(_this.shipment.shippingId, _this.sentToFacilityStatus);
+            } else {
+                if (EXI.credentialManager.getCredentials()[0].isManager()){
+                    if (_this.shipment.shippingStatus == _this.sentToFacilityStatus){
+                        _this.updateStatus(_this.shipment.shippingId, _this.atFacilityStatus);
+                    } else if (_this.shipment.shippingStatus == _this.processingStatus){
+                        _this.updateStatus(_this.shipment.shippingId, _this.atFacilityStatus);
+                    } else if (_this.shipment.shippingStatus == _this.atFacilityStatus){
+                        _this.updateStatus(_this.shipment.shippingId, _this.sentToUserStatus);
+                    }
+                }
+            }
+        }
 	});
 
-	/** It disables button Sent Shipment to facility if there is at least one dewar which dewarStatus is not "ready to go"  */	
-	if (!isSendShipmentActive){
+	/** It disables button Sent Shipment to facility if there is at least one dewar which dewarStatus is not "ready to go"  */
+	debugger;
+	if (!hidePrintLabelWarning){
 		$("#" + _this.id + "-send-button").addClass("disabled");
-	}
-	else{
+	}/*
+	else {
 		$("#" + _this.id + "-send-button").removeClass("disabled");
-	}
+	}*/
 
 
 
