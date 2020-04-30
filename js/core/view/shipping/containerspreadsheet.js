@@ -32,6 +32,7 @@ function ContainerSpreadSheet(args){
 ContainerSpreadSheet.prototype.getPanel = SpreadSheet.prototype.getPanel;
 ContainerSpreadSheet.prototype.setLoading = SpreadSheet.prototype.setLoading;
 ContainerSpreadSheet.prototype.getAcronyms = SpreadSheet.prototype.getAcronyms;
+ContainerSpreadSheet.prototype.reloadAcronyms = SpreadSheet.prototype.reloadAcronyms;
 ContainerSpreadSheet.prototype.getHeaderWidth = SpreadSheet.prototype.getHeaderWidth;
 ContainerSpreadSheet.prototype.getHeaderId = SpreadSheet.prototype.getHeaderId;
 ContainerSpreadSheet.prototype.getHeaderText = SpreadSheet.prototype.getHeaderText;

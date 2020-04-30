@@ -25,10 +25,10 @@
    </div>
     <div class="col-md-2" >
         <a id="{id}-send-button" class="btn btn-md enabled">
-                <span class="glyphicon glyphicon-plane"></span> 
-                <button class="btn btn-primary btn-md" style="margin-left:10px;height:40px;" >Send shipment to the facility</button>                                             
+                <span class="glyphicon glyphicon-plane"></span>
+                <button class="btn btn-primary btn-md" style="margin-left:10px;height:40px;" >{statusButtonLabel}</button>
         </a>
-        {@eq key=isSendShipmentActive value="false" type="boolean" }
+        {@eq key=hidePrintLabelWarning value="false" type="boolean" }
             <div class=" alert-warning" style="font-size:12px; margin-left:40px; width:200;">
                 <strong><span class="glyphicon glyphicon-alert"></span> </strong><span  style="margin-left:10px">One of your labels is not printed</span>
             </div>

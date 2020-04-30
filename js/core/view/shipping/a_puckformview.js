@@ -142,62 +142,86 @@ PuckFormView.prototype.getPanel = function() {
 	this.panel = Ext.create('Ext.panel.Panel', {
 		autoScroll 	: true,
 		buttons : this.getToolBar(),
-		items : [ 
-		         {
-							xtype : 'container',
-							margin : '5 0 2 5',
-							layout : 'hbox',
-							items : [																												        
-										{
-												xtype: 'requiredtextfield',
-												id : this.id + 'puck_name',
-												fieldLabel : 'Name',
-												name : 'name',
-												width : 250,
-												margin : '5 5 5 5',
-												labelWidth : 50,
-										},
-										this.capacityCombo.getPanel(),
-										{
-												xtype: 'textfield',
-												id : this.id + 'puck_beamline',
-												fieldLabel : 'Beamline',
-												width : 250,
-												disabled : true,
-												margin : '5 5 5 10',
-												labelWidth : 75
-										},
-										{
-												xtype: 'textfield',
-												id : this.id + 'puck_sampleChangerLocation',
-												fieldLabel : '#Sample Changer',
-												width : 300,
-												disabled : true,
-												margin : '5 5 5 5',
-												labelWidth :150
-										},                                                       
-										{
-												xtype: 'textfield',
-												id : this.id + 'puck_status',
-												fieldLabel : 'Status',
-												width : 250,
-												disabled : true,
-												margin : '5 5 5 5',
-												labelWidth : 50
-										}
-									]
-						
-		         },
-				 {
-					 html : html
-				 } ,
-		         this.containerSpreadSheet.getPanel()
-                
-	         ] 
-		} 
+		items : [
+        		         {
+        							xtype : 'container',
+        							margin : '5 0 2 5',
+        							layout : 'hbox',
+        							items : [
+        										{
+                                                    xtype: 'requiredtextfield',
+                                                    id : this.id + 'puck_name',
+                                                    fieldLabel : 'Name',
+                                                    name : 'name',
+                                                    width : 250,
+                                                    margin : '5 5 5 5',
+                                                    labelWidth : 50,
+        										},
+        										this.capacityCombo.getPanel(),
+        										{
+                                                    xtype: 'textfield',
+                                                    id : this.id + 'puck_beamline',
+                                                    fieldLabel : 'Beamline',
+                                                    width : 250,
+                                                    disabled : true,
+                                                    margin : '5 5 5 10',
+                                                    labelWidth : 75
+        										},
+        										{
+                                                    xtype: 'textfield',
+                                                    id : this.id + 'puck_sampleChangerLocation',
+                                                    fieldLabel : '#Sample Changer',
+                                                    width : 300,
+                                                    disabled : true,
+                                                    margin : '5 5 5 5',
+                                                    labelWidth :150
+        										},
+        										{
+                                                    xtype: 'textfield',
+                                                    id : this.id + 'puck_status',
+                                                    fieldLabel : 'Status',
+                                                    width : 250,
+                                                    disabled : true,
+                                                    margin : '5 5 5 5',
+                                                    labelWidth : 50
+        										},
+        										{
+                                                    xtype: 'toolbar',
+                                                    id : 'add_protein_puck_item',
+                                                    ui: 'footer',
+                                                    dock: 'bottom',
+                                                    items: ['->', {
+                                                        text:'Add Protein',
+                                                        iconCls: 'icon-clear-group',
+                                                        scope: this,
+                                                        handler: function () {
+                                                            this.addProtein();
+                                                        }
+                                                    }],
+                                                    disabled : true
+                                                }
+        									],
+
+        		         },
+        				 {
+        					 html : html
+        				 } ,
+        		         this.containerSpreadSheet.getPanel()
+                ]
+		}
 	);
+    this.panel.on('boxready', function() {
+        if (EXI.credentialManager.isUserAllowedAddProtein()){
+            Ext.getCmp('add_protein_puck_item').enable();
+        } else {
+            Ext.getCmp('add_protein_puck_item').disable();
+        }
+    });
 	return this.panel;
+
 };
+
+
 
 PuckFormView.prototype.getToolBar = function() {
 	var _this = this;
@@ -271,6 +295,40 @@ PuckFormView.prototype.returnToShipment = function(){
 		location.href = "#/shipping/" + this.shippingId + "/main";
 	}
 }
+
+PuckFormView.prototype.addProtein = function(){
+    var _this = this;
+    var proteinEditForm = new ProteinEditForm({width : 600, height : 700});
+
+    				proteinEditForm.onSaved.attach(function (sender, protein) {
+                        _this.containerSpreadSheet.reloadAcronyms();
+                        _this.save(false);
+    					window.close();
+    				});
+
+    				var window = Ext.create('Ext.window.Window', {
+                                    title : 'Protein',
+                                    height : 500,
+                                    width : 700,
+                                    padding : '10 10 10 10',
+                                    modal : true,
+                                    layout : 'fit',
+                                    items : [ proteinEditForm.getPanel() ],
+                                    buttons : [ {
+                                            text : 'Save',
+                                            handler : function() {
+                                                proteinEditForm.saveProtein();
+                                            }
+                                        }, {
+                                            text : 'Cancel',
+                                            handler : function() {
+                                                window.close();
+                                            }
+                                        } ]
+                                }).show();
+
+    				proteinEditForm.load();
+};
 
 PuckFormView.prototype.displaySpecialCharacterWarning = function(message) {	
 	$("#" + this.specialCharacterInfoPanelId).notify(message, { position:"right" });
