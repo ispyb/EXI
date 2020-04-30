@@ -27,7 +27,6 @@ function ContainerParcelPanel(args) {
     this.width = 2*this.data.mainRadius + 20;
     this.container = new ContainerWidget(this.data);
 
-    debugger;
 	if (args != null) {
         if (args.height != null) {
 			this.height = args.height;

@@ -31,8 +31,11 @@ function ShipmentForm(args) {
 	this.refresh = new Event(this);
 	this.openedStatus = "opened";
 	this.sentToUserStatus = "sent to User";
+	this.sentToUserStatus2 = "Sent_to_User"
 	this.sentToFacilityStatus = "sent to " +EXI.credentialManager.getSiteName();
+	this.sentToFacilityStatus2 = "Sent_to_" +EXI.credentialManager.getSiteName();
 	this.atFacilityStatus = "at " +EXI.credentialManager.getSiteName();
+	this.atFacilityStatus2 = "at_" +EXI.credentialManager.getSiteName();
 	this.processingStatus = "processing";
 }
 
@@ -93,13 +96,17 @@ ShipmentForm.prototype.load = function(shipment,hasExportedData) {
 	}
 	var statusButtonLabel = "Send shipment to the facility";
     if (EXI.credentialManager.getCredentials()[0].isManager() && shipment != null){
-        if (shipment.shippingStatus == _this.sentToFacilityStatus){
+        debugger;
+        if (shipment.shippingStatus == _this.sentToFacilityStatus || shipment.shippingStatus == _this.sentToFacilityStatus2){
             statusButtonLabel = "Mark shipment at facility";
         } else if (shipment.shippingStatus == _this.processingStatus){
             statusButtonLabel = "Mark shipment at facility";
-        } else if (shipment.shippingStatus == _this.atFacilityStatus){
+        } else if (shipment.shippingStatus == _this.atFacilityStatus || shipment.shippingStatus == _this.atFacilityStatus2){
             statusButtonLabel = "Send shipment to the user";
-        }
+        } /*else if (shipment.shippingStatus == _this.sentToUserStatus || shipment.shippingStatus == _this.sentToUserStatus2){
+            $("#" + _this.id + "-send-button").addClass("disabled");
+            $("#" + _this.id + "-send-button").removeClass("enabled");
+        }*/
     }
 
     dust.render("shipping.form.template", {id : this.id, to : toData, 
@@ -142,11 +149,11 @@ ShipmentForm.prototype.load = function(shipment,hasExportedData) {
                 _this.updateStatus(_this.shipment.shippingId, _this.sentToFacilityStatus);
             } else {
                 if (EXI.credentialManager.getCredentials()[0].isManager()){
-                    if (_this.shipment.shippingStatus == _this.sentToFacilityStatus){
+                    if (_this.shipment.shippingStatus == _this.sentToFacilityStatus || _this.shipment.shippingStatus == _this.sentToFacilityStatus2){
                         _this.updateStatus(_this.shipment.shippingId, _this.atFacilityStatus);
                     } else if (_this.shipment.shippingStatus == _this.processingStatus){
                         _this.updateStatus(_this.shipment.shippingId, _this.atFacilityStatus);
-                    } else if (_this.shipment.shippingStatus == _this.atFacilityStatus){
+                    } else if (_this.shipment.shippingStatus == _this.atFacilityStatus || _this.shipment.shippingStatus == _this.atFacilityStatus2){
                         _this.updateStatus(_this.shipment.shippingId, _this.sentToUserStatus);
                     }
                 }
