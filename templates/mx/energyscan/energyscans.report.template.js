@@ -103,7 +103,6 @@
                         <td >Remote f'</td>
                         <td class='column_parameter_value'>{@decimal key="remoteFPrime" decimals=2 /} &#275;</td>
                     </tr>
-
                     <tr>
                         <td >Remote f''</td>
                         <td class='column_parameter_value'>{@decimal key="remoteFDoublePrime" decimals=2 /} &#275;</td>
