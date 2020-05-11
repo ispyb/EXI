@@ -117,6 +117,19 @@
                                     <td class='column_parameter_value'>{@decimal key="inflectionFDoublePrime" decimals=2 /} e<sup>-</sup></td>
                                 </tr>
 
+                                <tr>
+                                    <td >Remote Energy</td>
+                                    <td class='column_parameter_value'>{@decimal key="remoteEnergy" decimals=2 /} keV</td>
+                                </tr>
+                                <tr>
+                                    <td >Remote f'</td>
+                                    <td class='column_parameter_value'>{@decimal key="remoteFPrime" decimals=2 /} e<sup>-</sup> </td>
+                                </tr>
+                                <tr>
+                                    <td >Remote f''</td>
+                                    <td class='column_parameter_value'>{@decimal key="remoteFDoublePrime" decimals=2 /} e<sup>-</sup></td>
+                                </tr>
+
 
                             </table>
                         </div>
