@@ -88,7 +88,7 @@
                         </div>
 
 
-                        <div class="col-xs-3 col-md-3">
+                        <div class="col-xs-3 col-md-5">
                             <table class="table table-condensed">
                                 <tr>
                                     <td >Peak Energy</td>
