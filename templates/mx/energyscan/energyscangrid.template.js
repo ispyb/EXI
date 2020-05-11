@@ -31,7 +31,7 @@
                         <div class="col-xs-1 col-md-1">
                             <div class="well" style='font-size:30px;'>{.element}</div>
                         </div>
-                        <div class="col-xs-3 col-md-3">
+                        <div class="col-xs-3 col-md-5">
                             <table class="table table-condensed">
                              
                                 <tr>
@@ -88,7 +88,7 @@
                         </div>
 
 
-                        <div class="col-xs-3 col-md-5">
+                        <div class="col-xs-3 col-md-3">
                             <table class="table table-condensed">
                                 <tr>
                                     <td >Peak Energy</td>
