@@ -302,7 +302,7 @@ PuckFormView.prototype.addProtein = function(){
 
     				proteinEditForm.onSaved.attach(function (sender, protein) {
                         _this.containerSpreadSheet.reloadAcronyms();
-                        _this.save(false);
+                        //_this.save(false);
     					window.close();
     				});
 
