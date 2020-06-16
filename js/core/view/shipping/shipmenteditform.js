@@ -68,6 +68,7 @@ ShipmentEditForm.prototype.load = function(shipment) {
 		}
 		var showRegEx = false;
 		var pattern = "";
+		var regExScript = "";
 		if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
 		    debugger;
 		    showRegEx = true;
@@ -76,9 +77,30 @@ ShipmentEditForm.prototype.load = function(shipment) {
 		        proposal = proposal.substring(2);
 		        pattern = "^" +proposal +"-(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])-[a-zA-Z-]*";
 		    }
+		    /*regExScript = '<script type="text/javascript">';
+		    regExScript += 'var regex = "{.pattern}"';
+            regExScript += 'console.log("pattern is " +regex);';
+            regExScript += 'var validate_name = function(name){';
+            regExScript += 'var is_name_valid = false;';
+            regExScript += 'if(name.match(regex) != null){';
+            regExScript += 'is_name_valid = true;';
+            regExScript += '}';
+            regExScript += 'return is_name_valid;';
+            regExScript += '};';
+
+            regExScript += '$("#{id}-name").on("focusout", function(){';
+            regExScript += 'var input_val = $(this).val();';
+            regExScript += 'console.log("input to validate:" +input_val);';
+            regExScript += 'var is_success = validate_name(input_val);';
+            regExScript += 'if(!is_success){';
+            regExScript += '$("#{id}-name").focus();';
+            regExScript += 'alert("Error in the name!");';
+            regExScript += '}';
+            regExScript += '});';
+            regExScript += '</script>';*/
 		}
 
-		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment, showRegEx: showRegEx, pattern, pattern}, function(err, out){
+		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment, showRegEx: showRegEx, pattern: pattern}, function(err, out){
 			html = out;
 		});
 	} catch (e) {
