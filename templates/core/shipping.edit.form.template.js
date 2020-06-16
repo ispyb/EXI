@@ -49,7 +49,7 @@
 
 {@eq key="{.showRegEx}" value="true"}
 <script type="text/javascript">
-    var regex = "^{.proposal}-(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])-[a-zA-Z-]*";
+    var regex = "^{.propid}-(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])-[a-zA-Z-]*";
     console.log("regex is " +regex);
     var validate_name = function(name){
         var is_name_valid = false;

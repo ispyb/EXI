@@ -72,9 +72,9 @@ ShipmentEditForm.prototype.load = function(shipment) {
 		if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
 		    debugger;
 		    showRegEx = true;
-		    var proposal = EXI.credentialManager.getActiveProposal()[0];
-		    if (proposal.startsWith("MX")){
-		        proposal = proposal.substring(2);
+		    var propid = EXI.credentialManager.getActiveProposal()[0];
+		    if (propid.startsWith("MX")){
+		        propid = propid.substring(2);
 		    }
 		    /*regExScript = '<script type="text/javascript">';
 		    regExScript += 'var regex = "{.pattern}"';
@@ -99,7 +99,7 @@ ShipmentEditForm.prototype.load = function(shipment) {
             regExScript += '</script>';*/
 		}
 
-		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment, showRegEx: showRegEx, proposal: proposal}, function(err, out){
+		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment, showRegEx: showRegEx, propid: propid}, function(err, out){
 			html = out;
 		});
 	} catch (e) {
