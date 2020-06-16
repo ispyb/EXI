@@ -4,7 +4,7 @@
         <div class="col-md-10">
             <input id="{id}-name" class="form-control" type="text" value="{shipment.shippingName}">
             {@eq key="{.showRegEx}" value="true"}
-            <span>The name needs to have the following format {.proposal}-YYYYMMDD-[something]</span>
+            <span>The name needs to have the following format {.propid}-YYYYMMDD-[something]</span>
             {/eq}
         </div>
     </div>
