@@ -67,17 +67,18 @@ ShipmentEditForm.prototype.load = function(shipment) {
 			}
 		}
 		var showRegEx = false;
-		var proposal = "";
+		var pattern = "";
 		if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
 		    debugger;
 		    showRegEx = true;
-		    proposal = EXI.credentialManager.getActiveProposal()[0];
+		    var proposal = EXI.credentialManager.getActiveProposal()[0];
 		    if (proposal.startsWith("MX")){
 		        proposal = proposal.substring(2);
+		        pattern = "^" +proposal +"-(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])-[a-zA-Z-]*";
 		    }
 		}
 
-		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment, showRegEx: showRegEx, proposal, proposal}, function(err, out){
+		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment, showRegEx: showRegEx, pattern, pattern}, function(err, out){
 			html = out;
 		});
 	} catch (e) {

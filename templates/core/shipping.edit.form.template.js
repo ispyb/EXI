@@ -49,12 +49,11 @@
 
 {@eq key="{.showRegEx}" value="true"}
 <script>
-    var pattern = "^{.proposal}-(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])-[a-zA-Z-]*";
+    var regex = "{.pattern}";
     var validate_name = function(name){
-        alert("Validate " +name);
         var is_name_valid = false;
-        alert("patter is " +pattern);
-        if(name.match(pattern) != null){
+        console.log("pattern is " +regex);
+        if(name.match(regex) != null){
             is_name_valid = true;
         }
         return is_name_valid;
@@ -62,7 +61,7 @@
 
     $("#{id}-name").on("focusout", function(){
         var input_val = $(this).val();
-        alert(input_val);
+        console.log("input to validate:" +input_val);
         var is_success = validate_name(input_val);
         if(!is_success){
             $("#{id}-name").focus();
