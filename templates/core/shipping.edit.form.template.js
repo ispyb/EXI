@@ -48,11 +48,11 @@
 </div>
 
 {@eq key="{.showRegEx}" value="true"}
-<script>
+<script type="text/javascript">
     var regex = "{.pattern}";
+    console.log("pattern is " +regex);
     var validate_name = function(name){
         var is_name_valid = false;
-        console.log("pattern is " +regex);
         if(name.match(regex) != null){
             is_name_valid = true;
         }
