@@ -75,7 +75,6 @@ ShipmentEditForm.prototype.load = function(shipment) {
 		    var proposal = EXI.credentialManager.getActiveProposal()[0];
 		    if (proposal.startsWith("MX")){
 		        proposal = proposal.substring(2);
-		        pattern = "^" +proposal +"-(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])-[a-zA-Z-]*";
 		    }
 		    /*regExScript = '<script type="text/javascript">';
 		    regExScript += 'var regex = "{.pattern}"';
@@ -100,7 +99,7 @@ ShipmentEditForm.prototype.load = function(shipment) {
             regExScript += '</script>';*/
 		}
 
-		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment, showRegEx: showRegEx, pattern: pattern}, function(err, out){
+		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment, showRegEx: showRegEx, proposal: proposal}, function(err, out){
 			html = out;
 		});
 	} catch (e) {
