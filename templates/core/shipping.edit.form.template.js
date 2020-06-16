@@ -4,7 +4,7 @@
         <div class="col-md-10">
             <input id="{id}-name" class="form-control" type="text" value="{shipment.shippingName}">
             {@eq key="{.showRegEx}" value="true"}
-            <span>The name needs to have the following format {.propid}-YYYYMMDD-[something]</span>
+            <span>{.regExLabel}</span>
             {/eq}
         </div>
     </div>
@@ -49,8 +49,8 @@
 
 {@eq key="{.showRegEx}" value="true"}
 <script>
-    var propid = "{.propid}";
-    var regex = "^" +propid +"-(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])-[a-zA-Z-]*";
+    var proposal = "{.proposal}";
+    var regex = "^" +proposal +"-(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])-[a-zA-Z-]*";
     console.log("regex is " +regex);
     var validate_name = function(name){
         var is_name_valid = false;

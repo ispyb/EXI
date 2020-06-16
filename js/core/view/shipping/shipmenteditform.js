@@ -68,14 +68,15 @@ ShipmentEditForm.prototype.load = function(shipment) {
 		}
 		var showRegEx = false;
 		var pattern = "";
-		var regExScript = "";
+		var regExLabel = "";
 		if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
 		    debugger;
 		    showRegEx = true;
-		    var propid = EXI.credentialManager.getActiveProposal()[0];
-		    if (propid.startsWith("MX")){
-		        propid = propid.substring(2);
+		    var proposal = EXI.credentialManager.getActiveProposal()[0];
+		    if (proposal.startsWith("MX")){
+		        proposal = proposal.substring(2);
 		    }
+		    regExLabel = "The name needs to have the following format " +propid +"-YYYYMMDD-[something]";
 		    /*regExScript = '<script type="text/javascript">';
 		    regExScript += 'var regex = "{.pattern}"';
             regExScript += 'console.log("pattern is " +regex);';
@@ -99,7 +100,7 @@ ShipmentEditForm.prototype.load = function(shipment) {
             regExScript += '</script>';*/
 		}
 
-		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment, showRegEx: showRegEx, propid: propid}, function(err, out){
+		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment, showRegEx: showRegEx, proposal: proposal, regExLabel: regExLabel}, function(err, out){
 			html = out;
 		});
 	} catch (e) {
