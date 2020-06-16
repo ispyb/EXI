@@ -104,6 +104,7 @@ ShipmentEditForm.prototype.load = function(shipment) {
 		});
 	} catch (e) {
 		html = "There was an error loading the lab contacts.";
+		html = e.message;
 	}
 	
 	$('#' + this.id).hide().html(html).fadeIn('fast');
