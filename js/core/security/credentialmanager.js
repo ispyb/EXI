@@ -223,4 +223,9 @@ CredentialManager.prototype.setActiveProposal = function(username, proposal){
 	}
 };
 
+CredentialManager.prototype.getActiveProposal = function(){
+	var credentials = this.getCredentials();
+	return credentials[0].activeProposals
+};
+
 
