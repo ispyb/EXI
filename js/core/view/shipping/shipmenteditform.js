@@ -76,7 +76,7 @@ ShipmentEditForm.prototype.load = function(shipment) {
 		    if (proposal.startsWith("MX")){
 		        proposal = proposal.substring(2);
 		    }
-		    regExLabel = "The name needs to have the following format " +propid +"-YYYYMMDD-[something]";
+		    regExLabel = "The name needs to have the following format " +proposal +"-YYYYMMDD-[something]";
 		    /*regExScript = '<script type="text/javascript">';
 		    regExScript += 'var regex = "{.pattern}"';
             regExScript += 'console.log("pattern is " +regex);';
@@ -105,7 +105,7 @@ ShipmentEditForm.prototype.load = function(shipment) {
 		});
 	} catch (e) {
 		html = "There was an error loading the lab contacts.";
-		html = e.message;
+		//html = e.message;
 	}
 	
 	$('#' + this.id).hide().html(html).fadeIn('fast');
