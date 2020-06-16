@@ -86,7 +86,7 @@ ShipmentForm.prototype.load = function(shipment,hasExportedData) {
 			fedexCode = shipment.sessions[0].proposalVO.code + "-" + shipment.sessions[0].proposalVO.number + "/" + beamlineName+ "/" + startDate;
 		}
 	}
-		
+
 	/** It disables button Sent Shipment to facility if there is at least one dewar which dewarStatus is not "ready to go"  */	
 	if (shipment.dewarVOs.length == 0 || _.filter(shipment.dewarVOs, function(o){return o.dewarStatus != "ready to go"}).length > 0){
 		$("#" + _this.id + "-send-button").addClass("disabled");
@@ -96,7 +96,6 @@ ShipmentForm.prototype.load = function(shipment,hasExportedData) {
 	}
 	var statusButtonLabel = "Send shipment to the facility";
     if (EXI.credentialManager.getCredentials()[0].isManager() && shipment != null){
-        debugger;
         if (shipment.shippingStatus == _this.sentToFacilityStatus || shipment.shippingStatus == _this.sentToFacilityStatus2){
             statusButtonLabel = "Mark shipment at facility";
         } else if (shipment.shippingStatus == _this.processingStatus){
@@ -122,7 +121,6 @@ ShipmentForm.prototype.load = function(shipment,hasExportedData) {
 	
     $('#' + _this.id).hide().html(html).fadeIn('fast');
 	if (shipment == null || shipment.shippingStatus != this.processingStatus){
-	    debugger;
 		$("#" + _this.id + "-edit-button").removeClass("disabled");
 		$("#" + _this.id + "-edit-button").unbind('click').click(function(sender){
 			_this.edit();
@@ -143,7 +141,7 @@ ShipmentForm.prototype.load = function(shipment,hasExportedData) {
 	}
 
 	$("#" + _this.id + "-send-button").unbind('click').click(function(sender){
-	    debugger;
+
         if (_this.shipment != null){
             if (_this.shipment.shippingStatus == _this.openedStatus){
                 _this.updateStatus(_this.shipment.shippingId, _this.sentToFacilityStatus);
@@ -162,7 +160,6 @@ ShipmentForm.prototype.load = function(shipment,hasExportedData) {
 	});
 
 	/** It disables button Sent Shipment to facility if there is at least one dewar which dewarStatus is not "ready to go"  */
-	debugger;
 	if (!hidePrintLabelWarning){
 		$("#" + _this.id + "-send-button").addClass("disabled");
 	}/*

@@ -3,6 +3,9 @@
         <label class="col-md-2 col-form-label">Name:</label>
         <div class="col-md-10">
             <input id="{id}-name" class="form-control" type="text" value="{shipment.shippingName}">
+            {@eq key="{.showRegEx}" value="true"}
+            <span>The name needs to have the following format {.proposal}-YYYYMMDD-[something]</span>
+            {/eq}
         </div>
     </div>
     <div class="form-group row">
@@ -43,3 +46,28 @@
         </div>
     </div>
 </div>
+
+{@eq key="{.showRegEx}" value="true"}
+<script>
+    var pattern = "^{.proposal}-(19|20)\\d\\d(0[1-9]|1[012])(0[1-9]|[12][0-9]|3[01])-[a-zA-Z-]*";
+    var validate_name = function(name){
+        alert("Validate " +name);
+        var is_name_valid = false;
+        alert("patter is " +pattern);
+        if(name.match(pattern) != null){
+            is_name_valid = true;
+        }
+        return is_name_valid;
+    };
+
+    $("#{id}-name").on("focusout", function(){
+        var input_val = $(this).val();
+        alert(input_val);
+        var is_success = validate_name(input_val);
+        if(!is_success){
+            $("#{id}-name").focus();
+            alert("Error in the name!");
+        }
+    });
+</script>
+{/eq}

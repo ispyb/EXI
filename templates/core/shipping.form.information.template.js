@@ -39,17 +39,17 @@
    <div class="col-md-3" style="margin-left:10px">
       <div class="form-group row" style="margin:5px">
          <label class="col-md-3 col-form-label " ><b>Comments:</b></label>
-         <textarea  class="col-md-9" rows="2" disabled>{shipment.comments}</textarea >
+         <textarea  class="col-md-9 disabled" rows="2" >{shipment.comments}</textarea >
       </div>
    </div>
    <div class="col-md-1" style="padding:0px">
       <div class="form-group row" style="margin:5px">
-         <button id="{id}-edit-button" class="btn btn-primary btn-md" style="margin-left:10px;height:40px;" disabled>Edit</button>
+         <button id="{id}-edit-button" class="btn btn-primary btn-md disabled" style="margin-left:10px;height:40px;">Edit</button>
       </div>
    </div>
    <div class="col-md-1" style="padding:0px">
          <div class="form-group row" style="margin:5px">
-            <button id="{id}-delete-button" class="btn btn-primary btn-md" style="margin-left:10px;height:40px;" disabled>Delete</button>
+            <button id="{id}-delete-button" class="btn btn-primary btn-md disabled" style="margin-left:10px;height:40px;">Delete</button>
          </div>
       </div>
 </div>
@@ -157,11 +157,11 @@
 <div class="col-md-3" style="padding:0px">
    <div class="form-group row" style="margin:5px">
       <label class="col-md-3 col-form-label " ><b>Comments:</b></label>
-      <textarea  class="col-md-9" rows="4" disabled>{shipment.comments}</textarea >
+      <textarea class="col-md-9 disabled" rows="4">{shipment.comments}</textarea >
    </div>
 </div>
 <div class="col-md-1 pull-right" style="padding:0px">
-   <button id="{id}-edit-button" class="btn btn-primary btn-lg" style="margin-left:10px;height:90px;" disabled>Edit</button>
+   <button id="{id}-edit-button" class="btn btn-primary btn-lg disabled" style="margin-left:10px;height:90px;">Edit</button>
 </div>
 </div>
 <div class="panel panel-default">

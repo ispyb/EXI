@@ -66,9 +66,18 @@ ShipmentEditForm.prototype.load = function(shipment) {
 				sessionsSelectData.push({sessionId : session.sessionId, date : sessionStartDate.toLocaleDateString(), formattedDate : formattedDate, beamLineName : session.beamLineName});
 			}
 		}
-		
-		
-		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment}, function(err, out){
+		var showRegEx = false;
+		var proposal = "";
+		if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+		    debugger;
+		    showRegEx = true;
+		    proposal = EXI.credentialManager.getActiveProposal()[0];
+		    if (proposal.startsWith("MX")){
+		        proposal = proposal.substring(2);
+		    }
+		}
+
+		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment, showRegEx: showRegEx, proposal, proposal}, function(err, out){
 			html = out;
 		});
 	} catch (e) {
@@ -144,6 +153,13 @@ ShipmentEditForm.prototype.saveShipment = function() {
 	if (json.name == "") {
 		BUI.showError("Name field is mandatory");
 		return;
+	} else {
+	    if(EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+            if (name.startsWith("MAXIV")){
+
+            }
+	    }
+
 	}
 
 	if (json.sendingLabContactId == null) {
