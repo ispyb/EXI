@@ -66,41 +66,9 @@ ShipmentEditForm.prototype.load = function(shipment) {
 				sessionsSelectData.push({sessionId : session.sessionId, date : sessionStartDate.toLocaleDateString(), formattedDate : formattedDate, beamLineName : session.beamLineName});
 			}
 		}
-		var showRegEx = false;
-		var pattern = "";
-		var regExLabel = "";
-		if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
-		    debugger;
-		    showRegEx = true;
-		    var proposal = EXI.credentialManager.getActiveProposal()[0];
-		    if (proposal.startsWith("MX")){
-		        proposal = proposal.substring(2);
-		    }
-		    regExLabel = "The name needs to have the following format " +proposal +"-YYYYMMDD-[something]";
-		    /*regExScript = '<script type="text/javascript">';
-		    regExScript += 'var regex = "{.pattern}"';
-            regExScript += 'console.log("pattern is " +regex);';
-            regExScript += 'var validate_name = function(name){';
-            regExScript += 'var is_name_valid = false;';
-            regExScript += 'if(name.match(regex) != null){';
-            regExScript += 'is_name_valid = true;';
-            regExScript += '}';
-            regExScript += 'return is_name_valid;';
-            regExScript += '};';
 
-            regExScript += '$("#{id}-name").on("focusout", function(){';
-            regExScript += 'var input_val = $(this).val();';
-            regExScript += 'console.log("input to validate:" +input_val);';
-            regExScript += 'var is_success = validate_name(input_val);';
-            regExScript += 'if(!is_success){';
-            regExScript += '$("#{id}-name").focus();';
-            regExScript += 'alert("Error in the name!");';
-            regExScript += '}';
-            regExScript += '});';
-            regExScript += '</script>';*/
-		}
 
-		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment, showRegEx: showRegEx, proposal: proposal, regExLabel: regExLabel}, function(err, out){
+		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment}, function(err, out){
 			html = out;
 		});
 	} catch (e) {
@@ -173,17 +141,17 @@ ShipmentEditForm.prototype.saveShipment = function() {
 		_this.onSaved.notify(shipment);
 	};
 
+	var onError = function(sender, error){
+	    _this.panel.setLoading(false);
+        // cannot be saved, an error occurred
+        BUI.showError(error.responseText);
+        return;
+    };
+
 	/** Cheking params **/
 	if (json.name == "") {
 		BUI.showError("Name field is mandatory");
 		return;
-	} else {
-	    if(EXI.credentialManager.getSiteName().startsWith("MAXIV")){
-            if (name.startsWith("MAXIV")){
-
-            }
-	    }
-
 	}
 
 	if (json.sendingLabContactId == null) {
@@ -192,5 +160,5 @@ ShipmentEditForm.prototype.saveShipment = function() {
 	}
 
 	this.panel.setLoading();
-	EXI.getDataAdapter({onSuccess : onSuccess}).proposal.shipping.saveShipment(json);
+	EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.shipping.saveShipment(json);
 }
