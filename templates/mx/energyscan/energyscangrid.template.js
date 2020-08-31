@@ -96,12 +96,12 @@
                                 </tr>
                                 <tr>
                                     <td >Pk f'</td> 
-                                    <td class='column_parameter_value'>{@decimal key="peakFPrime" decimals=2 /} e<sup>-</sup></td>
+                                    <td class='column_parameter_value'>{@decimal key="peakFPrime" decimals=3 /} e<sup>-</sup></td>
                                 </tr>
 
                                 <tr>
                                     <td >Pk f''</td>
-                                    <td class='column_parameter_value'>{@decimal key="peakFDoublePrime" decimals=2 /}e<sup>-</sup></td>
+                                    <td class='column_parameter_value'>{@decimal key="peakFDoublePrime" decimals=3 /}e<sup>-</sup></td>
                                 </tr>
 
                                 <tr>

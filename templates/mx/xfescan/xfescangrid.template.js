@@ -13,7 +13,7 @@
                         {@formatDate date=.startTime format="DD-MM-YYYY HH:mm:ss" /}
                         </span>                                   
                     </span>
-                <p><b>{.filename}</b></p>   
+                <p><b>{.scanFileFullPath}</b></p>
                
 
 
