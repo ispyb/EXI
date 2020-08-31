@@ -30,8 +30,14 @@ EnergyScanGrid.prototype.getPanel = function(dataCollectionGroup) {
                 name: 'dataCollectionGroup',
                 flex: 0.2,
                 renderer: function(grid, e, record) {
-                    var html = "";                
+                    var html = "";
+                    debugger;
                     record.data.choochURL = EXI.getDataAdapter().mx.energyscan.getChoochJpegByEnergyScanId(record.data.energyScanId);
+                    record.data.decimals = 2;
+                    if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+                        record.data.decimals = 3;
+                    }
+
 
                     dust.render("energyscangrid.template", record.data, function(err, out) {  
                         html = out;
