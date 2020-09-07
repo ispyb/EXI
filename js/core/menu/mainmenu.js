@@ -403,6 +403,10 @@ MainMenu.prototype.getAddCredentialMenu = function() {
 MainMenu.prototype.populateCredentialsMenu = function() {
 	this.credentialsMenu.removeAll();
 	var credentialDisplay = "";
+	var logo = "../images/icon/rsz_esrflogo80.gif";
+	if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+	    logo = "../images/icon/maxiv-favicon.ico";
+	}
 	if (EXI.credentialManager.getCredentials() != null) {
 		for (var i = 0; i < EXI.credentialManager.getCredentials().length; i++) {
 			credentialDisplay = EXI.credentialManager.getCredentials()[i].username;
@@ -411,13 +415,13 @@ MainMenu.prototype.populateCredentialsMenu = function() {
 					credentialDisplay = EXI.credentialManager.getCredentials()[i].activeProposals[j] + "@" + EXI.credentialManager.getCredentials()[i].username;
 					this.credentialsMenu.add({
 						text : credentialDisplay,
-						icon : "../images/icon/rsz_esrflogo80.gif",
+						icon : logo,
 						disabled : true });
 				}
 			} else {
 				this.credentialsMenu.add({
 					text : credentialDisplay,
-					icon : "../images/icon/rsz_esrflogo80.gif",
+					icon : logo,
 					disabled : true });
 				
 			}

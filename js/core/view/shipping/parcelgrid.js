@@ -181,7 +181,6 @@ ParcelGrid.prototype.fillTab = function (tabName, dewars) {
 			_this.panel.setLoading();
 			dewar["sessionId"] = dewar.firstExperimentId;
 			dewar["shippingId"] = _this.shipment.shippingId;
-			
 			var onSuccess = function(sender, shipment) {				
 				_this.panel.setLoading(false);							
 				_this.refreshReimbursementContentHTML( _this.getCurrentReimbursedDewars(shipment.dewarVOs), _this.getAuthorizedReimbursedDewars(shipment.sessions));
@@ -236,10 +235,17 @@ ParcelGrid.prototype.edit = function(dewar) {
 					_this.panel.setLoading(false);
 					window.close();
 				};
+				var onError = function(sender, error) {
+                	_this.panel.setLoading(false);
+                    // cannot be saved, an error occurred
+                    BUI.showError(error.responseText);
+                    return;
+                };
 				dewar["sessionId"] = dewar.firstExperimentId;
 				dewar["shippingId"] = _this.shipment.shippingId;
 				EXI.getDataAdapter({
-					onSuccess : onSuccess
+					onSuccess : onSuccess,
+					onError : onError
 				}).proposal.dewar.saveDewar(_this.shipment.shippingId, dewar);
 			}
 		}, {
