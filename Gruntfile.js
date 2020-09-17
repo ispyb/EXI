@@ -62,7 +62,8 @@ module.exports = function(grunt) {
                 },
                 uglify : {
                     prod : {
-                        options : {beautify:true},
+                        options : { beautify:true },
+
                         files : {
                            'min/exi.min.js' : ['min/exi.tools.js', 'min/ispyb-client.js', 'min/exi.js', 'min/exi.mx.js', 'min/exi.saxs.js', 'min/exi.em.js',
                                     'min/exi.test.js',
@@ -223,6 +224,26 @@ module.exports = function(grunt) {
                             'min/precompiled.templates.min.js' : [ 'templates/**/*js' ]
                         }
                     }
+                },
+                bustCache: {
+                  dev: {
+                    options: {
+                      hashType: "timestamp", // git, npm, maven, timestamp
+                      css: true,
+                      javascript: true,
+                      requireJs: true
+                    },
+                    src: "mx/dev.html"
+                  },
+                  prod: {
+                    options: {
+                      hashType: "timestamp", // git, npm, maven, timestamp
+                      css: true,
+                      requireJs: true,
+                      javascript: true
+                    },
+                    src: "mx/index.html"
+                  }
                 }
             });
 
@@ -237,14 +258,15 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-dustjs');
     grunt.loadNpmTasks('grunt-contrib-yuidoc');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-bust-cache');
 
     /** TASKS */
     grunt.task.registerTask('doc', [ 'yuidoc:compile' ]);
     grunt.task
             .registerTask('report', [ 'plato:all', 'plato:saxs', 'plato:mx' ]);
     grunt.task.registerTask('default', [ 'dustjs', // 'jshint:prod',
-            'concat:prod', 'uglify:prod', 'cssmin:prod', 'yuidoc:compile' ]);
+            'concat:prod', 'uglify:prod', 'cssmin:prod', 'yuidoc:compile', 'bustCache:prod' ]);
     grunt.task.registerTask('dev', [ 'dustjs', 'includeSource:dev',
-            'cssmin:prod', 'wiredep' ]);
+            'cssmin:prod', 'wiredep', 'bustCache:dev' ]);
 
 };
