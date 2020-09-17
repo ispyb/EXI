@@ -7,7 +7,7 @@
       </td>
       <td>
          <div id="{.acceptedContainerListPanelId}" class="alert alert-info" style="margin-bottom: 1px;height: 20px;  line-height:20px;  padding:0px 5px 0px 10px;display:inline-block;margin:5px;" role="alert">
-         {@eq key=showOnlyUnipuckMessage value=true}
+         {@eq key=showOnlyUnipuckMessage value="true" type="boolean"}
             Accepted values for container type are: SPINEpuck, Unipuck
          {:else}
             Only Unipuck container type at MAX IV

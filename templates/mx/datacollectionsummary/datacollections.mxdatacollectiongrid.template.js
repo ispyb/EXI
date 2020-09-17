@@ -65,7 +65,7 @@
                     <td>{@formatDate date=.startTime format="HH:mm:ss" /}</td>
                     <td>{.runStatus}</td>
                     <td>
-                    {@eq key=showQILink value=true}
+                    {@eq key=showQILink value="true" type="boolean"}
                     <a href={.urlImageQualityIndicators} data-lightbox={.urlImageQualityIndicators} >
                         <img src={.urlImageQualityIndicators} height="35px" width="35px"/></a>
                     {:else}

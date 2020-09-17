@@ -17,7 +17,7 @@ MXManagerMenu.prototype.getPreparationMenu = ManagerMenu.prototype.getPreparatio
 MXManagerMenu.prototype.getDataReductionMenu = ManagerMenu.prototype.getDataReductionMenu;
 MXManagerMenu.prototype.getDataExplorerMenu = ManagerMenu.prototype.getDataExplorerMenu;
 MXManagerMenu.prototype.getOnlineDataAnalisysMenu = ManagerMenu.prototype.getOnlineDataAnalisysMenu;
-MXManagerMenu.prototype.getProteinCrystalsMenu = MainMenu.prototype.getProteinCrystalsMenu;
+MXManagerMenu.prototype.getProteinCrystalsMenu = MXMainMenu.prototype.getProteinCrystalsMenu;
 
 MXManagerMenu.prototype.getMenuItems = function() {
 
@@ -37,14 +37,11 @@ MXManagerMenu.prototype.getMenuItems = function() {
 
 				}
 		},
+
 		{
                 text : this._convertToHTMLWhiteSpan("Proteins & Crystals <sub style='font-size:10px;color:orange'>NEW</sub>"),
-                cls : 'ExiSAXSMenuToolBar',
-				menu : this.getProteinCrystalsMenu()
-                /*handler : function(){
-                    location.hash = "#/protein/list";
-                }*/
-	    },
+        },
+
 		{
 				text : this._convertToHTMLWhiteSpan("Data Explorer"),
 				cls : 'ExiSAXSMenuToolBar',
@@ -96,6 +93,44 @@ MXManagerMenu.prototype.getMenuItems = function() {
 	];
 };
 
+
+
+MXManagerMenu.prototype.getProteinCrystalsMenu = function() {
+	var _this = this;
+	function onItemCheck(item, checked) {
+		if (item.text == "Autoproc Scaling Statistics") {
+			var scatteringForm = new ScatteringForm();
+
+			var keys = ["ISA", "rPimWithinIPlusIMinus","anomalousMultiplicity","multiplicity","resolutionLimitLow","ccHalf",
+			"strategySubWedgeOrigId","completeness","rMerge","anomalous","meanIOverSigI","ccAno","autoProcScalingId",
+			"nTotalObservations","sigAno","rMeasWithinIPlusIMinus","anomalousCompleteness","resolutionLimitHigh",
+			"fractionalPartialBias","rMeasAllIPlusIMinus","nTotalUniqueObservations","rPimAllIPlusIMinus"];
+
+			var scatteringData = {title : "AutoprocIntegrator", keys : keys};
+
+			scatteringForm.load(scatteringData);
+			scatteringForm.show();
+		}
+	}
+
+	return Ext.create('Ext.menu.Menu', {
+		items : [
+					{
+						text 	: 'Proteins & Crystals',						
+						handler : function(){
+                    		location.hash = "#/protein/list";
+                		}
+					},
+					{
+						text : 'Ligands',
+						icon : '../images/icon/macromolecule.png',
+						handler : function(){
+                    		location.hash = "#/ligands/list";
+                		}
+					}
+			] 
+	});
+};
 
 MXManagerMenu.prototype.getManagerMenu = function() {
 	var _this = this;

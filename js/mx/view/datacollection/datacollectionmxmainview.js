@@ -176,11 +176,11 @@ DataCollectionMxMainView.prototype.loadCollections = function(dataCollections) {
                 }
                 
                 if (data[i].DataCollection_flux_end != null){
-                    data[i].DataCollection_flux_end = data[i].DataCollection_flux_end.toExponential();
+                    data[i].DataCollection_flux_end = data[i].DataCollection_flux_end.toExponential(2);
                 }
                 
                 if (data[i].DataCollection_flux != null){
-                    data[i].DataCollection_flux = data[i].DataCollection_flux.toExponential();
+                    data[i].DataCollection_flux = data[i].DataCollection_flux.toExponential(2);
                 }
             }
             catch(err) {
