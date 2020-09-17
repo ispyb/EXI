@@ -225,25 +225,24 @@ module.exports = function(grunt) {
                         }
                     }
                 },
-                bustCache: {
-                  dev: {
+                asset_cachebuster: {
                     options: {
-                      hashType: "timestamp", // git, npm, maven, timestamp
-                      css: true,
-                      javascript: true,
-                      requireJs: true
+                      buster: Date.now(),
+                      ignore: ['../dependency/ext/build/bootstrap.js'],
+                      htmlExtension: 'html'
                     },
-                    src: "mx/dev.html"
-                  },
-                  prod: {
-                    options: {
-                      hashType: "timestamp", // git, npm, maven, timestamp
-                      css: true,
-                      requireJs: true,
-                      javascript: true
-                    },
-                    src: "mx/index.html"
-                  }
+                    build: {
+                      files: {
+                        'mx/index.html': ['mx/index.html'],
+                        'mx/dev.html': ['mx/dev.html'],
+                        'saxs/index.html': ['saxs/index.html'],
+                        'saxs/dev.html': ['saxs/dev.html'],
+                        'test/index.html': ['test/index.html'],
+                        'test/dev.html': ['test/dev.html'],
+                        'tracking/index.html': ['tracking/index.html'],
+                        'tracking/dev.html': ['tracking/dev.html']
+                      }
+                    }
                 }
             });
 
@@ -258,15 +257,15 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-dustjs');
     grunt.loadNpmTasks('grunt-contrib-yuidoc');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-bust-cache');
+    grunt.loadNpmTasks('grunt-asset-cachebuster');
 
     /** TASKS */
     grunt.task.registerTask('doc', [ 'yuidoc:compile' ]);
     grunt.task
             .registerTask('report', [ 'plato:all', 'plato:saxs', 'plato:mx' ]);
     grunt.task.registerTask('default', [ 'dustjs', // 'jshint:prod',
-            'concat:prod', 'uglify:prod', 'cssmin:prod', 'yuidoc:compile', 'bustCache:prod' ]);
+            'concat:prod', 'uglify:prod', 'cssmin:prod', 'yuidoc:compile', 'asset_cachebuster' ]);
     grunt.task.registerTask('dev', [ 'dustjs', 'includeSource:dev',
-            'cssmin:prod', 'wiredep', 'bustCache:dev' ]);
+            'cssmin:prod', 'wiredep', 'asset_cachebuster' ]);
 
 };
