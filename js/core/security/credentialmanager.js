@@ -219,14 +219,14 @@ CredentialManager.prototype.logout = function (username, roles, token, url) {
   this.onLogout.notify();
 };
 
-<<<<<<< HEAD
+
 CredentialManager.prototype.getActiveProposal = function(){
 	var credentials = this.getCredentials();
 	return credentials[0].activeProposals
 };
 
 
-=======
+
 CredentialManager.prototype.setActiveProposal = function (username, proposal) {
   var credentials = this.getCredentials();
   for (var i = 0; i < credentials.length; i++) {
@@ -238,4 +238,4 @@ CredentialManager.prototype.setActiveProposal = function (username, proposal) {
     }
   }
 };
->>>>>>> fb3ace5ee50af92ead9ee96601c8fc13b61c6089
+
