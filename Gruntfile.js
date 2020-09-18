@@ -228,7 +228,10 @@ module.exports = function(grunt) {
                 asset_cachebuster: {
                     options: {
                       buster: Date.now(),
-                      ignore: ['../dependency/ext/build/bootstrap.js'],
+                      ignore: ['../dependency/ext/build/bootstrap.js',
+                                '../dependency/ext/build',
+                                '../bower_components',
+                                '../js/dust/helpers.js'],
                       htmlExtension: 'html'
                     },
                     build: {

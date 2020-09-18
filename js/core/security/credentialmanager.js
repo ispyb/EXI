@@ -137,24 +137,21 @@ CredentialManager.prototype.getBeamlinesByTechnique = function (technique) {
   return beamlines;
 };
 
-CredentialManager.prototype.hasActiveProposal = function () {
-  var credentials = this.getCredentials();
-
-
-CredentialManager.prototype.isUserAllowedAddProtein = function(){
-    var connectors = this.getConnections();
-    var result = false;
-    var cred = this.getCredentials()[0];
-    for (var i = 0; i < connectors.length; i++) {
-        for (var j = 0; j < connectors[i].allow_add_proteins_roles.length; j++) {
-            if (cred.hasRole(connectors[i].allow_add_proteins_roles[j])){
-                result = true;
+CredentialManager.prototype.hasActiveProposal = function(){
+	var credentials = this.getCredentials();
+	var result = false;
+    for (var i = 0; i < credentials.length; i++) {
+        if (credentials[i].activeProposals.length > 0){
+            for (var j = 0; j < credentials[i].activeProposals.length; j++) {
+                if (credentials[i].activeProposals[j] != credentials[i].username){
+                    result = true;
+                }
             }
-  for (var i = 0; i < credentials.length; i++) {
-      if (credentials[i].activeProposals.length > 0) return true;
-  }
-  return false;
+        }
+	}
+	return result;
 };
+
 
 CredentialManager.prototype.isUserAllowedAddProtein = function () {
   debugger;
@@ -226,7 +223,6 @@ CredentialManager.prototype.getActiveProposal = function(){
 };
 
 
-
 CredentialManager.prototype.setActiveProposal = function (username, proposal) {
   var credentials = this.getCredentials();
   for (var i = 0; i < credentials.length; i++) {
@@ -238,4 +234,3 @@ CredentialManager.prototype.setActiveProposal = function (username, proposal) {
     }
   }
 };
-
