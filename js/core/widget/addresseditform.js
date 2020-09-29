@@ -50,7 +50,7 @@ AddressEditForm.prototype.getPanel = function() {
 
 AddressEditForm.prototype.save = function() {
     var _this = this;
-    
+
 	var address = this.getAddress();
     var onSuccess = function (sender,addressSaved) {
         _this.onSaved.notify(address);
@@ -78,6 +78,16 @@ AddressEditForm.prototype.save = function() {
 
     if (address.labAddress == "") {
         BUI.showError("Lab Address information is mandatory");
+        return;
+    }
+
+    if (address.dewarAvgCustomsValue == "") {
+        BUI.showError("Avg Customs Value information is mandatory");
+        return;
+    }
+
+    if (address.dewarAvgTransportValue == "") {
+        BUI.showError("Avg Transport Value information is mandatory");
         return;
     }
     
