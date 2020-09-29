@@ -48,10 +48,13 @@ SpreadSheet.prototype.setLoading = function (bool) {
 SpreadSheet.prototype.reloadAcronyms = function() {
     this.forceUpdate = true;
     this.acronyms = null;
-    this.getAcronyms();
+    this.acronyms = this.getAcronyms(true);
 }
 
-SpreadSheet.prototype.getAcronyms = function() {
+SpreadSheet.prototype.getAcronyms = function(force) {
+    if (force != null){
+        this.forceUpdate = force;
+    }
 	if (this.acronyms == null){
 		this.acronyms = _.map(EXI.proposalManager.getProteins(this.forceUpdate), 'acronym').sort(function(a, b) {
 			if (a.toLowerCase() < b.toLowerCase()) return -1;
