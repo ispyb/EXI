@@ -73,9 +73,9 @@ MainMenu.prototype.getShipmentItem = function() {
 	function getLabContactsMenu() {
 		var _this = this;
 		var addNewDisabled = true;
-		if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+		/*if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
 				addNewDisabled = false;
-		}
+		}*/
 		function onItemCheck(item, checked) {
 			if (item.text == "Add new") {
 				var addressEditForm = new AddressEditForm();
