@@ -22,12 +22,14 @@ MXManagerMenu.prototype.getProteinCrystalsMenu = MainMenu.prototype.getProteinCr
 MXManagerMenu.prototype.getMenuItems = function() {
 
     var synchTxt = "SMIS";
+    var homeLabel = "Home";
     if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
         synchTxt = "DUO";
+        homeLabel = "Sessions";
     }
 
 	return [
-    	this.getHomeItem(),
+    	this.getHomeItem(homeLabel),
     	this.getShipmentItem(),
     	{
                 text : this._convertToHTMLWhiteSpan("Prepare Experiment"),

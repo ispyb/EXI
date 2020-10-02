@@ -20,11 +20,13 @@ MXMainMenu.prototype.getDataExplorerMenu = MainMenu.prototype.getDataExplorerMen
 
 MXMainMenu.prototype.getMenuItems = function() {
     var synchTxt = "SMIS";
+    var homeLabel = "Home";
     if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
         synchTxt = "DUO";
+        var homeLabel = "Proposals";
     }
 	return [
-		this.getHomeItem(),
+		this.getHomeItem(homeLabel),
 		this.getShipmentItem(),
 
 			{
