@@ -61,3 +61,27 @@ StatisticsDataAdapter.prototype.getDatacollectionStatisticsByDate = function(ima
 StatisticsDataAdapter.prototype.getDatacollectionStatisticsByDateAndBeamline = function(imageslimit,startDate,endDate,testproposals,beamline){
 	return this.getUrl('/{token}/stats/datacollectionstatistics/{0}/{1}/{2}/{3}/csv?testproposals={4}'.format( [imageslimit,startDate,endDate,beamline,testproposals]));
 };
+
+
+/**
+* It retrieves the statistics url between the given dates
+* @method getExperimentsStatisticsByDate
+* @param {String} startDate
+* @param {String} endDate
+* @param {String} testproposals
+*/
+StatisticsDataAdapter.prototype.getExperimentsStatisticsByDate = function(startDate,endDate,testproposals){
+	return this.getUrl('/{token}/stats/experimentstatistics/{0}/{1}/0/csv?testproposals={2}'.format( [startDate,endDate,testproposals]));
+};
+
+/**
+* It retrieves the experiments statistics url between the given dates for the given beamline
+* @method getExperimentsStatisticsByDateAndBeamline
+* @param {String} startDate
+* @param {String} endDate
+* @param {String} testproposals
+* @param {String} beamline
+*/
+StatisticsDataAdapter.prototype.getExperimentsStatisticsByDateAndBeamline = function(startDate,endDate,testproposals,beamline){
+	return this.getUrl('/{token}/stats/experimentstatistics/{0}/{1}/{2}/csv?testproposals={3}'.format( [startDate,endDate,beamline,testproposals]));
+};

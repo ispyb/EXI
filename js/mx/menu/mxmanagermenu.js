@@ -122,7 +122,18 @@ MXManagerMenu.prototype.getManagerMenu = function() {
 
             datacollectionForm.load(datacollectionData);
             datacollectionForm.show();
-        }
+        } else if (item.text == "Experiments Statistics") {
+             var experimentsForm = new ExperimentsForm();
+             /*var keys = ["# Images", "Transmission", "Res. (corner)", "En. (Wave.)", "Omega range", "Omega start (total)",
+             "Exposure Time", "Flux start", "Flux end", "Detector Distance", "X Beam", "Y Beam", "Kappa", "Phi",
+             "Synchrotron Current"];*/
+             var keys = ["Images", "Transmission", "Res. (corner)", "En. (Wave.)", "Omega start (total)",
+                          "Exposure Time", "Flux", "Flux End", "Detector Distance", "X Beam", "Y Beam", "Kappa", "Phi",
+                          "Axis Start", "Axis End", "Axis Range" ,"Beam Size X", "Beam Size Y"];
+             var experimentsData = {title : "Experiments", keys : keys};
+             experimentsForm.load(experimentsData);
+             experimentsForm.show();
+         }
 
 	}
 
@@ -144,7 +155,13 @@ MXManagerMenu.prototype.getManagerMenu = function() {
                                          //icon : '../images/icon/ic_insert_chart_black_36dp.png',
                                          handler: onItemCheck,
                                          disabled : false
-                                     }
+                                    },
+                                    {
+                                       text: 'Experiments Statistics',
+                                       //icon : '../images/icon/ic_insert_chart_black_36dp.png',
+                                       handler: onItemCheck,
+                                       disabled : false
+                                    }
 
 								]
 							}
