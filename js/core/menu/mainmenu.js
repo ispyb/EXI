@@ -19,7 +19,10 @@ MainMenu.prototype.getMenuItems = function() { return [];};
 /**
  * If there is a credential then home tab will redirect to the welcome page (either manager or user)
  */
-MainMenu.prototype.getHomeItem = function(homeLabel = "Home") {
+MainMenu.prototype.getHomeItem = function(homeLabel) {
+    if (homeLabel == null || homeLabel == ""){
+        homeLabel = "Home";
+    }
 	return {
 		text : this._convertToHTMLWhiteSpan(homeLabel),
 		cls : 'ExiSAXSMenuToolBar',
