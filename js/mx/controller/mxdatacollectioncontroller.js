@@ -22,7 +22,8 @@ MxDataCollectionController.prototype.notFound = ExiGenericController.prototype.n
 */
 MxDataCollectionController.prototype.init = function() {
 	var _this = this;
-	var listView;	
+	var listView;
+
 	Path.map("#/mx/datacollection/protein_acronym/:acronmys/main").to(function() {
 		var mainView = new DataCollectionMxMainView();
 		EXI.addMainPanel(mainView);
@@ -32,6 +33,31 @@ MxDataCollectionController.prototype.init = function() {
 		};
 		EXI.getDataAdapter({onSuccess : onSuccess}).mx.dataCollection.getByAcronymList(this.params['acronmys']);
 	}).enter(this.setPageBackground);
+
+    Path.map("#/mx/proposal/:proposal/datacollection/sample/:sampleId/main").to(function() {
+
+        var redirection = "#/mx/datacollection/sample/" + this.params['sampleId'] +"/main";
+        var proposal = this.params['proposal'];
+        if (EXI.credentialManager.getConnections().length > 0){
+            ExiGenericController.prototype.redirect( this.params['proposal'], redirection);
+        }
+        else{
+            ExiGenericController.prototype.authenticateAndRedirect(this.params['proposal'], redirection);
+        }
+    }).enter(this.setPageBackground);
+
+	Path.map("#/mx/datacollection/sample/:sampleId/main").to(function() {
+
+	    var proposals = EXI.credentialManager.getCredentials()[0].activeProposals;
+        var mainView = new DataCollectionMxMainView({sampleId: this.params['sampleId'], proposal : proposals[0]});
+        EXI.addMainPanel(mainView);
+        EXI.hideNavigationPanel();
+        var onSuccess = function(sender, data){
+            debugger;
+            mainView.loadCollections(data);
+        };
+        EXI.getDataAdapter({onSuccess : onSuccess}).mx.dataCollection.getBySampleId(this.params['sampleId']);
+    }).enter(this.setPageBackground);
     
 	
 	Path.map("#/mx/proposal/:proposal/datacollection/session/:sessionId/main").to(function() {		

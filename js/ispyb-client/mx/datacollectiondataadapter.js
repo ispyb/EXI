@@ -33,6 +33,13 @@ DataCollectionDataAdapter.prototype.getByAcronymList= function(acronymList){
 };
 
 /**
+* @method getBySampleId
+*/
+DataCollectionDataAdapter.prototype.getBySampleId= function(sampleId){
+    this.get('/{token}/proposal/{proposal}/mx/datacollection/sample/{0}/list'.format( [sampleId]));
+};
+
+/**
 * @method getDataCollectionViewBySessionId
 */
 DataCollectionDataAdapter.prototype.getDataCollectionViewBySessionId= function(sessionId){

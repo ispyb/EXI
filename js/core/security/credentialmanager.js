@@ -219,7 +219,7 @@ CredentialManager.prototype.logout = function (username, roles, token, url) {
 
 CredentialManager.prototype.getActiveProposal = function(){
 	var credentials = this.getCredentials();
-	return credentials[0].activeProposals
+	return credentials[0].activeProposals;
 };
 
 
