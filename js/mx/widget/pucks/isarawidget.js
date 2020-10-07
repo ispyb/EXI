@@ -87,7 +87,7 @@ ISARAWidget.prototype.onRender = function () {
 }
 
 /**
-* Creates the particular structure of the FlexHCD
+* Creates the particular structure of the ISARA
 *
 * @method createStructure
 */
