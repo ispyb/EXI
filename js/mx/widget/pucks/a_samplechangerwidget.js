@@ -391,7 +391,6 @@ SampleChangerWidget.prototype.createHCDStructure = function (data) {
 * @return The puck with the corresponding id
 */
 SampleChangerWidget.prototype.findPuckById = function (id) {
-    debugger;
 	var allPucks = this.getAllPucks();
 	return _.find(allPucks, function(o) {return o.puckWidget.id == id}).puckWidget;
 };

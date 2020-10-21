@@ -33,7 +33,6 @@ function ContainerPrepareSpreadSheet(args){
 */
 ContainerPrepareSpreadSheet.prototype.getPanel = function() {
     var _this = this;
-    debugger;
     this.store = Ext.create('Ext.data.Store', {
         storeId:'spreadSheedStore',
         fields:['shippingName', 'shippingId', 'barCode', 'parcelName', 'containerCode', 'containerType', 'sampleCount', 'beamlineName','beamlineCombo','sampleChangerLocation','dewarId','containerId','capacity'],
