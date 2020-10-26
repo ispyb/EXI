@@ -12,8 +12,12 @@
             </div>    
 
             <span class="help-block">
-                <span class="glyphicons glyphicons-question-sign"></span> Do you need help? Click 
-                <a target='_blank' href='https://github.com/ispyb/EXI/wiki/Fill-shipment-from-CSV'>here.</a> 
+                <span class="glyphicons glyphicons-question-sign"></span> Do you need help? Click
+                {@eq key=siteName value="MAXIV"}
+                    <a target='_blank' href='https://www.maxiv.lu.se/accelerators-beamlines/beamlines/biomax/user-access/how-to-prepare-sample-shipments-with-exi-at-max-iv/'>here.</a>
+                {:else}
+                    <a target='_blank' href='https://github.com/ispyb/EXI/wiki/Fill-shipment-from-CSV'>here.</a>
+                {/eq}
                 Examples can be found here:
                 {@eq key=siteName value="MAXIV"}
                     <a target='_blank' href='../csv/example3_MAXIV.csv'>

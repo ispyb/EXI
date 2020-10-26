@@ -1,4 +1,4 @@
-# For more information go to https://github.com/ispyb/EXI/wiki/Fill-shipment-from-CSV,,,,,,,,,,,,,,,,,,,,,,,,,,,
+# For more information go to https://www.maxiv.lu.se/accelerators-beamlines/beamlines/biomax/user-access/how-to-prepare-sample-shipments-with-exi-at-max-iv/,,,,,,,,,,,,,,,,,,,,,,,,,,,
 #parcel name, container name, container type, container position, protein acronym, sample acronym, pin barcode, SPG, cellA, cellB, cellC, cellAlpha, cellBeta, cellGamma, experimentType, aimed Resolution, required Resolution, beam diameter, number of positions, aimed multiplicity, aimed completeness, forced SPG, radiation sensitivity, smiles, total rot. angle, min osc. angle, observed resolution, comments
 parcelA3,containerA4,Unipuck,1,5HT3,testtes2t1,,,,,,,,,Default,1,2,3,4,5,6,P1,100,,40,0.2,1.6,comments
 parcelA3,containerA4,Unipuck,2,5HT3,testtes2t1,,,,,,,,,Default,1,2,3,4,5,6,P1,100,,41,0.2,1.6,comments
