@@ -31,7 +31,7 @@ RUN npm install -g bower grunt-cli && \
 	bower cache clean && \
 	bower install
 
-RUN grunt --force
+RUN grunt --force -v
 RUN mkdir dist && mv mx min dependency images tracking fonts css csv dev saxs reports viewer bower_components index.html dist
 
 FROM nginx:1.15.0-alpine
