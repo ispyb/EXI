@@ -28,9 +28,9 @@ RUN npm i npm@latest -g
 RUN npm install -g bower grunt-cli && \
 	echo '{ "allow_root": true }' > /root/.bowerrc && \
 	npm install -D grunt && \
-	npm install && \
-	bower cache clean && \
-	bower install -V -E
+	npm install 
+#RUN	bower cache clean && \
+#	bower install -V -E
 
 RUN grunt --force -v
 RUN mkdir dist && mv mx min dependency images tracking fonts css csv dev saxs reports viewer bower_components index.html dist
