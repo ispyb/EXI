@@ -25,11 +25,15 @@ RUN apk --update add git
 RUN apk --update add nodejs 
 #RUN rm -rf /var/cache/apk/* && \
 RUN npm install -g bower grunt-cli && \
+    npm -v && \
+    bower -v && \
+    grunt -v && \
 	echo '{ "allow_root": true }' > /root/.bowerrc && \
 	npm install -D grunt && \
+	grunt -v && \
 	npm install && \
 	bower cache clean && \
-	bower install
+	bower install -V
 
 RUN grunt --force -v
 RUN mkdir dist && mv mx min dependency images tracking fonts css csv dev saxs reports viewer bower_components index.html dist
