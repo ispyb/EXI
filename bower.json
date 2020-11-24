@@ -50,6 +50,6 @@
   "devDependencies": {},
   "resolutions": {
     "lightbox2": "2.8.2",
-    "jquery": "~3.1.0"
+    "jquery": "2.2.4"
   }
 }
