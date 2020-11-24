@@ -30,8 +30,8 @@ RUN npm install -g bower grunt-cli && \
 	npm install -D grunt && \
 	npm install 
 RUN	bower cache clean && \
-    bower install bootstrap#3.3.7 && \
-	bower install -V -E --config.interactive=false
+    bower install bootstrap#3.3.7
+RUN	bower install -V -E --config.interactive=false
 
 RUN grunt --force -v
 RUN mkdir dist && mv mx min dependency images tracking fonts css csv dev saxs reports viewer bower_components index.html dist
