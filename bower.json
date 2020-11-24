@@ -27,7 +27,7 @@
     "tests"
   ],
   "dependencies": {
-    "handsontable": "*",
+    "handsontable": "8.1.0",
     "jquery-lazy": "~0.6.1",
     "dygraphs": "1.1.1",
     "qunit": "~1.22.0",
@@ -38,7 +38,7 @@
     "dustjs-linkedin": "^2.7.2",
     "dustjs-helpers": "^1.7.3",
     "lightbox2": "2.8.2",
-    "bootstrap": "3.3.7",
+    "bootstrap": "^3.3.7",
     "bootstrap-year-calendar": "^1.1.0",
     "notifyjs": "*",
     "lodash": "^4.17.11",
