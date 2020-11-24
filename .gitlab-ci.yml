@@ -9,13 +9,13 @@ build_image:
   only:
     - master
     
-#build_image_test:
-#  stage: build
-#  script:
-#    - docker build . --no-cache -t docker.maxiv.lu.se/exi-test:$CI_COMMIT_SHA -t docker.maxiv.lu.se/exi-test:latest
-#    - docker push docker.maxiv.lu.se/exi-test
-#  except:
-#    - master
+build_image_test:
+  stage: build
+  script:
+    - docker build . --no-cache -t docker.maxiv.lu.se/exi-test:$CI_COMMIT_SHA -t docker.maxiv.lu.se/exi-test:latest
+    - docker push docker.maxiv.lu.se/exi-test
+  except:
+    - master
 
 deploy_image:
   stage: deploy
