@@ -27,8 +27,8 @@
     "tests"
   ],
   "dependencies": {
-    "handsontable": "*",
-    "jquery-lazy": "~0.6.1",
+    "handsontable": "5.0.0",
+    "jquery-lazy": "0.6.4",
     "dygraphs": "1.1.1",
     "qunit": "~1.22.0",
     "vis": "^4.15.0",
