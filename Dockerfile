@@ -24,6 +24,7 @@ RUN rm -rf /var/cache/apk/*
 RUN apk --update add git
 RUN apk --update add nodejs 
 #RUN rm -rf /var/cache/apk/* && \
+RUN npm i npm@latest -g
 RUN npm install -g bower grunt-cli && \
 	echo '{ "allow_root": true }' > /root/.bowerrc && \
 	npm install -D grunt && \
