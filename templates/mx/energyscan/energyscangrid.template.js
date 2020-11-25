@@ -118,15 +118,27 @@
 
                                 <tr>
                                     <td >Inflection Energy</td>
-                                    <td class='column_parameter_value'>{@decimal key="inflectionEnergy" decimals=2 /} keV</td>
+                                    {@eq key=decimals value=3}
+                                        <td class='column_parameter_value'>{@decimal key="inflectionEnergy" decimals=3 /} keV</td>
+                                    {:else}
+                                        <td class='column_parameter_value'>{@decimal key="inflectionEnergy" decimals=2 /} keV</td>
+                                    {/eq}
                                 </tr>
                                 <tr>
                                     <td >Ip f'</td>
-                                    <td class='column_parameter_value'>{@decimal key="inflectionFPrime" decimals=2 /} e<sup>-</sup> </td>
+                                    {@eq key=decimals value=3}
+                                        <td class='column_parameter_value'>{@decimal key="inflectionFPrime" decimals=3 /} e<sup>-</sup> </td>
+                                    {:else}
+                                        <td class='column_parameter_value'>{@decimal key="inflectionFPrime" decimals=2 /} e<sup>-</sup> </td>
+                                    {/eq}
                                 </tr>
                                 <tr>
                                     <td >Ip f''</td>
-                                    <td class='column_parameter_value'>{@decimal key="inflectionFDoublePrime" decimals=2 /} e<sup>-</sup></td>
+                                    {@eq key=decimals value=3}
+                                        <td class='column_parameter_value'>{@decimal key="inflectionFDoublePrime" decimals=2 /} e<sup>-</sup></td>
+                                    {:else}
+                                        <td class='column_parameter_value'>{@decimal key="inflectionFDoublePrime" decimals=2 /} e<sup>-</sup></td>
+                                    {/eq}
                                 </tr>
 
                                 <tr>
