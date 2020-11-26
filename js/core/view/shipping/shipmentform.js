@@ -94,12 +94,14 @@ ShipmentForm.prototype.load = function(shipment,hasExportedData) {
 	else{
 		$("#" + _this.id + "-send-button").removeClass("disabled");
 	}
+	var warningProcessingLabel = "";
 	var statusButtonLabel = "Send shipment to the facility";
     if (EXI.credentialManager.getCredentials()[0].isManager() && shipment != null){
         if (shipment.shippingStatus == _this.sentToFacilityStatus || shipment.shippingStatus == _this.sentToFacilityStatus2){
             statusButtonLabel = "Mark shipment at facility";
         } else if (shipment.shippingStatus == _this.processingStatus){
             statusButtonLabel = "Mark shipment at facility";
+            warningProcessingLabel = "The shipment and all its contents cannot be modified while it's in 'Processing' status";
         } else if (shipment.shippingStatus == _this.atFacilityStatus || shipment.shippingStatus == _this.atFacilityStatus2){
             statusButtonLabel = "Send shipment to the user";
         } /*else if (shipment.shippingStatus == _this.sentToUserStatus || shipment.shippingStatus == _this.sentToUserStatus2){
@@ -115,6 +117,7 @@ ShipmentForm.prototype.load = function(shipment,hasExportedData) {
 		reimbText : reimbText,
 		hidePrintLabelWarning : hidePrintLabelWarning,
 		statusButtonLabel: statusButtonLabel,
+		warningProcessingLabel: warningProcessingLabel,
 		fedexCode : fedexCode}, function(err, out){
 		html = out;
 	});

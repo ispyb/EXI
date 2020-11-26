@@ -56,8 +56,8 @@
 
 
 <div class="form-group row">
-   
-   
+
+
    <div class="col-md-12" >
     {@gt key=nbReimbDewars value=0}
         <div class="alert alert-warning">
@@ -120,6 +120,15 @@
 
 </div>
 
+{@ne key=warningProcessingLabel value=""}
+<div class="form-group row">
+   <div class="col-md-12" >
+    <div class="alert alert-warning">
+        {warningProcessingLabel}
+    </div>
+   </div>
+</div>
+{/ne}
 
 {!
 
