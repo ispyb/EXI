@@ -43,14 +43,14 @@ function AutoProcIntegrationGrid(args) {
 }
 
 AutoProcIntegrationGrid.prototype.parseData = function(data) {        
-     /** Adding stats */     
+     /** Adding stats */
     for(var i = 0; i < data.length; i++){
          try{             
             data[i].statistics = this.getStatistics(data[i]);
             data[i].collapsed = this.getCollapseStatistics(data[i]);
             data[i].phasing = this.getPhasing(data[i]);              
-            if (data[i].v_datacollection_summary_phasing_autoProcProgramId){                
-                var fileName = data[i].DataCollection_imagePrefix;                         
+            if (data[i].v_datacollection_summary_phasing_autoProcProgramId){
+                var fileName = data[i].DataCollection_imagePrefix +"_" +data[i].DataCollection_dataCollectionNumber;
                 if (data[i].v_datacollection_summary_phasing_anomalous){
                     fileName = fileName +  "_anomalous";
                 }
