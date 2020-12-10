@@ -63,7 +63,8 @@ ExiMX.prototype.getHeader = function(){
     var html = "";
     var data = {
         version         : ExtISPyB.version,
-        release_date    : ExtISPyB.release_date
+        release_date    : ExtISPyB.release_date,
+        site            : EXI.credentialManager.getSiteName()
        
         
     };
