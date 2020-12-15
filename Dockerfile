@@ -58,14 +58,14 @@ RUN npm --version
 #RUN touch /root/.ssh/known_hosts
 #RUN ssh-keyscan gitlab.maxiv.lu.se >> /root/.ssh/known_hosts
 RUN cd /opt/tomcat/webapps && mkdir /opt/tomcat/webapps/EXI
-COPY . /opt/tomcat/webapps/EXI/
+COPY . /opt/tomcat/webapps/ROOT/
 
 #############################
 # BUILDING EXI
 #############################
 
 #RUN echo '{ "proxy":"http://proxy.esrf.fr:3128", "https-proxy":"http://proxy.esrf.fr:3128"}' > /opt/tomcat/webapps/EXI/.bowerrc
-RUN npm config set strict-ssl false && cd /opt/tomcat/webapps/EXI && npm install && npm install -g bower --allow-root && npm install -g grunt && bower install --allow-root  && grunt --force
+RUN npm config set strict-ssl false && cd /opt/tomcat/webapps/ROOT && npm install && npm install -g bower --allow-root && npm install -g grunt && bower install --allow-root  && grunt --force
 RUN apt-get install -y apt-utils procps
 
 ##################
