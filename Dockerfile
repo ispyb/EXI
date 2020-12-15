@@ -1,42 +1,79 @@
-FROM node:9.11.2-alpine AS build
+FROM debian:9
+ENV branch master
+ENV DEBIAN_FRONTEND noninteractive
+ENV JAVA_HOME /opt/jdk
+ENV TOMCAT_VERSION 8.5.14
+#######################
+# PACKAGES
+#######################
 
-WORKDIR /home/node/app
+#RUN apt-get update && apt-get install -y wget unzip supervisor mysql-server mysql-client git vim python-suds python-pip && pip install requests
+RUN apt-get update && apt-get install -y wget unzip supervisor mysql-server mysql-client git vim python-suds python-pip
 
-COPY . .
+#######################
+# INSTALLING JAVA
+#######################
 
-#RUN apk update && \
-#apk add git && \
-#npm install && npm install -g bower grunt && \
-#bower install --allow-root && \
-#bower install lodash --allow-root && \
-#bower install zeroclipboard --allow-root && \
-#bower install three --allow-root && \
-#bower install uglymol --allow-root && \
-#bower install jszip --allow-root && \
-#grunt --force && \
-#grunt dev --force && \
-#bower list --allow-root
+#RUN cd /opt &&  wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u112-b15/jdk-8u112-linux-x64.tar.gz
+#RUN cd /opt && tar xvfz jdk-8u112-linux-x64.tar.gz && ln -s jdk1.8.0_112 jdk
+RUN apt-get install -y default-jdk
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/jre
+RUN export PATH=$JAVA_HOME/jre/bin:$PATH
+#############################
+# DOWNLOADING APACHE TOMCAT
+#############################
 
-RUN apk update && \
-	apk add git && \
-	apk add ca-certificates  
-RUN rm -rf /var/cache/apk/*
-RUN apk --update add git
-RUN apk --update add nodejs 
-#RUN rm -rf /var/cache/apk/* && \
-RUN npm i npm@latest -g
-RUN npm install -g bower grunt-cli && \
-	echo '{ "allow_root": true }' > /root/.bowerrc && \
-	npm install -D grunt && \
-	npm install && \
-	bower install -V
+# Get Tomcat
+# RUN wget --quiet --no-cookies http://apache.rediris.es/tomcat/tomcat-8/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz -O /tmp/tomcat.tgz && \
+RUN wget --quiet --no-cookies https://archive.apache.org/dist/tomcat/tomcat-8/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz -O /tmp/tomcat.tgz && \
+tar xzvf /tmp/tomcat.tgz -C /opt && \
+mv /opt/apache-tomcat-${TOMCAT_VERSION} /opt/tomcat && \
+rm /tmp/tomcat.tgz && \
+rm -rf /opt/tomcat/webapps/examples && \
+rm -rf /opt/tomcat/webapps/docs && \
+rm -rf /opt/tomcat/webapps/ROOT
 
-RUN grunt --force -v
-RUN mkdir dist && mv mx min dependency images tracking fonts css csv dev saxs reports viewer bower_components index.html dist
+RUN cd /opt  && chmod +x /opt/tomcat/bin/*sh
+RUN sed -i 's/8080/8090/g' /opt/tomcat/conf/server.xml
 
-FROM nginx:1.15.0-alpine
+#############################
+# INSTALLING NPM
+#############################
+RUN apt-get install -y curl
+#RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
+RUN apt-get install -y nodejs
 
-COPY --from=build /home/node/app/dist /usr/share/nginx/html
-COPY assets/nginx.conf /etc/nginx/
+#RUN apt-get update && apt-get install -y nodejs nodejs-legacy
 
-EXPOSE 8084
+RUN node --version
+RUN npm --version
+#RUN apt-get install -y npm nodejs nodejs-legacy
+
+#############################
+# DOWNLOADING EXI
+#############################
+#RUN mkdir /root/.ssh/
+#ADD id_rsa /root/.ssh/id_rsa
+#RUN touch /root/.ssh/known_hosts
+#RUN ssh-keyscan gitlab.maxiv.lu.se >> /root/.ssh/known_hosts
+RUN cd /opt/tomcat/webapps && mkdir /opt/tomcat/webapps/EXI
+COPY . /opt/tomcat/webapps/EXI/
+
+#############################
+# BUILDING EXI
+#############################
+
+#RUN echo '{ "proxy":"http://proxy.esrf.fr:3128", "https-proxy":"http://proxy.esrf.fr:3128"}' > /opt/tomcat/webapps/EXI/.bowerrc
+RUN npm config set strict-ssl false && cd /opt/tomcat/webapps/EXI && npm install && npm install -g bower --allow-root && npm install -g grunt && bower install --allow-root  && grunt --force
+RUN apt-get install -y apt-utils procps
+
+##################
+# DOCKER SUPERVISOR
+##################
+RUN mkdir -p /var/log/supervisor
+COPY supervisord.conf /etc/supervisor/supervisord.conf
+COPY tomcat.conf /etc/supervisor/conf.d/tomcat.conf
+#EXPOSE 9001
+
+CMD ["/usr/bin/supervisord"]
