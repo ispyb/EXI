@@ -64,7 +64,7 @@ ExiMX.prototype.getHeader = function(){
     var data = {
         version         : ExtISPyB.version,
         release_date    : ExtISPyB.release_date,
-        site            : EXI.credentialManager.getSiteName()
+        site            : ExtISPyB.default_site
        
         
     };

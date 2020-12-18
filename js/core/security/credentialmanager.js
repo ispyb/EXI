@@ -114,7 +114,7 @@ CredentialManager.prototype.getDefaultSampleChanger = function () {
 */
 CredentialManager.prototype.getSiteName = function(){
 	var connections = this.getConnections();
-	var siteName = "ESRF";
+	var siteName = ExtISPyB.default_site;
 	if (connections != null && connections.length > 0){
 	    siteName = connections[0].site;
 	}

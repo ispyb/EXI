@@ -10,7 +10,7 @@ AuthenticationDataAdapter.prototype.getUrl = DataAdapter.prototype.getUrl;
 AuthenticationDataAdapter.prototype.authenticate = function(user, password, url){
 	var _this = this;
 	
-	var site = "ESRF";
+	var site = ExtISPyB.default_site;
 	/** SITE **/
 	if (url.indexOf("embl-hamburg") != -1){
 		site = "EMBL";
@@ -20,6 +20,9 @@ AuthenticationDataAdapter.prototype.authenticate = function(user, password, url)
 	}
     if (url.indexOf("maxiv") != -1){
         site = "MAXIV";
+    }
+    if (url.indexOf("localhost") != -1){
+            site = ExtISPyB.default_site;
     }
 	this.post('/authenticate?site=' + site, 
 					{
