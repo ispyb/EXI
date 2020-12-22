@@ -113,6 +113,7 @@ CredentialManager.prototype.getDefaultSampleChanger = function () {
 * @return
 */
 CredentialManager.prototype.getSiteName = function(){
+debugger;
 	var connections = this.getConnections();
 	var siteName = ExtISPyB.default_site;
 	if (connections != null && connections.length > 0){
@@ -154,7 +155,6 @@ CredentialManager.prototype.hasActiveProposal = function(){
 
 
 CredentialManager.prototype.isUserAllowedAddProtein = function () {
-  debugger;
   var connectors = this.getConnections();
   var result = false;
   var cred = this.getCredentials()[0];
