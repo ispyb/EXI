@@ -56,7 +56,6 @@ ElectronDensityViewer.prototype.getToolBar = function() {
                 text: 'Debugger',
                 handler: function() {
                     _this.XV;
-                    debugger;
                 }
             }
 	];

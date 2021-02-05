@@ -4,8 +4,8 @@
             <th>             
             {.spaceGroup}             
             </th>
-            <th style='padding:0 15px 0 15px;'>Completeness</th>
             <th style='padding:0 15px 0 15px;'>Res.</th>
+            <th style='padding:0 15px 0 15px;'>Compl.</th>
             <th>Rmerge</th>
         </tr>
         

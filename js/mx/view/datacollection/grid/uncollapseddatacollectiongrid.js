@@ -91,6 +91,24 @@ UncollapsedDataCollectionGrid.prototype.displayDataCollectionTab = function(targ
             } else {
                 value.formattedFileTemplate = value.fileTemplate.replace("%04d", "????");
             };
+            // Multiply ccHalf values by 100
+            if (value.onlineresults.length > 0) {
+                if (value.onlineresults[0].innerShell) {
+                    value.onlineresults[0].innerShell.ccHalf = value.onlineresults[0].innerShell.ccHalf * 100;
+                } else {
+                	value.onlineresults[0].innerShell.ccHalf = 0
+                }
+                if (value.onlineresults[0].outerShell) {
+                    value.onlineresults[0].outerShell.ccHalf = value.onlineresults[0].outerShell.ccHalf * 100;
+                } else {
+                	value.onlineresults[0].outerShell.ccHalf = 0
+                }
+                if (value.onlineresults[0].overall) {
+                    value.onlineresults[0].overall.ccHalf = value.onlineresults[0].overall.ccHalf * 100;
+                } else {
+                	value.onlineresults[0].overall.ccHalf = 0
+                }
+            }
         });
         var html = "";
         

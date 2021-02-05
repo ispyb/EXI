@@ -7,8 +7,6 @@
         <th style='padding:0 15px 0 15px;'>Res.</th>
         <th style='padding:0 15px 0 15px;'>Completeness</th>
         <th style='padding:0 15px 0 15px;'>Rmerge</th>                    
-        <th style='padding:0 15px 0 15px;'>I/sigma</th>                    
-        <th style='padding:0 15px 0 15px;'>CC1/2</th>                    
     </tr>
     </thead>
     <tbody>
@@ -29,8 +27,6 @@
             {/gte}
         </td>    
         <td style='padding:0 15px 0 15px;'>{@decimal key="overall.rMerge" decimals=1}{/decimal}</td>
-        <td style='padding:0 15px 0 15px;'>{@decimal key="overall.meanIOverSigI" decimals=1}{/decimal}</td>
-        <td style='padding:0 15px 0 15px;'>{@decimal key="overall.ccHalf" decimals=1}{/decimal}</td>
     </tr>
 
     <tr>
@@ -49,8 +45,6 @@
                 {/gte}
         </td>
         <td style='padding:0 15px 0 15px;'>{@decimal key="innerShell.rMerge" decimals=1}{/decimal}</td>
-        <td style='padding:0 15px 0 15px;'>{@decimal key="innerShell.meanIOverSigI" decimals=1}{/decimal}</td>
-        <td style='padding:0 15px 0 15px;'>{@decimal key="innerShell.ccHalf" decimals=1}{/decimal}</td>
     </tr>
 
     <tr>
@@ -69,8 +63,6 @@
             
         </td>
         <td style='padding:0 15px 0 15px;'>{@decimal key="outerShell.rMerge" decimals=1}{/decimal}</td>
-        <td style='padding:0 15px 0 15px;'>{@decimal key="outerShell.meanIOverSigI" decimals=1}{/decimal}</td>
-        <td style='padding:0 15px 0 15px;'>{@decimal key="outerShell.ccHalf" decimals=1}{/decimal}</td>
     </tr>
     
         </tbody>

@@ -433,7 +433,6 @@ ContainerPrepareSpreadSheet.prototype.load = function(containers, sampleChangerW
 * @return
 */
 ContainerPrepareSpreadSheet.prototype.updateSampleChangerLocation = function (containerId, location) {
-    debugger;
     var _this = this;
     var recordsByContainerId = this.getRowsByContainerId(containerId);
 

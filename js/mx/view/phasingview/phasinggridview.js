@@ -56,6 +56,7 @@ PhasingGridView.prototype.printHTML = function(target) {
                         spaceGroup       : spaceGroup,                                    
                         hasPhasing          : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "PHASING"}) != null,
                         hasRefinement       : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "REFINEMENT"}) != null,                
+                        hasLigandFit        : _.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "LIGAND_FIT"}) != null,
                         downloadCSV      : EXI.getDataAdapter().mx.phasing.getCSVPhasingFilesByPhasingAttachmentIdURL(getCSV(stepsBySpaceGroup)),
                         downloadFilesUrl : EXI.getDataAdapter().mx.phasing.getDownloadFilesByPhasingStepIdURL(getStepId(stepsBySpaceGroup))
                         
@@ -166,7 +167,7 @@ PhasingGridView.prototype.printHTML = function(target) {
 	                                    toBePushed["uglymol"] = '../viewer/uglymol/index.html?pdb=' + pdbUrl + '&map1=' + mapUrl1 + '&map2=' + mapUrl2;
 	                                }
 	                            }
-                            } else if (step == "REFINEMENT") {
+                            } else if ((step == "REFINEMENT") || (step == "LIGAND_FIT")) {
                                 var refinedPdbFileId = -1;
                                 var mrPdbFileId = -1;
                                 var peaksFileId = -1;
@@ -187,9 +188,11 @@ PhasingGridView.prototype.printHTML = function(target) {
                                 	var csvsArr = [];
                                 }
                                 if ("mapFileName" in steps[z]) {
-                                    var mapFileNamesArr = steps[z].mapFileName.split(",");
-                                    for (var i = 0; i < mapFileNamesArr.length; i++) {
-                                        mapFileNamesArr[i] = mapFileNamesArr[i].slice(0, -4)
+                                    if (steps[z].mapFileName){
+                                        var mapFileNamesArr = steps[z].mapFileName.split(",");
+                                        for (var i = 0; i < mapFileNamesArr.length; i++) {
+                                            mapFileNamesArr[i] = mapFileNamesArr[i].slice(0, -4)
+                                        }
                                     }
                                 } else {
                                     var mapFileNamesArr = [];
@@ -261,13 +264,16 @@ PhasingGridView.prototype.printHTML = function(target) {
                
                /**
                 StepS for Phasing are: PREPARE,  SUBSTRUCTUREDETERMINATION, PHASING AND MODELBUILDING
-                StepS for Molecular replacement are: PHASING AND REFINEMENT */
+                StepS for Molecular replacement are: PHASING, REFINEMENT and LIGAND_FIT*/
 
                /** If there is model building then we will display modelbuilding */
                if (_.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "MODELBUILDING"}) != null){
                         node = getNodeByPhasingStep(node, stepsBySpaceGroup, "MODELBUILDING");
                }
                else{
+                   if (_.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "LIGAND_FIT"}) != null){
+                       node = getNodeByPhasingStep(node, stepsBySpaceGroup, "LIGAND_FIT");                                  
+                   } else
                    if (_.find(stepsBySpaceGroup, {"PhasingStep_phasingStepType" : "REFINEMENT"}) != null){
                        node = getNodeByPhasingStep(node, stepsBySpaceGroup, "REFINEMENT");                                  
                    }
@@ -328,7 +334,6 @@ PhasingGridView.prototype.printHTML = function(target) {
         }
         
         var html = "";
-       
         if (_this.PhasingStep_method == "MR"){
             
             dust.render("mr.mxdatacollectiongrid.template",  {parsed : parsed, hasScroll : _this.hasScroll}, function(err, out) {

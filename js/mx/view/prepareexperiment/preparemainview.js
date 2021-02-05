@@ -252,7 +252,7 @@ PrepareMainView.prototype.load = function() {
                 var beamline = _.filter(EXI.credentialManager.getBeamlinesByTechnique("MX"),{"name":beamlinesSelected[0]});
                 if (beamline.length > 0) {
                     _this.loadSampleChangerView.createSampleChangerWidget(beamline[0].sampleChangerType,beamline[0].name);
-                } else {
+                } else {                    
                     _this.loadSampleChangerView.createSampleChangerWidget(EXI.credentialManager.getDefaultSampleChanger(), "");
                     _this.loadSampleChangerView.hidePanel();
                 }

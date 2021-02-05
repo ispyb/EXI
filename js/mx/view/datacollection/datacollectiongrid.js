@@ -78,7 +78,6 @@ DataCollectionGrid.prototype._getAutoprocessingStatistics = function(data) {
     var autoProcIntegrationIds = getArrayValues(data.autoProcIntegrationId);
     var anomalous = getArrayValues(data.Autoprocessing_anomalous);        
     var processingStatus = getArrayValues(data.processingStatus);
-
     /** These arrays only will get value if there are statistics it means they did not failed */
     var autoProc_spaceGroups = getArrayValues(data.AutoProc_spaceGroups);
     var autoProcIds = getArrayValues(data.autoProcIds);
@@ -87,6 +86,8 @@ DataCollectionGrid.prototype._getAutoprocessingStatistics = function(data) {
     var resolutionsLimitLow = getArrayValues(data.resolutionsLimitLow);
     var scalingStatisticsTypes = getArrayValues(data.scalingStatisticsTypes);
     var rMerges = getArrayValues(data.rMerges);
+    var meanIOverSigIList = getArrayValues(data.meanIOverSigIList);
+    var ccHalfList = getArrayValues(data.ccHalfList);
     var cell_a = getArrayValues(data.Autoprocessing_cell_a);
     var cell_b = getArrayValues(data.Autoprocessing_cell_b);
     var cell_c = getArrayValues(data.Autoprocessing_cell_c);
@@ -130,6 +131,8 @@ DataCollectionGrid.prototype._getAutoprocessingStatistics = function(data) {
             resolutionsLimitHigh: Number(resolutionsLimitHigh[counter]),
             resolutionsLimitLow: Number(resolutionsLimitLow[counter]),
             rMerge: Number(rMerges[counter]),
+            meanIOverSigI: Number(meanIOverSigIList[counter]),
+            ccHalf: Number(ccHalfList[counter]),
             spaceGroup: autoProc_spaceGroups[counter],
             cell_a: cell_a[counter],
             cell_b: cell_b[counter],
@@ -341,7 +344,6 @@ DataCollectionGrid.prototype.parseEMData =  function(data){
             
              /** Parsing grid squares */
             for (var i = 0; i < parseFloat(data.numberOfGridSquares); i++){
-                debugger
                 var stats = _.find(data.stats, function(o){return o.dataCollectionId == dataCollectionList[i]});
                 var motionCount =  "";
                 var ctfCount =  "";   

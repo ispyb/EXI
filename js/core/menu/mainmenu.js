@@ -117,12 +117,13 @@ MainMenu.prototype.getShipmentItem = function() {
 
 		return Ext.create('Ext.menu.Menu', {
 			items : [ 
-						{
-							text : 'Add new',
+						/*{
+							text : 'Add new --',
 							icon : '../images/icon/add.png',
 							handler : onItemCheck,
 							disabled : addNewDisabled
-						}, {
+						}, */
+						{
 							text : 'List',
 							icon : '../images/icon/ic_list_black_24dp.png',
 							handler : onItemCheck 
@@ -152,6 +153,7 @@ MainMenu.prototype.getShipmentItem = function() {
 					buttons : [ {
 							text : 'Save',
 							handler : function() {
+								debugger
 								shippingEditForm.saveShipment();
 							}
 						}, {

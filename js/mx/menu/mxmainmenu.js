@@ -126,39 +126,3 @@ MXMainMenu.prototype.getOnlineDataAnalisysMenu = function() {
 				handler : onItemCheck }
 		] });
 };
-
-
-/*MXMainMenu.prototype.getProteinCrystalsMenu = function() {
-	function onItemCheck(item, checked) {
-		if (item.text == "My Crystals") {
-			location.hash = "/crystal/nav";
-		}
-		if (item.text == "My Proteins") {
-			location.hash = "/protein/list";
-		}
-		if (item.text == "Puck") {
-			location.hash = "/puck/nav";
-		}
-	}
-	return Ext.create('Ext.menu.Menu', {
-		items : [
-			{
-				text : 'My Crystals',
-				icon : '../images/icon/macromolecule.png',
-				disabled : true,
-				handler : onItemCheck
-			},
-			{
-				text : 'My Proteins',
-				icon : '../images/icon/testtube.png',
-				handler : onItemCheck
-			},
-			{
-				text : 'Puck',
-				disabled : true,
-				icon : '../images/icon/testtube.png',
-				handler : onItemCheck
-			}
-		]
-	});
-};*/

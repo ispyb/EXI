@@ -44,7 +44,7 @@ function PhasingGrid(args) {
  * 
  * 
  */
-PhasingGrid.prototype.load = function(data) {
+PhasingGrid.prototype.load = function(data) {	
 	this.store.loadData(data, false);
 };
 

@@ -7,8 +7,8 @@
                                 <th>Phasing</th>
                                 
                                 <th><abbr title="Phasing Step">PHASING</abbr></th>
-                              
                                 <th><abbr title="Model Building Step">REFINEMENT</abbr></th>
+                                <th><abbr title="Ligand Fit Step">LIGAND_FIT</abbr></th>
                                 <th>MR directory<br>(< 30 days)</th>       
                                 <th>Download</th>       
                                 <th style='color:gray'></th>                                                       
@@ -55,6 +55,15 @@
                                                 {/eq}
                                             {/eq}
                                         </td>
+                                        <td> 
+                                        {@eq key=$idx value=0}
+                                            {@eq key=hasLigandFit type="boolean" value="true"}                           
+                                                <span style='color:green;' class="glyphicon glyphicon-ok"></span>                          
+                                            {:else}
+                                                <span style='color:red;' class="glyphicon glyphicon-remove"></span>
+                                            {/eq}
+                                        {/eq}
+                                    </td>
                                         <td>
                                             <button type="button" class="btn btn-sm" data-toggle="modal" data-target="#myModal{.dataCollectionId}"><span class="glyphicon glyphicon-folder-close" aria-hidden="true"></span></button>
                                             <!-- Modal -->

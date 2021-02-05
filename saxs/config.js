@@ -8,6 +8,7 @@ var ExtISPyB ={
    sites:[
         {
          name:'ESRF',
+         siteName:'ESRF',
          description : 'European Synchroton Radiation Facility',
          icon : '../images/site/esrf.png',
          url:'https://ispyb.esrf.fr/ispyb/ispyb-ws/rest',
@@ -68,6 +69,7 @@ var ExtISPyB ={
 
       {
          name:'ESRF TEST',
+         siteName:'ESRF TEST',
          url:'https://ispyb-valid.esrf.fr/ispyb/ispyb-ws/rest',
          icon : '../images/site/dev.esrf.png',
          exiUrl:'https://ispyb-valid.esrf.fr/ispyb/ispyb-ws/rest',
@@ -127,6 +129,7 @@ var ExtISPyB ={
 
       {
          name:'ESRF lindemaria',
+         siteName:'ESRF lindemaria',
          url:'http://lindemaria:8080/ispyb/ispyb-ws/rest',
          icon : '../images/site/dev.esrf.png',
 		 exiUrl:'http://lindemaria:8080/ispyb/ispyb-ws/rest',
@@ -186,6 +189,7 @@ var ExtISPyB ={
       },
 	       {
          name:'ESRF localhost',
+         siteName:'ESRF localhost',
          url:'http://localhost:8080/ispyb/ispyb-ws/rest',
          icon : '../images/site/dev.esrf.png',
 		 exiUrl:'http://localhost:8080/ispyb/ispyb-ws/rest',

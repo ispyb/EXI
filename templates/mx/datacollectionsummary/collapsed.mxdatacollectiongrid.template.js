@@ -60,7 +60,7 @@
       </div>
       <div class="col-xs-6 col-md-2">
          {#.onlineresults[0]}       
-            {>"sm.completeness.autoproc.mxdatacollectiongrid.template"  /}
+            {>"sm.completeness.autoproc.mxdatacollectiongrid.summary.template"  /}
          {:else}
              {#.screeningresults[0]}
              {>"sm.characterisation.result.mxdatacollectiongrid.template"  /}

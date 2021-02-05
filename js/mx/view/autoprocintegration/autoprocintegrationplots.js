@@ -68,7 +68,6 @@ AutoProcIntegrationPlots.prototype.load = function(data) {
     
     var autoProcIntegrationId = [];
     var spaceGroups = [];
-    debugger;
     autoprocProgram = "";
     for (var i = 0; i < data.length; i++) {
         if (data[i].v_datacollection_summary_phasing_autoProcProgramId){

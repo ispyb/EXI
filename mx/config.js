@@ -256,6 +256,31 @@ var ExtISPyB ={
             ]
          }
       },
+
+  {
+         name:'EMBL',
+         url:'http://ispyb.embl-hamburg.de/ispyb/ispyb-ws/rest',
+         exiUrl:'http://ispyb.embl-hamburg.de/ispyb/ispyb-ws/rest',
+         beamlines:{
+            SAXS:[
+              {
+                   name : "P12"
+               }
+
+            ],
+            MX:[
+               {
+                   name : "P13",
+                   sampleChangerType : 'FlexHCDDual'
+               },
+               {
+                   name : "P14",
+                   sampleChangerType : 'FlexHCDDual'
+               }
+            ]
+         }
+
+      },
        {
            name:'MAXIV',
            description : 'MAX IV Laboratory',

@@ -7,7 +7,7 @@
         <th style='padding:0 15px 0 15px;'>Resolution</th>
         <th style='padding:0 15px 0 15px;'>Multiplicity</th>
         <th style='padding:0 15px 0 15px;'>Completeness</th>
-        <th  style='padding:0 15px 0 15px;'>I/Sigmal</th>
+        <th style='padding:0 15px 0 15px;'>I/Sigmal</th>
         <th style='padding:0 15px 0 15px;'>Rmeas</th>
         <th style='padding:0 15px 0 15px;'>Rmerge</th>
         <th style='padding:0 15px 0 15px;'>Rpim</th>
