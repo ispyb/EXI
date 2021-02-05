@@ -32,5 +32,9 @@
         <td>Sample changer location</td>
         <td  class='column_parameter_value'>{.Container_sampleChangerLocation}</td>
     </tr>
+    <tr>
+        <td>Sample comments</td>
+        <td  class='column_parameter_value' ><span id="comments_{.BLSample_blSampleId}" onmouseover="javascript:$(this).linkify();">{.BLSample_comments}</span></td>
+    </tr>
 </table>       
               
