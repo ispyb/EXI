@@ -40,6 +40,13 @@ DataCollectionDataAdapter.prototype.getBySampleId= function(sampleId){
 };
 
 /**
+* @method getByShippingId
+*/
+DataCollectionDataAdapter.prototype.getByShippingId= function(shippingId){
+    this.get('/{token}/proposal/{proposal}/shipping/{0}/datacollections/list'.format( [shippingId]));
+};
+
+/**
 * @method getDataCollectionViewBySessionId
 */
 DataCollectionDataAdapter.prototype.getDataCollectionViewBySessionId= function(sessionId){
@@ -160,6 +167,15 @@ DataCollectionDataAdapter.prototype.getReportURLByFilterParam = function(filterP
 */
 DataCollectionDataAdapter.prototype.getRtfReportURLByFilterParam = function(filterParam){
    return this.getUrl('/{token}/proposal/{proposal}/mx/datacollection/filterParam/{0}/report/rtf'.format([filterParam]));
+
+};
+
+/**
+* This method downloads a CSV summary for a filter parameter
+* @method getCSVReportURLByFilterParam
+*/
+DataCollectionDataAdapter.prototype.getCSVReportURLByFilterParam = function(filterParam){
+   return this.getUrl('/{token}/proposal/{proposal}/mx/datacollection/filterParam/{0}/report/csv'.format([filterParam]));
 
 };
 

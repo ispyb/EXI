@@ -54,16 +54,40 @@ MxDataCollectionController.prototype.init = function() {
         EXI.addMainPanel(mainView);
         EXI.hideNavigationPanel();
         var onSuccess = function(sender, data){
-            debugger;
             mainView.loadCollections(data);
         };
         EXI.getDataAdapter({onSuccess : onSuccess}).mx.dataCollection.getBySampleId(this.params['sampleId']);
     }).enter(this.setPageBackground);
-    
-	
+
+    Path.map("#/mx/datacollection/proposal/:proposal/shipping/:shippingId/main").to(function() {
+
+        var redirection = "#/mx/datacollection/shipping/" + this.params['shippingId'] +"/main";
+        var proposal = this.params['proposal'];
+        if (EXI.credentialManager.getConnections().length > 0){
+            ExiGenericController.prototype.redirect( this.params['proposal'], redirection);
+        }
+        else{
+            ExiGenericController.prototype.authenticateAndRedirect(this.params['proposal'], redirection);
+        }
+    }).enter(this.setPageBackground);
+
+    Path.map("#/mx/datacollection/shipping/:shippingId/main").to(function() {
+
+        var proposals = EXI.credentialManager.getCredentials()[0].activeProposals;
+        var mainView = new DataCollectionMxMainView({shippingId: this.params['shippingId'], proposal : proposals[0]});
+        EXI.addMainPanel(mainView);
+        EXI.hideNavigationPanel();
+        var onSuccess = function(sender, data){
+            mainView.loadCollections(data);
+        };
+
+        EXI.getDataAdapter({onSuccess : onSuccess}).proposal.shipping.getDataCollections(this.params['shippingId']);
+    }).enter(this.setPageBackground);
+
+
 	Path.map("#/mx/proposal/:proposal/datacollection/session/:sessionId/main").to(function() {
-			
-		var redirection = "#/mx/datacollection/session/" + this.params['sessionId'] +"/main";	
+
+		var redirection = "#/mx/datacollection/session/" + this.params['sessionId'] +"/main";
 		this.proposal = this.params['proposal'];	
 		/** Are we logged in yet? */
 		if (EXI.credentialManager.getConnections().length > 0){			
@@ -132,15 +156,15 @@ MxDataCollectionController.prototype.init = function() {
     }).enter(this.setPageBackground);
 
     Path.map("#/mx/datacollection/datacollectionid/:datacollectionid/main").to(function() {
-			var mainView = new DataCollectionMxMainView({sessionId : this.params['sessionId'], proposal : this.params['proposal']});
-			EXI.addMainPanel(mainView);
-			EXI.hideNavigationPanel();
-			EXI.setLoadingMainPanel(true);
-			var onSuccess = function(sender, data){				
-				mainView.loadCollections(data);
-				EXI.setLoadingMainPanel(false);
-			};
-			EXI.getDataAdapter({onSuccess : onSuccess}).mx.dataCollection.getByDataCollectionId(this.params['datacollectionid']);
+        var mainView = new DataCollectionMxMainView({sessionId : this.params['sessionId'], proposal : this.params['proposal']});
+        EXI.addMainPanel(mainView);
+        EXI.hideNavigationPanel();
+        EXI.setLoadingMainPanel(true);
+        var onSuccess = function(sender, data){
+            mainView.loadCollections(data);
+            EXI.setLoadingMainPanel(false);
+        };
+        EXI.getDataAdapter({onSuccess : onSuccess}).mx.dataCollection.getByDataCollectionId(this.params['datacollectionid']);
 	}).enter(this.setPageBackground);
     
     

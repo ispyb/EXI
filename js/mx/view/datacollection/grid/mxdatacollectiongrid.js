@@ -20,7 +20,7 @@ function MXDataCollectionGrid(args) {
 	if (args) {
         if (args.proposal) {
             this.proposal = args.proposal;
-			if (this.proposal.substring(0,2).toLowerCase() == 'fx'){
+			if (this.proposal.toString().substring(0,2).toLowerCase() == 'fx'){
 				this.hideSendReport = false
 			}
         }
@@ -145,6 +145,18 @@ MXDataCollectionGrid.prototype.getToolBar = function() {
                             }
                         }
                     },
+                    {
+                        text: "<span class='glyphicon glyphicon-download-alt'> CSV summary</span>",
+                        id : 'xlsBtn',
+                        tooltip: 'Download Session Summary as CSV',
+                        margin: '2 0 2 5',
+                        handler : function(){
+                            debugger;
+                            if (_this.csvUrl != null){
+                                location.href = _this.csvUrl;
+                            }
+                        }
+                    },
 					{                     
                         text: "<span class='glyphicon glyphicon-download-alt'> PDF analysis</span>",
                         id : 'pdfBtn2',
@@ -266,6 +278,7 @@ MXDataCollectionGrid.prototype.load = function(dataCollectionGroup) {
     for (sessionId in sessionsId){
         this.pdfUrl = EXI.getDataAdapter().mx.dataCollection.getReportURLBySessionId(sessionId);
         this.rtfUrl = EXI.getDataAdapter().mx.dataCollection.getRtfReportURLBySessionId(sessionId);
+        this.csvUrl = EXI.getDataAdapter().mx.dataCollection.getCSVReportURLByFilterParam(sessionId);
 		this.pdfAnalysisUrl = EXI.getDataAdapter().mx.dataCollection.getAnalysisReportURLBySessionId(sessionId);
         this.rtfAnalysisUrl = EXI.getDataAdapter().mx.dataCollection.getRtfAnalysisReportURLBySessionId(sessionId);
 		this.sendPdfUrl = EXI.getDataAdapter().mx.dataCollection.sendPdfReport(sessionId);
@@ -294,6 +307,7 @@ MXDataCollectionGrid.prototype.filterBy = function(searchTerm) {
     Ext.getCmp(this.id + "_found").setText(filtered.length + " items found");
 	this.pdfUrl = EXI.getDataAdapter().mx.dataCollection.getReportURLByFilterParam(searchTerm);
 	this.rtfUrl = EXI.getDataAdapter().mx.dataCollection.getRtfReportURLByFilterParam(searchTerm);
+	this.csvUrl = EXI.getDataAdapter().mx.dataCollection.getCSVReportURLByFilterParam(searchTerm);
 	this.pdfAnalysisUrl = EXI.getDataAdapter().mx.dataCollection.getAnalysisReportURLByFilterParam(searchTerm);
     this.rtfAnalysisUrl = EXI.getDataAdapter().mx.dataCollection.getRtfAnalysisReportURLByFilterParam(searchTerm);
     return filtered;
