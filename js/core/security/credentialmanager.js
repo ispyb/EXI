@@ -107,15 +107,19 @@ CredentialManager.prototype.getDefaultSampleChanger = function () {
 };
 
 /**
- *  Returns the site name
- *
- * @method getSiteName
- * @return
- */
-CredentialManager.prototype.getSiteName = function () {
-  var connections = this.getConnections();
-  var siteName = connections[0].site;
-  return siteName;
+*  Returns the site name
+*
+* @method getSiteName
+* @return
+*/
+CredentialManager.prototype.getSiteName = function(){
+debugger;
+	var connections = this.getConnections();
+	var siteName = ExtISPyB.default_site;
+	if (connections != null && connections.length > 0){
+	    siteName = connections[0].site;
+	}
+	return siteName;
 };
 
 /**
@@ -134,24 +138,23 @@ CredentialManager.prototype.getBeamlinesByTechnique = function (technique) {
   return beamlines;
 };
 
-CredentialManager.prototype.hasActiveProposal = function () {
-  var credentials = this.getCredentials();
-
-  for (var i = 0; i < credentials.length; i++) {
-    if (credentials[i].activeProposals.length > 0) {
-      /*for (var j = 0; j < credentials[i].activeProposals.length; j++) {
-        if (credentials[i].activeProposals[j] != credentials[i].username) {
-          return true;
+CredentialManager.prototype.hasActiveProposal = function(){
+	var credentials = this.getCredentials();
+	var result = false;
+    for (var i = 0; i < credentials.length; i++) {
+        if (credentials[i].activeProposals.length > 0){
+            for (var j = 0; j < credentials[i].activeProposals.length; j++) {
+                if (credentials[i].activeProposals[j] != credentials[i].username){
+                    result = true;
+                }
+            }
         }
-	  }*/
-      if (credentials[i].activeProposals.length > 0) return true;
-    }
-  }
-  return false;
+	}
+	return result;
 };
 
+
 CredentialManager.prototype.isUserAllowedAddProtein = function () {
-  debugger;
   var connectors = this.getConnections();
   var result = false;
   var cred = this.getCredentials()[0];
@@ -212,6 +215,13 @@ CredentialManager.prototype.logout = function (username, roles, token, url) {
   localStorage.removeItem("credentials");
   this.onLogout.notify();
 };
+
+
+CredentialManager.prototype.getActiveProposal = function(){
+	var credentials = this.getCredentials();
+	return credentials[0].activeProposals;
+};
+
 
 CredentialManager.prototype.setActiveProposal = function (username, proposal) {
   var credentials = this.getCredentials();

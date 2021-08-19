@@ -24,6 +24,9 @@ function CSVContainerSpreadSheet(args){
 	/** Array of arrays with the list of crystal form by protein acronym */
     this.crystalFormList = {};
 
+    this.acronyms;
+    this.forceUpdate = false;
+
   	this.crystalFormIndex = -1;
 	// this.unitCellIndex = -1;
 	this.spaceGroupIndex = -1;
@@ -75,6 +78,7 @@ function CSVContainerSpreadSheet(args){
 CSVContainerSpreadSheet.prototype.getPanel = SpreadSheet.prototype.getPanel;
 CSVContainerSpreadSheet.prototype.setLoading = SpreadSheet.prototype.setLoading;
 CSVContainerSpreadSheet.prototype.getAcronyms = SpreadSheet.prototype.getAcronyms;
+CSVContainerSpreadSheet.prototype.reloadAcronyms = SpreadSheet.prototype.reloadAcronyms;
 CSVContainerSpreadSheet.prototype.getHeaderWidth = SpreadSheet.prototype.getHeaderWidth;
 CSVContainerSpreadSheet.prototype.getHeaderId = SpreadSheet.prototype.getHeaderId;
 CSVContainerSpreadSheet.prototype.getHeaderText = SpreadSheet.prototype.getHeaderText;
@@ -399,7 +403,7 @@ CSVContainerSpreadSheet.prototype.getParcels = function() {
 			containerVOs : containerVOs
 		});		
 	}	
-	debugger       
+
 	return dewars3vo;
 };
 
@@ -653,13 +657,15 @@ CSVContainerSpreadSheet.prototype.getHeader = function() {
 	}
 
 
-	var proteinParameterRenderer = function(instance, td, row, col, prop, value, cellProperties){	
-		if ((value == undefined)||(value == "")){					
+	var proteinParameterRenderer = function(instance, td, row, col, prop, value, cellProperties){
+		if ((value == undefined)||(value == "")){
 			td.className = 'custom-row-text-required';			
 			return;
 		}
 		
-		var protein = _.find(_this.getAcronyms(), function(o){ return o==value;});		
+		var protein = _.find(_this.getAcronyms(), function(o){
+		    return o==value;
+		});
 		if (!protein){
 			td.className = 'custom-row-text-required';			
 		}		
@@ -721,7 +727,7 @@ CSVContainerSpreadSheet.prototype.getHeader = function() {
 			td.innerHTML = value;										
 	}
 
-	if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+	/*if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
         header = [
             // { text :'', id :'crystalId', column : {width : 100}},
             { text : 'Parcel  <br /> Name', 	id: 'parcel', column : {width : 80, renderer: parcelDisplayCell}},
@@ -745,7 +751,7 @@ CSVContainerSpreadSheet.prototype.getHeader = function() {
             { text :'Pin <br />Barcode', id : 'Pin BarCode', column : {width : 60}},
             { text :'Comments', id :'Comments', column : {width : 200}}
             ];
-	} else {
+	} else {*/
 	 
         header = [
             // { text :'', id :'crystalId', column : {width : 100}}, 
@@ -758,9 +764,10 @@ CSVContainerSpreadSheet.prototype.getHeader = function() {
 			{ text : '#', 	id: 'position', column : {width : 20, renderer: samplePositionParameterRenderer}},
             { text :'Protein <br />Acronym', id :'Protein Acronym', 	column :  {
                                                                                         width : 80,
-                                                                                        type: 'dropdown',
+                                                                                        type: 'autocomplete',
+                                                                                        filter: 'true',
 																						renderer: proteinParameterRenderer,
-                                                                                        source: this.getAcronyms()
+                                                                                        source: this.getAcronyms(true)
                                                                                     }
             }, 
             { text :'Sample<br /> Name', id :'Sample Name', column : {
@@ -809,7 +816,7 @@ CSVContainerSpreadSheet.prototype.getHeader = function() {
 			{ text :'Observed <br />Resolution', id :'Observed Resolution',column : {width : 60, renderer:numericParameterRenderer}},
             { text :'Comments', id :'Comments', column : {width : 200}}
             ];
-    }
+   /* }*/
 
     
 

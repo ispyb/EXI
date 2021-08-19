@@ -2,6 +2,7 @@ function AuthenticationForm(){
     this.singleSite =false;
     this.siteURL = null;
     this.icon = null;
+    this.loginMessage = "";
    
 	this.onAuthenticate = new Event(this);
 }
@@ -25,6 +26,7 @@ AuthenticationForm.prototype.getAuthenticationForm = function(){
     
     var _this = this;
     var margin =  '30 0 0 10';
+    this.loginMessage = ExtISPyB.loginMessage;
      if (ExtISPyB.sites){
         if (ExtISPyB.sites.length > 1){
             margin = '10 0 0 10';
@@ -138,7 +140,7 @@ AuthenticationForm.prototype.getPanel = function(){
             this.icon = ExtISPyB.sites[0].icon;                                                            
         }
     }
-    
+
 	return Ext.create('Ext.form.Panel', {
 	    bodyPadding: 5,
 	    width: 400,
@@ -160,7 +162,7 @@ AuthenticationForm.prototype.getPanel = function(){
         ],
        
 	    buttons: [ 
-		        'If you are a User, please use the beamline proposal login.',
+		        this.loginMessage,
                 {
                     text: 'Login',
                     formBind: true,

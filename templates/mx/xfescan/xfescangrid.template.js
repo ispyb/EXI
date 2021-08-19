@@ -13,7 +13,7 @@
                         {@formatDate date=.startTime format="DD-MM-YYYY HH:mm:ss" /}
                         </span>                                   
                     </span>
-                <p><b>{.filename}</b></p>   
+                <p><b>{.scanFileFullPath}</b></p>
                
 
 
@@ -95,10 +95,13 @@
                             
                     </div>
                     <div class="col-xs-2 col-md-2">
-                              
-                               <a href="#/mx/xfe/{.xfeFluorescenceSpectrumId}/main" target="_blank" data-title=""> 
-                                    <img alt="Image not found"  src="{.url}" />                    
-                                </a>
+                        {@eq key=showLink value=true}
+                            <a href="#/mx/xfe/{.xfeFluorescenceSpectrumId}/main" target="_blank" data-title="">
+                        {/eq}
+                               <img alt="Image not found"  src="{.url}" />
+                        {@eq key=showLink value=true}
+                            </a>
+                        {/eq}
                     </div>        
                 </div>
             </div>

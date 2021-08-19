@@ -181,7 +181,6 @@ ParcelGrid.prototype.fillTab = function (tabName, dewars) {
 			_this.panel.setLoading();
 			dewar["sessionId"] = dewar.firstExperimentId;
 			dewar["shippingId"] = _this.shipment.shippingId;
-			
 			var onSuccess = function(sender, shipment) {				
 				_this.panel.setLoading(false);							
 				_this.refreshReimbursementContentHTML( _this.getCurrentReimbursedDewars(shipment.dewarVOs), _this.getAuthorizedReimbursedDewars(shipment.sessions));
@@ -190,8 +189,24 @@ ParcelGrid.prototype.fillTab = function (tabName, dewars) {
 			};
 			EXI.getDataAdapter({onSuccess : onSuccess}).proposal.dewar.saveDewar(_this.shipment.shippingId, dewar);
     }
-	
-	for ( var i in dewars) {
+
+    function onRemoved(sender, dewar) {
+        _this.panel.setLoading();
+
+        var onRemoveSuccess = function (sender, shipment) {
+            _this.panel.setLoading(false);
+            _this.load(shipment);
+            _this.panel.doLayout();
+        };
+
+        var onError = function(sender,error) {
+            EXI.setError(error.responseText);
+        };
+
+	    EXI.getDataAdapter({onSuccess : onRemoveSuccess, onError : onError}).proposal.dewar.removeDewar(_this.shipment.shippingId, dewar.dewarId );
+    }
+
+    for ( var i in dewars) {
 		var parcelPanel = new ParcelPanel({
 			height : 110,
 			width : this.panel.getWidth()*0.9,
@@ -203,6 +218,7 @@ ParcelGrid.prototype.fillTab = function (tabName, dewars) {
 		this.parcelPanels[tabName].insert(parcelPanel.getPanel());
 		parcelPanel.load(this.dewars[i],this.shipment,this.samples[this.dewars[i].dewarId],this.withoutCollection[this.dewars[i].dewarId]);
 		parcelPanel.onSavedClick.attach(onSaved);
+		parcelPanel.onRemovedClick.attach(onRemoved);
 	}
 	this.parcelPanels[tabName].doLayout();
 	this.panel.doLayout();
@@ -236,10 +252,17 @@ ParcelGrid.prototype.edit = function(dewar) {
 					_this.panel.setLoading(false);
 					window.close();
 				};
+				var onError = function(sender, error) {
+                	_this.panel.setLoading(false);
+                    // cannot be saved, an error occurred
+                    BUI.showError(error.responseText);
+                    return;
+                };
 				dewar["sessionId"] = dewar.firstExperimentId;
 				dewar["shippingId"] = _this.shipment.shippingId;
 				EXI.getDataAdapter({
-					onSuccess : onSuccess
+					onSuccess : onSuccess,
+					onError : onError
 				}).proposal.dewar.saveDewar(_this.shipment.shippingId, dewar);
 			}
 		}, {
@@ -247,7 +270,7 @@ ParcelGrid.prototype.edit = function(dewar) {
 			handler : function() {
 				window.close();
 			}
-		} ]
+		}]
 	});
 	window.show();
 };

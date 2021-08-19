@@ -13,15 +13,20 @@ MXMainMenu.prototype.setText = MainMenu.prototype.setText;
 MXMainMenu.prototype.getHomeItem = MainMenu.prototype.getHomeItem;
 MXMainMenu.prototype.getHelpMenu = MainMenu.prototype.getHelpMenu;
 MXMainMenu.prototype.getShipmentItem = MainMenu.prototype.getShipmentItem;
-//MXMainMenu.prototype.getProteinCrystalsMenu = MainMenu.prototype.getProteinCrystalsMenu;
+MXMainMenu.prototype.getProteinCrystalsMenu = MainMenu.prototype.getProteinCrystalsMenu;
 MXMainMenu.prototype.getDataExplorerMenu = MainMenu.prototype.getDataExplorerMenu;
 
 
 
 MXMainMenu.prototype.getMenuItems = function() {
-
+    var synchTxt = "SMIS";
+    var homeLabel = "Home";
+    if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+        synchTxt = "DUO";
+        var homeLabel = "Proposals";
+    }
 	return [
-		this.getHomeItem(),
+		this.getHomeItem(homeLabel),
 		this.getShipmentItem(),
 
 			{
@@ -51,7 +56,7 @@ MXMainMenu.prototype.getMenuItems = function() {
 		},
 
 		{
-			text : this._convertToHTMLWhiteSpan("<button type='button' class='btn btn-default'> <span class='glyphicon glyphicon-refresh'></span> SMIS</button>"),
+			text : this._convertToHTMLWhiteSpan("<button type='button' class='btn btn-default'> <span class='glyphicon glyphicon-refresh'></span> " +synchTxt +"</button>"),
 			cls : 'ExiSAXSMenuToolBar',
 			handler : function(){
 				EXI.setLoadingMainPanel("Synch is running");
@@ -62,7 +67,16 @@ MXMainMenu.prototype.getMenuItems = function() {
 					EXI.setLoadingMainPanel(false);
 				}
 
-				EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.proposal.synchSMIS();
+                if (EXI.credentialManager.hasActiveProposal()) {
+                    EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.proposal.synchSMIS();
+                } else {
+                    if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+                        EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.proposal.synchSMISByUsername();
+                    } else {
+                        EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.proposal.synchSMIS();
+                    }
+                }
+
 
 			}
 		},
@@ -111,51 +125,4 @@ MXMainMenu.prototype.getOnlineDataAnalisysMenu = function() {
 				group : 'theme',
 				handler : onItemCheck }
 		] });
-};
-
-
-MXMainMenu.prototype.getProteinCrystalsMenu = function() {
-	function onItemCheck(item, checked) {
-		if (item.text == "My Crystals") {
-			location.hash = "/crystal/nav";
-		}
-		if (item.text == "My Proteins") {
-			location.hash = "/protein/list";
-		}
-		if (item.text == "Puck") {
-			location.hash = "/puck/nav";
-		}
-                if (item.text == "Ligands") {
-                        location.hash = "/ligands/list";
-                }
-
-	}
-	return Ext.create('Ext.menu.Menu', {
-		items : [
-			/**{
-				text : 'My Crystals',
-				icon : '../images/icon/macromolecule.png',
-				disabled : true,
-				handler : onItemCheck
-			},**/
-			{
-				text : 'My Proteins',
-				icon : '../images/icon/testtube.png',
-				handler : onItemCheck
-			},
-
-			{
-                                text : 'Ligands',
-                                icon : '../images/icon/macromolecule.png',
-                                handler : onItemCheck
-                        },
-
-			/**{
-				text : 'Puck',
-				disabled : true,
-				icon : '../images/icon/testtube.png',
-				handler : onItemCheck
-			}**/
-		]
-	});
 };

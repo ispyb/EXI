@@ -1,13 +1,13 @@
-function DatacollectionForm(args) {
+function ExperimentsForm(args) {
     this.id = BUI.id();
 	this.data = {id : this.id};
 }
 
-DatacollectionForm.prototype.show = function(){
+ExperimentsForm.prototype.show = function(){
     var _this = this;
-
+    
     var html = "";
-    dust.render("datacollection.form.template", this.data, function(err,out){
+    dust.render("experiments.form.template", this.data, function(err,out){
         html = out;
     });
 
@@ -34,11 +34,12 @@ DatacollectionForm.prototype.show = function(){
     $("#" + this.id + "-modal").on('hidden.bs.modal', function(){
         $(this).remove();
     });
-
+    
     $("#" + this.id + "-modal").modal();
 };
 
-DatacollectionForm.prototype.load = function(data) {
+ExperimentsForm.prototype.load = function(data) {
+debugger;
 	this.data = data;
     if (!this.data) {
         this.data = {};
@@ -62,7 +63,7 @@ DatacollectionForm.prototype.load = function(data) {
 	}
 
     var html = "";
-    dust.render("datacollection.form.template", this.data, function (err, out) {
+    dust.render("experiments.form.template", this.data, function (err, out) {
         html = out;
     });
 
@@ -79,59 +80,67 @@ DatacollectionForm.prototype.load = function(data) {
     });
 }
 
-DatacollectionForm.prototype.plot = function() {
+ExperimentsForm.prototype.plot = function() {
 	var startDate= moment($("#" + this.id + "-start-date").val(),"DD-MM-YYYY").format("YYYY-MM-DD");
 	var endDate= moment($("#" + this.id + "-end-date").val(),"DD-MM-YYYY").format("YYYY-MM-DD");
 	var checkedValues = [];
-	$('.datacollection-checkbox:checked').each(function(i){
+	$('.experiments-checkbox:checked').each(function(i){
 		checkedValues.push($(this).val());
 	});
-	var imageslimit = $("#" + this.id + "-type").val();
+
+	if (this.data.keys) {
+        this.data.chunkedKeys = _.chunk(this.data.keys,Math.ceil(this.data.keys.length/3.0));
+    }
+
 	var proposals = $("#" + this.id + "-proposals").val();
-	if (proposals == ""){
+	/*if (proposals == ""){
 	    proposals = "0";
-	}
+	}*/
 	var beamline = $("#" + this.id + "-beamline").val();
 
 	if (startDate != "Invalid date" && endDate != "Invalid date" && endDate >= startDate && checkedValues.length > 0) {
 		url = "";
+		debugger;
 		if (beamline != ""){
-			url = EXI.getDataAdapter().mx.stats.getDatacollectionStatisticsByDateAndBeamline(imageslimit,startDate,endDate,proposals,beamline);
+			url = EXI.getDataAdapter().mx.stats.getExperimentsStatisticsByDateAndBeamline(startDate,endDate,proposals,beamline);
 		} else {
-			url = EXI.getDataAdapter().mx.stats.getDatacollectionStatisticsByDate(imageslimit,startDate,endDate,proposals);
+			url = EXI.getDataAdapter().mx.stats.getExperimentsStatisticsByDate(startDate,endDate,proposals);
 		}
-		var urlParams = "url=" + url + "&/&title=" + this.data.title + "&/&x=" + checkedValues.toString() + "&";
+		var urlParams = "url=" + url + "&/&title=" + this.data.title + "&/&y=" + checkedValues.toString() + "&/&x=startTime&";
 		if (beamline != ""){
 		    urlParams = urlParams.replace("&beamlinenames=", "&/&beamlinenames=");
 		}
-		window.open("../viewer/bar/index.html?" + urlParams,"_blank");
+		window.open("../viewer/scatter/index.html?" + urlParams,"_blank");
 	} else {
 		$("#" + this.id + "-checkox-div").notify("Set the dates correctly and select the values to plot.", { className : "error",elementPosition: 'top left'});
 	}
 }
 
-DatacollectionForm.prototype.download = function() {
+ExperimentsForm.prototype.download = function() {
 	var startDate= moment($("#" + this.id + "-start-date").val(),"DD-MM-YYYY").format("YYYY-MM-DD");
 	var endDate= moment($("#" + this.id + "-end-date").val(),"DD-MM-YYYY").format("YYYY-MM-DD");
 	var checkedValues = [];
-	$('.datacollection-checkbox:checked').each(function(i){
+	/*$('.experiments-checkbox:checked').each(function(i){
 		checkedValues.push($(this).val());
-	});
-	var imageslimit = $("#" + this.id + "-type").val();
+	});*/
+
 	var proposals = $("#" + this.id + "-proposals").val();
 	if (proposals == ""){
 	    proposals = "0";
 	}
 	var beamline = $("#" + this.id + "-beamline").val();
 
-	if (startDate != "Invalid date" && endDate != "Invalid date" && endDate >= startDate && checkedValues.length > 0) {
+    var type = $("#" + this.id + "-type").val();
+	//if (startDate != "Invalid date" && endDate != "Invalid date" && endDate >= startDate && checkedValues.length > 0) {
+	if (startDate != "Invalid date" && endDate != "Invalid date" && endDate >= startDate) {
 		url = "";
 		if (beamline != ""){
-			url = EXI.getDataAdapter().mx.stats.getDatacollectionStatisticsByDateAndBeamline(imageslimit,startDate,endDate,proposals,beamline);
+			url = EXI.getDataAdapter().mx.stats.getExperimentsStatisticsByDateAndBeamline(startDate,endDate,proposals,beamline);
 		} else {
-			url = EXI.getDataAdapter().mx.stats.getDatacollectionStatisticsByDate(imageslimit,startDate,endDate,proposals);
+			url = EXI.getDataAdapter().mx.stats.getExperimentsStatisticsByDate(startDate,endDate,proposals);
 		}
-		var urlParams = "url=" + url + "&/&title=" + this.data.title + "&/&x=" + checkedValues.toString() + "&";
+
+		var urlParams = "url=" + url + "&/&title=" + this.data.title + "&/&y=" + checkedValues.toString() + "&/&x=recordTimeStamp&";
 		if (beamline != ""){
 		    urlParams = urlParams.replace("&beamlinenames=", "&/&beamlinenames=");
 		}
@@ -147,10 +156,10 @@ DatacollectionForm.prototype.download = function() {
                 width: 0,
                 height: 0,
                 css: 'display:none;visibility:hidden;height: 0px;',
-                src: url
+                src: url + "&/&title=" + this.data.title + "&/&y=" + checkedValues.toString() + "&/&x=recordTimeStamp&"
             });
 		//window.open("../viewer/bar/index.html?" + urlParams,"_blank");
 	} else {
-		$("#" + this.id + "-checkox-div").notify("Set the dates correctly and select the values to downlaod.", { className : "error",elementPosition: 'top left'});
+		$("#" + this.id + "-checkox-div").notify("Set the dates correctly and select the values to download.", { className : "error",elementPosition: 'top left'});
 	}
 }

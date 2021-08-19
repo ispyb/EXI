@@ -53,6 +53,7 @@ function ParcelPanel(args) {
 	}
 	
 	this.onSavedClick = new Event(this);
+	this.onRemovedClick = new Event(this);
 
 }
 
@@ -326,6 +327,7 @@ ParcelPanel.prototype.addContainerToDewar = function(containerVO) {
 	}	
 };
 
+
 /**
 * It displays a window with a case form
 *
@@ -367,10 +369,32 @@ ParcelPanel.prototype.showCaseForm = function() {
 						handler : function() {
 							window.close();
 						}
-					} ]
+					}, {
+                        text : 'Remove',
+                        cls : 'btn-remove',
+                        tooltip: 'Remove',
+                        //disabled : _this.shippingStatus == "processing" || !_this.withoutCollection,
+                        handler : function() {
+                            function showResult(result){
+                                if (result == "yes"){
+                                    _this.onRemovedClick.notify(_this.dewar);
+                                }
+                            }
+                            Ext.MessageBox.show({
+                                title:'Remove',
+                                msg: 'Removing the parcel from this shipment will remove also its content. <br />Are you sure you want to continue?',
+                                buttons: Ext.MessageBox.YESNO,
+                                fn: showResult,
+                                animateTarget: 'mb4',
+                                icon: Ext.MessageBox.QUESTION
+                            });
+                            window.close();
+                        }
+                    } ]
 	});
 	window.show();
 };
+
 
 /**
 * It displays a window with the reimbursement form

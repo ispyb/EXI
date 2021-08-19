@@ -58,6 +58,7 @@ CSVPuckFormView.prototype.showReturnWarning = PuckFormView.prototype.showReturnW
 CSVPuckFormView.prototype.getSamplesFromProposal = PuckFormView.prototype.getSamplesFromProposal;
 
 
+
 CSVPuckFormView.prototype.getToolBar = function() {
 	var _this = this;
 	return [
@@ -85,6 +86,18 @@ CSVPuckFormView.prototype.getToolBar = function() {
 			    }
 			},
 	        "->",
+	        {
+	            text:'Add Protein',
+	            //iconCls: 'icon-clear-group',
+	            id: "add_protein_puck_item",
+	            width : 150,
+	            height : 30,
+                /*scope: this,*/
+                disabled : true,
+                handler: function () {
+                    _this.addProtein();
+                }
+	        },
 	        {
 	            text: 'Save',
                 id: this.id + "_save_button",
@@ -115,6 +128,40 @@ CSVPuckFormView.prototype.displayErrors = function(errors, panelId, message) {
 			return true;
 		}
 	}
+};
+
+CSVPuckFormView.prototype.addProtein = function(){
+    var _this = this;
+    var proteinEditForm = new ProteinEditForm({width : 600, height : 700});
+
+    proteinEditForm.onSaved.attach(function (sender, protein) {
+        _this.containerSpreadSheet.reloadAcronyms();
+        //_this.save(false);
+        window.close();
+    });
+
+    var window = Ext.create('Ext.window.Window', {
+        title : 'Protein',
+        height : 500,
+        width : 700,
+        padding : '10 10 10 10',
+        modal : true,
+        layout : 'fit',
+        items : [ proteinEditForm.getPanel() ],
+        buttons : [ {
+                text : 'Save',
+                handler : function() {
+                    proteinEditForm.saveProtein();
+                }
+            }, {
+                text : 'Cancel',
+                handler : function() {
+                    window.close();
+                }
+            } ]
+    }).show();
+
+    proteinEditForm.load();
 };
 
 /*
@@ -185,11 +232,10 @@ CSVPuckFormView.prototype.getWarningPanelsHTML = function() {
 	);
 	return html;
 };
+
 CSVPuckFormView.prototype.getPanel = function() {
 	/** Get Samples from Proposal */
 	this.getSamplesFromProposal();
-
-	
 
 	this.panel = Ext.create('Ext.panel.Panel', {
 		autoScroll : true,				
@@ -197,10 +243,15 @@ CSVPuckFormView.prototype.getPanel = function() {
         layout : 'fit',
         padding: 10,
 		border : 0,
-		items :[this.getContainer() ]
-	});
+		items :[this.getContainer()]
+		});
     var _this = this;
     this.panel.on('boxready', function() {
+        if (EXI.credentialManager.isUserAllowedAddProtein()){
+            Ext.getCmp('add_protein_puck_item').enable();
+        } else {
+            Ext.getCmp('add_protein_puck_item').disable();
+        }
         if (_this.onBoxReady){
             _this.onBoxReady();
         }
@@ -215,6 +266,7 @@ CSVPuckFormView.prototype.getContainer = function() {
     if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
         siteName = "MAXIV";
     }
+
     dust.render("csvimportmainview.template", {
         id: "file_" + this.id,
         siteName: siteName
@@ -239,6 +291,7 @@ CSVPuckFormView.prototype.getContainer = function() {
 
         ]
     });
+
     return this.panel;
 
 };
@@ -287,6 +340,7 @@ CSVPuckFormView.prototype.setFileUploadListeners = function() {
 			reader.readAsText(f);
 		}
 	}
+
 	/** Add listener to change */
 	document.getElementById("file_" + _this.id).addEventListener('change', handleFileSelect, false);
 	/** Make button active */

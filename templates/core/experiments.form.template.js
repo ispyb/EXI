@@ -28,16 +28,6 @@
                 </div>
             </div>
             <div class="form-group row">
-                <label class="col-md-2 col-form-label">Number of Images:</label>
-                <div class="col-md-10">
-                    <select id="{id}-type" class="form-control">
-                        {#types}
-                        <option value={.value}>{.display}</option>
-                        {/types}
-                    </select>
-                </div>
-            </div>
-            <div class="form-group row">
                 <label class="col-md-2 col-form-label">Proposals to exclude (comma separated):</label>
                 <div class="col-md-10">
                    <input id="{id}-proposals" type='text' class="form-control" />
@@ -59,7 +49,7 @@
                     {#chunkedKeys}
                         {#.}
                             <div class="col-md-4">
-                                <label><input class="datacollection-checkbox" type="checkbox" value="{.}"> {.}</label>
+                                <label><input class="experiments-checkbox" type="checkbox" value="{.}"> {.}</label>
                             </div>
                         {/.}
                     {/chunkedKeys}

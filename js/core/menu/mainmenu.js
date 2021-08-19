@@ -19,9 +19,12 @@ MainMenu.prototype.getMenuItems = function() { return [];};
 /**
  * If there is a credential then home tab will redirect to the welcome page (either manager or user)
  */
-MainMenu.prototype.getHomeItem = function() { 
+MainMenu.prototype.getHomeItem = function(homeLabel) {
+    if (homeLabel == null || homeLabel == ""){
+        homeLabel = "Home";
+    }
 	return {
-		text : this._convertToHTMLWhiteSpan("Home"),
+		text : this._convertToHTMLWhiteSpan(homeLabel),
 		cls : 'ExiSAXSMenuToolBar',
 		icon : '../images/icon/rsz_ic_home_black_24dp.png',
 		handler : function(){
@@ -72,11 +75,16 @@ MainMenu.prototype.getShipmentItem = function() {
 
 	function getLabContactsMenu() {
 		var _this = this;
+		var addNewDisabled = true;
+		/*if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+				addNewDisabled = false;
+		}*/
 		function onItemCheck(item, checked) {
 			if (item.text == "Add new") {
 				var addressEditForm = new AddressEditForm();
 	
 				addressEditForm.onSaved.attach(function (sender, address) {
+				debugger;
 					window.close();
 					location.hash = "#/proposal/address/" + address.labContactId + "/main";
 				});
@@ -113,9 +121,9 @@ MainMenu.prototype.getShipmentItem = function() {
 							text : 'Add new --',
 							icon : '../images/icon/add.png',
 							handler : onItemCheck,
-							disabled : false
-						},**/
-						 {
+							disabled : addNewDisabled
+						}, */
+						{
 							text : 'List',
 							icon : '../images/icon/ic_list_black_24dp.png',
 							handler : onItemCheck 
@@ -400,6 +408,10 @@ MainMenu.prototype.getAddCredentialMenu = function() {
 MainMenu.prototype.populateCredentialsMenu = function() {
 	this.credentialsMenu.removeAll();
 	var credentialDisplay = "";
+	var logo = "../images/icon/rsz_esrflogo80.gif";
+	if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+	    logo = "../images/icon/maxiv-favicon.ico";
+	}
 	if (EXI.credentialManager.getCredentials() != null) {
 		for (var i = 0; i < EXI.credentialManager.getCredentials().length; i++) {
 			credentialDisplay = EXI.credentialManager.getCredentials()[i].username;
@@ -408,13 +420,13 @@ MainMenu.prototype.populateCredentialsMenu = function() {
 					credentialDisplay = EXI.credentialManager.getCredentials()[i].activeProposals[j] + "@" + EXI.credentialManager.getCredentials()[i].username;
 					this.credentialsMenu.add({
 						text : credentialDisplay,
-						icon : "../images/icon/rsz_esrflogo80.gif",
+						icon : logo,
 						disabled : true });
 				}
 			} else {
 				this.credentialsMenu.add({
 					text : credentialDisplay,
-					icon : "../images/icon/rsz_esrflogo80.gif",
+					icon : logo,
 					disabled : true });
 				
 			}

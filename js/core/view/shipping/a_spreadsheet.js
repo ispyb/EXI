@@ -5,6 +5,7 @@ function SpreadSheet(args){
 	this.containerType = "OTHER";
 	
 	this.acronyms;
+	this.forceUpdate = false;
 	if (args != null) {
 		if (args.height != null) {
 			this.height = args.height;
@@ -44,9 +45,18 @@ SpreadSheet.prototype.setLoading = function (bool) {
 	this.panel.setLoading(bool);
 }
 
-SpreadSheet.prototype.getAcronyms = function() {
-	if (this.acronyms == null){		
-		this.acronyms = _.map(EXI.proposalManager.getProteins(), 'acronym').sort(function(a, b) {
+SpreadSheet.prototype.reloadAcronyms = function() {
+    this.forceUpdate = true;
+    this.acronyms = null;
+    this.acronyms = this.getAcronyms(true);
+}
+
+SpreadSheet.prototype.getAcronyms = function(force) {
+    if (force != null){
+        this.forceUpdate = force;
+    }
+	if (this.acronyms == null){
+		this.acronyms = _.map(EXI.proposalManager.getProteins(this.forceUpdate), 'acronym').sort(function(a, b) {
 			if (a.toLowerCase() < b.toLowerCase()) return -1;
 			if (a.toLowerCase() > b.toLowerCase()) return 1;
 			return 0;
@@ -91,6 +101,7 @@ SpreadSheet.prototype.loadData = function(data){
 			colHeaders: this.getHeaderText(),
 			stretchH: 'last',
 			columns: this.getColumns(),
+			licenseKey: 'non-commercial-and-evaluation',
 	});
 };
 

@@ -32,6 +32,7 @@ function ContainerSpreadSheet(args){
 ContainerSpreadSheet.prototype.getPanel = SpreadSheet.prototype.getPanel;
 ContainerSpreadSheet.prototype.setLoading = SpreadSheet.prototype.setLoading;
 ContainerSpreadSheet.prototype.getAcronyms = SpreadSheet.prototype.getAcronyms;
+ContainerSpreadSheet.prototype.reloadAcronyms = SpreadSheet.prototype.reloadAcronyms;
 ContainerSpreadSheet.prototype.getHeaderWidth = SpreadSheet.prototype.getHeaderWidth;
 ContainerSpreadSheet.prototype.getHeaderId = SpreadSheet.prototype.getHeaderId;
 ContainerSpreadSheet.prototype.getHeaderText = SpreadSheet.prototype.getHeaderText;
@@ -235,7 +236,7 @@ ContainerSpreadSheet.prototype.getSamplesData = function(puck) {
                         (i+1),
                         protein.acronym,
 						sample.name,
-						sample.BLSample_code ,
+						sample.code ,
 						this.getCrystalInfo(crystal),
 						"",
 						diffraction.experimentKind,
@@ -394,7 +395,7 @@ ContainerSpreadSheet.prototype.getPuck = function() {
         }
 
 		sample["name"] = rows[i]["Sample Name"];
-		sample["BLSample_code"] = rows[i]["Pin BarCode"];
+		sample["code"] = rows[i]["Pin BarCode"];
 		sample["smiles"] = rows[i]["Smiles"];
 		sample["location"]= rows[i]["location"];
 		sample["comments"] = rows[i]["Comments"];

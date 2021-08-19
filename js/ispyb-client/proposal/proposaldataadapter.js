@@ -28,6 +28,10 @@ ProposalDataAdapter.prototype.synchSMIS= function(){
 	this.get('/{token}/proposal/{proposal}/update'.format([]));
 };
 
+ProposalDataAdapter.prototype.synchSMISByUsername= function(){
+	this.get('/{token}/proposal/updateProposalsByToken');
+};
+
 ProposalDataAdapter.prototype.getLigandsByProposalId= function(){
 	this.get('/{token}/proposal/{proposal}/ligands/list');
 };

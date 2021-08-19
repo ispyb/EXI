@@ -465,9 +465,9 @@ LoadSampleChangerView.prototype.reloadSampleChangerWidget = function () {
 */
 LoadSampleChangerView.prototype.cleanPreviewPanel = function () {
     this.previewPanelView.clean();
-    if (this.previewPanelView.panel){
-        if(this.previewPanelView.panel.body){
-            this.verticalPanel.remove(this.previewPanelView.panel);
+    if (this.previewPanelView.getPanel()){
+        if(this.previewPanelView.getPanel().body){
+            this.verticalPanel.remove(this.previewPanelView.getPanel());
         }
     }
 };
@@ -490,5 +490,4 @@ LoadSampleChangerView.prototype.hidePanel = function () {
     if (this.previewPanelView.getPanel()){
          this.previewPanelView.getPanel().hidden = true;
     }
-    
 }

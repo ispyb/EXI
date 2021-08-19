@@ -17,11 +17,19 @@ MXManagerMenu.prototype.getPreparationMenu = ManagerMenu.prototype.getPreparatio
 MXManagerMenu.prototype.getDataReductionMenu = ManagerMenu.prototype.getDataReductionMenu;
 MXManagerMenu.prototype.getDataExplorerMenu = ManagerMenu.prototype.getDataExplorerMenu;
 MXManagerMenu.prototype.getOnlineDataAnalisysMenu = ManagerMenu.prototype.getOnlineDataAnalisysMenu;
-MXManagerMenu.prototype.getProteinCrystalsMenu = MXMainMenu.prototype.getProteinCrystalsMenu;
+MXManagerMenu.prototype.getProteinCrystalsMenu = MainMenu.prototype.getProteinCrystalsMenu;
 
 MXManagerMenu.prototype.getMenuItems = function() {
+
+    var synchTxt = "SMIS";
+    var homeLabel = "Home";
+    if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
+        synchTxt = "DUO";
+        homeLabel = "Sessions";
+    }
+
 	return [
-    	this.getHomeItem(),
+    	this.getHomeItem(homeLabel),
     	this.getShipmentItem(),
     	{
                 text : this._convertToHTMLWhiteSpan("Prepare Experiment"),
@@ -31,14 +39,13 @@ MXManagerMenu.prototype.getMenuItems = function() {
 
 				}
 		},
-		/*{
-                text : this._convertToHTMLWhiteSpan("Samples <sub style='font-size:10px;color:orange'>NEW</sub>"),
+
+		{
+                text : this._convertToHTMLWhiteSpan("Proteins & Crystals <sub style='font-size:10px;color:orange'>NEW</sub>"),
                 cls : 'ExiSAXSMenuToolBar',
-				menu : this.getProteinCrystalsMenu() 
-                handler : function(){
-                    location.hash = "#/protein/list";
-                }
-	    },*/
+                menu : this.getProteinCrystalsMenu()
+        },
+
 		{
 				text : this._convertToHTMLWhiteSpan("Data Explorer"),
 				cls : 'ExiSAXSMenuToolBar',
@@ -58,7 +65,7 @@ MXManagerMenu.prototype.getMenuItems = function() {
 		},
 
 		{
-			text : this._convertToHTMLWhiteSpan("<button type='button' class='btn btn-default'> <span class='glyphicon glyphicon-refresh'></span> SMIS</button>"),
+			text : this._convertToHTMLWhiteSpan("<button type='button' class='btn btn-default'> <span class='glyphicon glyphicon-refresh'></span> " +synchTxt +"</button>"),
 			cls : 'ExiSAXSMenuToolBar',
 			handler : function(){
 				EXI.setLoadingMainPanel("Synch is running");
@@ -91,44 +98,6 @@ MXManagerMenu.prototype.getMenuItems = function() {
 };
 
 
-
-MXManagerMenu.prototype.getProteinCrystalsMenu = function() {
-	var _this = this;
-	function onItemCheck(item, checked) {
-		if (item.text == "Autoproc Scaling Statistics") {
-			var scatteringForm = new ScatteringForm();
-
-			var keys = ["ISA", "rPimWithinIPlusIMinus","anomalousMultiplicity","multiplicity","resolutionLimitLow","ccHalf",
-			"strategySubWedgeOrigId","completeness","rMerge","anomalous","meanIOverSigI","ccAno","autoProcScalingId",
-			"nTotalObservations","sigAno","rMeasWithinIPlusIMinus","anomalousCompleteness","resolutionLimitHigh",
-			"fractionalPartialBias","rMeasAllIPlusIMinus","nTotalUniqueObservations","rPimAllIPlusIMinus"];
-
-			var scatteringData = {title : "AutoprocIntegrator", keys : keys};
-
-			scatteringForm.load(scatteringData);
-			scatteringForm.show();
-		}
-	}
-
-	return Ext.create('Ext.menu.Menu', {
-		items : [
-					{
-						text 	: 'Proteins & Crystals',						
-						handler : function(){
-                    		location.hash = "#/protein/list";
-                		}
-					},
-					{
-						text : 'Ligands',
-						icon : '../images/icon/macromolecule.png',
-						handler : function(){
-                    		location.hash = "#/ligands/list";
-                		}
-					}
-			] 
-	});
-};
-
 MXManagerMenu.prototype.getManagerMenu = function() {
 	var _this = this;
 	function onItemCheck(item, checked) {
@@ -144,7 +113,28 @@ MXManagerMenu.prototype.getManagerMenu = function() {
 
 			scatteringForm.load(scatteringData);
 			scatteringForm.show();
-		}
+		} else if (item.text == "Datacollection Statistics") {
+            var datacollectionForm = new DatacollectionForm();
+
+            var keys = ["Datasets", "Samples"];
+
+            var datacollectionData = {title : "Datacollection", keys : keys};
+
+            datacollectionForm.load(datacollectionData);
+            datacollectionForm.show();
+        } else if (item.text == "Experiments Statistics") {
+             var experimentsForm = new ExperimentsForm();
+             /*var keys = ["# Images", "Transmission", "Res. (corner)", "En. (Wave.)", "Omega range", "Omega start (total)",
+             "Exposure Time", "Flux start", "Flux end", "Detector Distance", "X Beam", "Y Beam", "Kappa", "Phi",
+             "Synchrotron Current"];*/
+             var keys = ["Images", "Transmission", "Res. (corner)", "En. (Wave.)", "Omega start (total)",
+                          "Exposure Time", "Flux", "Flux End", "Detector Distance", "X Beam", "Y Beam", "Kappa", "Phi",
+                          "Axis Start", "Axis End", "Axis Range" ,"Beam Size X", "Beam Size Y"];
+             var experimentsData = {title : "Experiments", keys : keys};
+             experimentsForm.load(experimentsData);
+             experimentsForm.show();
+         }
+
 	}
 
 	return Ext.create('Ext.menu.Menu', {
@@ -165,7 +155,13 @@ MXManagerMenu.prototype.getManagerMenu = function() {
                                          //icon : '../images/icon/ic_insert_chart_black_36dp.png',
                                          handler: onItemCheck,
                                          disabled : false
-                                     }
+                                    },
+                                    {
+                                       text: 'Experiments Statistics',
+                                       //icon : '../images/icon/ic_insert_chart_black_36dp.png',
+                                       handler: onItemCheck,
+                                       disabled : false
+                                    }
 
 								]
 							}

@@ -58,13 +58,18 @@ ManagerWelcomeMainView.prototype.activeProposal = function(proposal) {
 
 ManagerWelcomeMainView.prototype.getContainer = function() {
     var _this = this;
+
+    var panelToShow = this.sessionGrid.getPanel();
+    if (EXI.credentialManager.getSiteName().startsWith("MAXIV")) {
+        panelToShow = this.proposalGrid.getPanel()
+    }
 	this.container = Ext.create('Ext.panel.Panel', {
 		autoScroll : true,
         margin : 20,
         cls : 'border-grid',
         tbar : this.getToolbar(),
             items :[
-                this.sessionGrid.getPanel()
+                panelToShow
         ]
 	});
 
@@ -283,15 +288,39 @@ ManagerWelcomeMainView.prototype.loadProposals = function(callback) {
 	EXI.getDataAdapter({onSuccess:onSuccess}).proposal.proposal.getProposals();
 };
 
+/**
+* Retrieves all the sessions on ISPyB and stores them on this.sessions
+* It is useful for fast search later on
+*
+* @method loadSessions
+*/
+ManagerWelcomeMainView.prototype.loadSessions = function(callback) {
+	var _this = this;
+	var onSuccess = function(sender, sessions){
+		_this.sessions = sessions;
+        if (callback){
+            callback();
+        }
+	};
+	EXI.getDataAdapter({onSuccess:onSuccess}).proposal.proposal.getProposals();
+};
+
 ManagerWelcomeMainView.prototype.isUser = function(username) {
        return (!EXI.credentialManager.getCredentialByUserName(username).isManager() && (!EXI.credentialManager.getCredentialByUserName(username).isLocalContact()));
 };
 
-ManagerWelcomeMainView.prototype.load = function(username) {      
+ManagerWelcomeMainView.prototype.load = function(username) {
+
   this.username = username;  
   /** By default for users we load all the sessions and managers only sessions that occurs today */
   if (this.isUser(username)){
-    this.loadSessionsByUsername(username);  
+  if (EXI.credentialManager.getSiteName().startsWith("MAXIV")) {
+    this.loadProposalsByUsername(username);
+  } else {
+    this.loadSessionsByUsername(username);
+  }
+
+
     /** set active proposal */
     this.activeProposal(username);
   }
@@ -319,6 +348,22 @@ ManagerWelcomeMainView.prototype.loadSessionsByUsername = function(username) {
     EXI.getDataAdapter({onSuccess:onSuccess}).proposal.session.getSessionsByToken();
 };
 
+/**
+* Retrieves all sessions for the proposal
+*
+* @method loadSessions
+*/
+ManagerWelcomeMainView.prototype.loadProposalsByUsername = function(username) {
+    this.username = username;
+    var _this = this;
+    this.panel.setLoading(true);
+    function onSuccess(sender, data){
+       _this.displayProposals(data, " proposals for user " + username);
+       _this.panel.setLoading(false);
+    }
+    //EXI.getDataAdapter({onSuccess:onSuccess}).proposal.session.getSessionsByProposal(username);
+    EXI.getDataAdapter({onSuccess:onSuccess}).proposal.proposal.getProposals();
+};
 
 ManagerWelcomeMainView.prototype.loadSessionsByDate = function(username, start, end) { 
   this.username = username;

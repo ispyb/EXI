@@ -31,7 +31,7 @@
                         <div class="col-xs-1 col-md-1">
                             <div class="well" style='font-size:30px;'>{.element}</div>
                         </div>
-                        <div class="col-xs-3 col-md-3">
+                        <div class="col-xs-3 col-md-5">
                             <table class="table table-condensed">
                              
                                 <tr>
@@ -92,29 +92,66 @@
                             <table class="table table-condensed">
                                 <tr>
                                     <td >Peak Energy</td>
+                                    {@eq key=decimals value=3}
                                     <td class='column_parameter_value'>{@decimal key="peakEnergy" decimals=3 /} keV</td>
+                                    {:else}
+                                    <td class='column_parameter_value'>{@decimal key="peakEnergy" decimals=2 /} keV</td>
+                                    {/eq}
                                 </tr>
                                 <tr>
-                                    <td >Pk f'</td> 
+                                    <td >Pk f'</td>
+                                    {@eq key=decimals value=3}
+                                    <td class='column_parameter_value'>{@decimal key="peakFPrime" decimals=3 /} e<sup>-</sup></td>
+                                    {:else}
                                     <td class='column_parameter_value'>{@decimal key="peakFPrime" decimals=2 /} e<sup>-</sup></td>
+                                    {/eq}
                                 </tr>
 
                                 <tr>
                                     <td >Pk f''</td>
-                                    <td class='column_parameter_value'>{@decimal key="peakFDoublePrime" decimals=2 /}e<sup>-</sup></td>
+                                    {@eq key=decimals value=3}
+                                    <td class='column_parameter_value'>{@decimal key="peakFDoublePrime" decimals=3 /} e<sup>-</sup></td>
+                                    {:else}
+                                    <td class='column_parameter_value'>{@decimal key="peakFDoublePrime" decimals=2 /} e<sup>-</sup></td>
+                                    {/eq}
                                 </tr>
 
                                 <tr>
                                     <td >Inflection Energy</td>
-                                    <td class='column_parameter_value'>{@decimal key="inflectionEnergy" decimals=2 /} keV</td>
+                                    {@eq key=decimals value=3}
+                                        <td class='column_parameter_value'>{@decimal key="inflectionEnergy" decimals=3 /} keV</td>
+                                    {:else}
+                                        <td class='column_parameter_value'>{@decimal key="inflectionEnergy" decimals=2 /} keV</td>
+                                    {/eq}
                                 </tr>
                                 <tr>
                                     <td >Ip f'</td>
-                                    <td class='column_parameter_value'>{@decimal key="inflectionFPrime" decimals=2 /} e<sup>-</sup> </td>
+                                    {@eq key=decimals value=3}
+                                        <td class='column_parameter_value'>{@decimal key="inflectionFPrime" decimals=3 /} e<sup>-</sup> </td>
+                                    {:else}
+                                        <td class='column_parameter_value'>{@decimal key="inflectionFPrime" decimals=2 /} e<sup>-</sup> </td>
+                                    {/eq}
                                 </tr>
                                 <tr>
                                     <td >Ip f''</td>
-                                    <td class='column_parameter_value'>{@decimal key="inflectionFDoublePrime" decimals=2 /} e<sup>-</sup></td>
+                                    {@eq key=decimals value=3}
+                                        <td class='column_parameter_value'>{@decimal key="inflectionFDoublePrime" decimals=3 /} e<sup>-</sup></td>
+                                    {:else}
+                                        <td class='column_parameter_value'>{@decimal key="inflectionFDoublePrime" decimals=2 /} e<sup>-</sup></td>
+                                    {/eq}
+                                </tr>
+
+                                <tr>
+                                    <td >Remote Energy</td>
+                                    <td class='column_parameter_value'>{@decimal key="remoteEnergy" decimals=2 /} keV</td>
+                                </tr>
+                                <tr>
+                                    <td >Remote f'</td>
+                                    <td class='column_parameter_value'>{@decimal key="remoteFPrime" decimals=2 /} e<sup>-</sup> </td>
+                                </tr>
+                                <tr>
+                                    <td >Remote f''</td>
+                                    <td class='column_parameter_value'>{@decimal key="remoteFDoublePrime" decimals=2 /} e<sup>-</sup></td>
                                 </tr>
 
 

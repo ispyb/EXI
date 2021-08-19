@@ -231,8 +231,8 @@ ProposalManager.prototype.getStockSolutions = function() {
 /**
 * @method getProteins
 */
-ProposalManager.prototype.getProteins = function() {
-	return this.get()[0].proteins;
+ProposalManager.prototype.getProteins = function(forceUpdate) {
+	return this.get(forceUpdate)[0].proteins;
 };
 
 /**

@@ -5,7 +5,7 @@ function ContainerTypeComboBox(args) {
     this.labelWidth = 200;
     this.width = 500;
     this.initDisabled = false;
-    debugger;
+
     if (EXI.credentialManager.getSiteName().startsWith("MAXIV")){
         this.data = [
                         {"type":"UNIPUCK", "capacity":16}

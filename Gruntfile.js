@@ -55,14 +55,17 @@ module.exports = function(grunt) {
                                     "bower_components/notifyjs/dist/notify.js",
 									"bower_components/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js",
 									"bower_components/bootstrap-multiselect/dist/js/bootstrap-multiselect.js",
-									"bower_components/file-saver/FileSaver.min.js"
+									"bower_components/file-saver/FileSaver.min.js",
+									"bower_components/linkifyjs/linkify.min.js",
+									"bower_components/linkifyjs/linkify-jquery.min.js"
 									]
                         }
                     }
                 },
                 uglify : {
                     prod : {
-                        options : {beautify:true},
+                        options : { beautify:true },
+
                         files : {
                            'min/exi.min.js' : ['min/exi.tools.js', 'min/ispyb-client.js', 'min/exi.js', 'min/exi.mx.js', 'min/exi.saxs.js', 'min/exi.em.js',
                                     'min/exi.test.js',
@@ -223,6 +226,28 @@ module.exports = function(grunt) {
                             'min/precompiled.templates.min.js' : [ 'templates/**/*js' ]
                         }
                     }
+                },
+                asset_cachebuster: {
+                    options: {
+                      buster: Date.now(),
+                      ignore: ['../dependency/ext/build/bootstrap.js',
+                                '../dependency/ext/build',
+                                '../bower_components',
+                                '../js/dust/helpers.js'],
+                      htmlExtension: 'html'
+                    },
+                    build: {
+                      files: {
+                        'mx/index.html': ['mx/index.html'],
+                        'mx/dev.html': ['mx/dev.html'],
+                        'saxs/index.html': ['saxs/index.html'],
+                        'saxs/dev.html': ['saxs/dev.html'],
+                        'test/index.html': ['test/index.html'],
+                        'test/dev.html': ['test/dev.html'],
+                        'tracking/index.html': ['tracking/index.html'],
+                        'tracking/dev.html': ['tracking/dev.html']
+                      }
+                    }
                 }
             });
 
@@ -237,14 +262,15 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-dustjs');
     grunt.loadNpmTasks('grunt-contrib-yuidoc');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-asset-cachebuster');
 
     /** TASKS */
     grunt.task.registerTask('doc', [ 'yuidoc:compile' ]);
     grunt.task
             .registerTask('report', [ 'plato:all', 'plato:saxs', 'plato:mx' ]);
     grunt.task.registerTask('default', [ 'dustjs', // 'jshint:prod',
-            'concat:prod', 'uglify:prod', 'cssmin:prod', 'yuidoc:compile' ]);
+            'concat:prod', 'uglify:prod', 'cssmin:prod', 'yuidoc:compile', 'asset_cachebuster' ]);
     grunt.task.registerTask('dev', [ 'dustjs', 'includeSource:dev',
-            'cssmin:prod', 'wiredep' ]);
+            'cssmin:prod', 'wiredep', 'asset_cachebuster' ]);
 
 };

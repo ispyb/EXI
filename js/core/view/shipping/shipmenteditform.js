@@ -66,13 +66,14 @@ ShipmentEditForm.prototype.load = function(shipment) {
 				sessionsSelectData.push({sessionId : session.sessionId, date : sessionStartDate.toLocaleDateString(), formattedDate : formattedDate, beamLineName : session.beamLineName});
 			}
 		}
-		
-		
+
+
 		dust.render("shipping.edit.form.template", {id : this.id, sessions : sessionsSelectData, to : toData, from : fromData, beamlineName : beamlineName, startDate : startDate, shipment : shipment}, function(err, out){
 			html = out;
 		});
 	} catch (e) {
 		html = "There was an error loading the lab contacts.";
+		//html = e.message;
 	}
 	
 	$('#' + this.id).hide().html(html).fadeIn('fast');
@@ -140,6 +141,13 @@ ShipmentEditForm.prototype.saveShipment = function() {
 		_this.onSaved.notify(shipment);
 	};
 
+	var onError = function(sender, error){
+	    _this.panel.setLoading(false);
+        // cannot be saved, an error occurred
+        BUI.showError(error.responseText);
+        return;
+    };
+
 	/** Cheking params **/
 	if (json.name == "") {
 		BUI.showError("Name field is mandatory");
@@ -152,5 +160,5 @@ ShipmentEditForm.prototype.saveShipment = function() {
 	}
 
 	this.panel.setLoading();
-	EXI.getDataAdapter({onSuccess : onSuccess}).proposal.shipping.saveShipment(json);
+	EXI.getDataAdapter({onSuccess : onSuccess, onError : onError}).proposal.shipping.saveShipment(json);
 }

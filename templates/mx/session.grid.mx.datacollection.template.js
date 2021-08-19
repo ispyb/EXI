@@ -86,13 +86,23 @@
                  {/eq}
             </td>
             <td> <a href='{.dataCollectionURL}'>
-            <?BLSession_protectedData>
-                 {@eq key=BLSession_protectedData value="OK"}
-                         <span class="glyphicon glyphicon-lock" ></span>
-                 {/eq}
-            </BLSession_protectedData>                              
-            <a href='{.dataCollectionURL}'>{.Proposal_proposalCode}{.Proposal_ProposalNumber}</a>
-         </td>
+               <?BLSession_protectedData>
+                    {@eq key=BLSession_protectedData value="OK"}
+                            <span class="glyphicon glyphicon-lock" ></span>
+                    {/eq}
+               </BLSession_protectedData>                              
+               <a href='{.dataCollectionURL}'>
+               {@eq key=showProposalType value=true}{.Proposal_proposalCode}{/eq}{.Proposal_ProposalNumber}</a>
+            </td>
+            <td class='sessiongrid-a-form-header2' style='color: gray !important;'>
+                <?BLSession_protectedData>
+                {.Proposal_title}
+            </td>
+            {@eq key=BLSession_protectedData value="OK"}
+                    <span class="glyphicon glyphicon-lock" ></span>
+            {/eq}
+            </BLSession_protectedData>
+            </td>
             <td> {.beamLineOperator}</td>
             <td class="mxsessiongridcell">
                <div style="text-align:center;">
